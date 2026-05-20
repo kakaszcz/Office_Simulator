@@ -1,7 +1,7 @@
 ### IntelliJ IDEA ###
 out/
-!**/src/main/**/out/
-!**/src/test/**/out/
+!.idea/src.java/main/**/out/
+!.idea/src.java/test/**/out/
 .kotlin
 
 ### Eclipse ###
@@ -13,8 +13,8 @@ out/
 .springBeans
 .sts4-cache
 bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
+!.idea/src.java/main/**/bin/
+!.idea/src.java/test/**/bin/
 
 ### NetBeans ###
 /nbproject/private/
