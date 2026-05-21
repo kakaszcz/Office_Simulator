@@ -23,5 +23,16 @@ public class Board {
 
         initOfficeLayout(totalWorkers);
         }
+
+        private void initOfficeLayout(int totalWorkers) {
+        int placeDesks = 0;
+        for(int y = 0; y<height; y++){
+            for(int x = 0; x<width; x++){
+                String type = "floor";
+
+
+            }
+        }
+        }
     }
 
