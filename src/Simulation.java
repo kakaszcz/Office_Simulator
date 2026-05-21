@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 
 public class Simulation {
@@ -13,6 +14,9 @@ public class Simulation {
         this.board = new Board();
         this.agents = new ArrayList<>();
 
+        //Nowa część
+        String[] juniorNames = {"Jan", "Anna", "Piotr", "Maria", "Krzysztof", "Kasia", "Tomasz", "Magda"};
+        Random rand = new Random();
 
 
     /*
@@ -21,10 +25,21 @@ public class Simulation {
      */
         for (int i = 0; i < numJuniors; i++) {
             Cell freeDesk = board.findFirstEmptyCell("desk");
+
             if (freeDesk != null) {
+
+                int randomNameIndex = rand.nextInt(juniorNames.length);
+                String losoweImie = juniorNames[randomNameIndex];
+
+                //double wydajnosc =
+                //double doswiadczenie =
+
                 Junior j = new Junior(board, freeDesk.getX(), freeDesk.getY());
+
                 agents.add(j);
                 freeDesk.setAgent(j);
+
+                System.out.println("stworzono juniora"); //komenda do potwerdzenia w programie
             }
         }
     }
