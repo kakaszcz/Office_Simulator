@@ -4,7 +4,7 @@ abstract public class Agent {
     static int nextId = 1;
     int id;
 
-    public Agent(int id, int x, int y) {
+    public Agent(int x, int y) {
         this.id = nextId++;
         this.x = x;
         this.y = y;
