@@ -22,7 +22,7 @@ public class Simulation {
         for (int i = 0; i < numJuniors; i++) {
             Cell freeDesk = board.findFirstEmptyCell("desk");
             if (freeDesk != null) {
-                junior j = new Junior(board, freeDesk.getX(), freeDesk.getY());
+                Junior j = new Junior(board, freeDesk.getX(), freeDesk.getY());
                 agents.add(j);
                 freeDesk.setAgent(j);
             }
