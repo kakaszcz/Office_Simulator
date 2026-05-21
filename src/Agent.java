@@ -1,4 +1,4 @@
-public class Agent {
+abstract public class Agent {
     int x;
     int y;
     double wydajnosc;
