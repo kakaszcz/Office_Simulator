@@ -1,13 +1,12 @@
 abstract public class Agent {
     int x;
     int y;
-    double wydajnosc;
-    double doswiadczenie;
+    static int nextId = 1;
+    int id;
 
-    public Agent(int x, int y, double wydajnosc, double doswiadczenie) {
+    public Agent(int id, int x, int y) {
+        this.id = nextId++;
         this.x = x;
         this.y = y;
-        this.wydajnosc = wydajnosc;
-        this.doswiadczenie = doswiadczenie;
     }
 }

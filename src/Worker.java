@@ -1,6 +1,16 @@
 public class Worker extends Agent {
 
-    public Worker(int x, int y, double wydajnosc, double doswiadczenie) {
-        super(x, y, wydajnosc, doswiadczenie);
+    double efficincy;
+    double experience;
+
+    public Worker(int id, int x, int y, double efficincy, double experience) {
+        super(id, x, y);
+        this.efficincy = efficincy;
+        this.experience = experience;
+    }
+
+    public double calculatePerformance() {
+        double performance;
+        return performance = (efficincy + experience)/2.0;
     }
 }

@@ -1,6 +1,7 @@
 public class Junior extends Worker{
 
-    public Junior(int x, int y, double wydajnosc, double doswiadczenie) {
-        super(x, y, wydajnosc, doswiadczenie);
+    public Junior(int x, int y, double efficiency, double experience) {
+
+        super(id, x, y, efficiency, experience);
     }
 }
