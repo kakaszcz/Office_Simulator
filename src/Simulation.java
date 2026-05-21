@@ -8,21 +8,24 @@ public class Simulation {
 
     private Board board;
     private List<Agent> agents;
-    private int stepCount = 0;
-    private boolean isRunning = true;
 
-    public Simulation(int numJuniors, int numSeniors) {
+    public Simulation(int numJuniors, int initialBudget){
+        this.board = new Board ();
         this.agents = new ArrayList<>();
+    }
 
-        //Obliczenia dotyczące tego jak duża mapka powinna się
-        //wczytać w zależności od tego jaką ilość agntów wybrał użytkownik,
-        //min. size boardu - 6x6
 
-        int totalWorkers = numJuniors * numSeniors;
-        int rozmiar = (int) Math.ceil(Math.sqrt(totalWorkers * 3));
-
-       int(rozmiar < 6) rozmiar = 6;
-
-        this.board = new Board(rozmiar, rozmiar, totalWorkers);
+    /*
+    Ta część kodu odpowiada za przydzielanie biurek juniorom, po kolej
+    W poprzedniej klasie wyszukuje biurek, a tu przydziela miejsca
+     */
+     */
+    for(int i = 0; i < numJuniors; i++){
+        Cell freeDesk = board.findFirstEmptyCell("desk");
+        if(freeDesk != null){
+            junior j = new Junior(board, freeDesk.getX(), freeDesk.getY());
+            agents.add(j);
+            freeDesk.setAgent(j);
+        }
     }
 }
