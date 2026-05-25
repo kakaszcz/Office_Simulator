@@ -1,16 +1,28 @@
-public class Worker extends Agent {
+public abstract class Worker extends Agent {
 
-    double efficiency;
-    double experience;
+    private double efficiency;
+    private double experience;
+    private int roundsToFinishTask;
+    private boolean isOutside;
+    private int taskTime;
 
-    public Worker(int x, int y, double efficincy, double experience) {
+    public Worker(int x, int y, double efficiency, double experience) {
         super(x, y);
-        this.efficiency = efficincy;
+        this.efficiency = efficiency;
         this.experience = experience;
+        this.isOutside = false;
     }
 
-    public double calculatePerformance() {
+    public double getPerformance() {
         double performance;
         return performance = (efficiency + experience)/2.0;
     }
+
+    public boolean shouldBeFired() { return false; }
+
+    public void doTask() {}
+
+    public void goRest() {}
+
+    //public boolean isBossNear() {}
 }
