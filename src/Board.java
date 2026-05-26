@@ -30,7 +30,7 @@ public class Board {
                 for(int y = 0; y <height; y++) {
                     for (int x = 0; x < width; x++) {
                         String type = "floor";
-                        if (layout[x][y] == 1) type = "desk";
+                        if (layout[y][x] == 1) type = "desk";
                         else if (layout[y][x] == 2) type = "coffee";
                         else if (layout[y][x] == 3) type = "outdoor";
 
@@ -41,7 +41,7 @@ public class Board {
 
 
             //Zabezpieczenie przed wyjsciem poza tablicę
-            public boolean inBounds (int x, int y){
+            public boolean isInBounds (int x, int y){
                 return x >= 0 && x < width && y >= 0 && y < height;
             }
 
@@ -51,7 +51,7 @@ public class Board {
             Przykłąd 2: do umieszczania na danym kafelku agentów
              */
             public Cell getCell(int x, int y) {
-                if (!inBounds(x, y)) return null;
+                if (!isInBounds(x, y)) return null;
                 return grid[y][x];
             }
 
@@ -75,5 +75,10 @@ public class Board {
 
     public int getWidth() { return width; }
     public int getHeight() { return height; }
+
+    //dodac placeAgent(); moveAgent(); removeAgent();
+    //strasznie duzo rzeczy jest w konstruktorze - moze by zrobic osobne metody zeby byl clean code - void initializeBoard();
+    //trzeba bedzie albo dodac pare biurek albo powiekszyc plansze bo przy 10x10 mamy 12 biurek a max 15 workerow
+    //zrob biuro szefa bo jest bezdomny!
     }
 
