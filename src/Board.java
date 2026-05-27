@@ -6,8 +6,17 @@ public class Board {
     private int height = 11;
     private Cell[][] grid;
 
+    //Poprawiony konstruktor
     public Board() {
+        createEmptyGrid();
+        initalizeBoard();
+    }
+
+    private void createEmptyGrid() {
         this.grid = new Cell[height][width];
+    }
+
+    private void initalizeBoard(){
 
         //Plansza 10x10, wszytsko powinno się zmieścić, edit: jednak 11x11 bedzie symetrycznie
         //0-floor
@@ -31,15 +40,20 @@ public class Board {
 
                 for(int y = 0; y <height; y++) {
                     for (int x = 0; x < width; x++) {
-                        String type = "floor";
-                        if (layout[y][x] == 1) type = "desk";
-                        else if (layout[y][x] == 2) type = "coffee";
-                        else if (layout[y][x] == 3) type = "outdoor";
-
+                        String type = determineCellType(layout[y][x]);
                         grid[y][x] = new Cell(x, y, type);
                     }
                 }
-            }
+    }
+
+
+    private String determineCellType(int value){
+        if (value == 1) return "desk";
+        if (value == 2) return "coffee";
+        if (value == 3) return "outdoor";
+        if (value == 4) return "boss_office";
+        return "floor"; // Domyślnie, jeśli wartość to 0 lub jakakolwiek inna
+    }
 
 
             //Zabezpieczenie przed wyjsciem poza tablicę
@@ -78,10 +92,10 @@ public class Board {
             Tutaj dokładnie tak samo jak powyżej, boss na samym pocżatku dostaje info gdzie ma iść
             Bedzie maił swój spawn na pierwszym kafelku w swoim biurze(przynajmniej tak to powinno działać)
              */
-            public Cell finfBossOfficeCell(){
+            public Cell findBossOfficeCell(){
                 for(int y =0; y < height; y++){
                     for(int x = 0; x < width; x++){
-                        if(grid[y][x].getType().equals("Boss_office") && grid[y][x].isEmpty()){
+                        if(grid[y][x].getType().equals("boss_office") && grid[y][x].isEmpty()){
                             return grid[y][x];
                         }
                     }
@@ -90,18 +104,52 @@ public class Board {
             }
 
 
+  //Fizyczna logika ruchu -- agentów
+
+    public boolean placeAgent(Agent agent, int x, int y) {
+        Cell cell = getCell(x, y);
+        if (cell != null && cell.isEmpty()) {
+            cell.setAgent(agent);
+            return true;
+        }
+        return false;
+    }
+
+    public void removeAgent(int x, int y) {
+        Cell cell = getCell(x, y);
+        if (cell != null) {
+            cell.setAgent(null);
+        }
+    }
+
+
+    public boolean moveAgent(int oldX, int oldY, int newX, int newY) {
+
+        Cell oldCell = getCell(oldX, oldY);
+        Cell newCell = getCell(newX, newY);
+
+        if (oldCell != null && newCell != null && !oldCell.isEmpty() && newCell.isEmpty()) {
+            Agent agent = oldCell.getAgent();
+            oldCell.setAgent(null);
+            newCell.setAgent(agent);
+            return true;
+        }
+        return false;
+    }
+
+
+            //GETTERY ROZMIARU
     public int getWidth() { return width; }
     public int getHeight() { return height; }
 
-    //dodac placeAgent(); moveAgent(); removeAgent();
-    //strasznie duzo rzeczy jest w konstruktorze - moze by zrobic osobne metody zeby byl clean code - void initializeBoard();
+    //dodac placeAgent(); moveAgent(); removeAgent();✔️
+    //strasznie duzo rzeczy jest w konstruktorze - moze by zrobic osobne metody zeby byl clean code - void initializeBoard();✔️
     //trzeba bedzie albo dodac pare biurek albo powiekszyc plansze bo przy 10x10 mamy 12 biurek a max 15 workerow✔️
     //zrob biuro szefa bo jest bezdomny! ✔️
-    /*
-   /Dodałam mu cały gabinet bo tak będzie łatwiej to w kodzie zapisać imo,
-   Nie bedziemy musieli sprawdzać na jakim kafelku stoi w danym momencie,
-   TYlko trzeba usatwić że pracownicy np. Juniorzy mają tm zakaz wstępu
 
-     */
-    }
+/*
+   /dobra to tak dodałam mu cały gabinet bo tak będzie łatwiej to w kodzie zapisać imo,
+   Nie bedziemy musieli sprawdzać na jakim kafelku stoi w danym momencie,
+   TYlko trzeba usatwić że pracownicy np. Juniorzy mają tam zakaz wstępu (To napiszemy jeszzce w klasie junior albo bezpośrednio w nadrzędnej klasie jeśli chcemy ten zakaz rozszerzyć dla seniora i juniora)
+*/
 
