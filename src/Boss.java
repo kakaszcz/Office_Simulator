@@ -1,10 +1,12 @@
 public class Boss extends Agent{
+    private String name;
     private int control_range;
     private int coffeeTimer;
     private int[][] bossLocation;
 
-    public Boss(int x, int y) {
+    public Boss(String name, int x, int y) {
         super(x, y);
+        this.name = name;
         this.control_range = 1;
         this.coffeeTimer = 0;
     }
@@ -19,4 +21,12 @@ public class Boss extends Agent{
     public void moveTo() {}
 
     public void fireWorker(Worker worker) {}
+
+    // Getter dla imienia szefa, żeby inne klasy mogły z niego korzystać
+    public String getName() {
+        return name;
+    }
 }
+
+
+//Dopisałam zmienną z imieniem, bo dla juniorów losujemy to tutaj możemy mu je nadać
