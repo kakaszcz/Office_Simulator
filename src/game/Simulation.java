@@ -9,9 +9,11 @@ public class Simulation {
     //public static void main(String[] args) {
     //System.out.println("helool");
 
+    public enum WorkerType { JUNIOR, SENIOR }
+
     private GameBoard gameBoard;
     private List<Agent> agents;
-    private String[] names = {"Mateusz", "Karolina", "Wiktoria", "Jan", "Anna", "Piotr", "Maria", "Krzysztof", "Kasia", "Tomasz", "Magda", "Michał", "Gienek", "Sebastian", "Brajan", "Artur",  "Zofia", "Marek", "Barbara", "Adam", "Ewa", "Paweł", "Małgorzata", "Robert"};
+    private AgentFactory agentFactory;
 
     private double budget;
     private int stepCount;
@@ -26,58 +28,44 @@ public class Simulation {
 
         Random rand = new Random();
 
-        //stworzenie szefa
-        Boss boss = new Boss(2, 3);
-        String bossName = names[rand.nextInt(names.length)];
-        boss.setName(bossName);
+        // 1. Stworzenie szefa
+        Boss boss = agentFactory.createBoss(2, 3);
         agents.add(boss);
         gameBoard.getCell(2, 3).setAgent(boss);
-        System.out.println("Stworzono szefa " + bossName + ".");
+        System.out.println("Stworzono szefa " + boss.getName() + ".");
 
-        //max ilość agentów - jeśli podamy więcej, niż limit to wybierze mniejszą liczbę z nawiasu
+        // 2. Limity agentów
         int seniorsToCreate = Math.min(numSeniors, 5);
         int juniorsToCreate = Math.min(numJuniors, 10);
 
-        //stworzenie pracowników
-        createWorkers(seniorsToCreate, "game.Senior", rand);
-        createWorkers(juniorsToCreate, "game.Junior", rand);
+        // 3. Stworzenie pracowników przy użyciu Enuma
+        createWorkers(seniorsToCreate, WorkerType.SENIOR);
+        createWorkers(juniorsToCreate, WorkerType.JUNIOR);
 
     }
 
-    private void createWorkers (int num, String type, Random rand) {
-         /*
-    Ta część kodu odpowiada za przydzielanie biurek pracownikom, po kolej
-    W poprzedniej klasie wyszukuje biurek, a tu przydziela miejsca
-     */
-
+    private void createWorkers(int num, WorkerType type) {
         for (int i = 0; i < num; i++) {
             Cell freeDesk = gameBoard.findFirstEmptyCell("desk");
 
             if (freeDesk != null) {
-                String randomName = names[rand.nextInt(names.length)];
+                Worker w = null;
 
-                //wydajność 0.4 - 0.9
-                double eff = 0.4 + (0.5) * rand.nextDouble();
-                double exp;
-
-                Worker w;
-                if (type.equalsIgnoreCase("game.Junior")) {
-                    // game.Junior - doświadczenie od 10% do 40%
-                    exp = 0.1 + (0.4 - 0.1) * rand.nextDouble();
-                    w = new Junior(freeDesk.getX(), freeDesk.getY(), eff, exp);
-                } else {
-                    // game.Senior - doświadczenie od 60% do 95%
-                    exp = 0.6 + (0.95 - 0.6) * rand.nextDouble();
-                    w = new Senior(freeDesk.getX(), freeDesk.getY(), eff, exp);
+                // Fabryka zajmuje się detalami, my tylko decydujemy jakiego typu potrzebujemy
+                if (type == WorkerType.JUNIOR) {
+                    w = agentFactory.createJunior(freeDesk.getX(), freeDesk.getY());
+                } else if (type == WorkerType.SENIOR) {
+                    w = agentFactory.createSenior(freeDesk.getX(), freeDesk.getY());
                 }
 
-                w.setName(randomName);
-                agents.add(w);
-                freeDesk.setAgent(w);
-
-                //log o utworzeniu pracownika
-                System.out.println("Stworzono " + type + " o imieniu " + randomName + " (Doświadczenie: "
-                        + String.format("%.2f", exp) + " Wydajność:" + String.format("%.2f", eff) + ")");
+                if (w != null) {
+                    agents.add(w);
+                    freeDesk.setAgent(w);
+                    System.out.println("Stworzono " + type + " o imieniu " + w.getName() + ".");
+                }
+            } else {
+                System.out.println("Brak wolnych biurek dla " + type + "!");
+                break; // Skoro nie ma wolnych biurek, przerywamy pętlę
             }
         }
     }
