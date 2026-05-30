@@ -22,39 +22,60 @@ public class GameBoard {
     private void initalizeBoard(){
 
         //Plansza 10x10, wszytsko powinno się zmieścić, edit: jednak 11x11 bedzie symetrycznie
-        //---------WARSTWA PODŁÓG ------------
-        //0-empty_floor, 3-outdoor(grass), 4- boss_floor
-        int[][] layout = {
-                {2,2,0,0,0,0,0,4,4,4,4},
-                {2,2,0,0,0,0,0,4,4,4,4},
+        //-------  WARSTWA PODŁÓG  ------------
+        //0-empty_floor, 1-outdoor(grass), 2- boss_floor
+        int[][] floorLayout = {
+                {0,0,0,0,0,0,0,2,2,2,2},
+                {0,0,0,0,0,0,0,2,2,2,2},
+                {0,0,0,0,0,0,0,2,2,2,2},
                 {0,0,0,0,0,0,0,0,0,0,0},
-                {0,1,0,1,0,1,0,1,0,1,0},
                 {0,0,0,0,0,0,0,0,0,0,0},
-                {0,1,0,1,0,1,0,1,0,1,0},
                 {0,0,0,0,0,0,0,0,0,0,0},
-                {0,1,0,1,0,1,0,1,0,1,0},
                 {0,0,0,0,0,0,0,0,0,0,0},
-                {3,3,3,3,3,3,3,3,3,3,3},
-                {3,3,3,3,3,3,3,3,3,3,3},
+                {0,0,0,0,0,0,0,0,0,0,0},
+                {0,0,0,0,0,0,0,0,0,0,0},
+                {1,1,1,1,1,1,1,1,1,1,1}, // Trawa na dole
+                {1,1,1,1,1,1,1,1,1,1,1}
         };
+
+        // ----- WARSTWA OBIEKTÓW (0 = pusto, 6 = ściana, 7 = kawa, 9 = 15 biurek) ---
+        int[][] objectLayout = {
+                {7,7,0,0,0,0,0,6,6,6,6}, // Aneks i górna ściana szefa
+                {7,7,0,0,0,0,0,6,0,0,0}, // Ściana boczna szefa
+                {0,0,0,0,0,0,0,6,0,0,0}, // Wejście do szefa (puste 0 na podłodze 2)
+                {0,9,0,9,0,9,0,9,0,9,0}, // Rząd 1: 5 biurek
+                {0,0,0,0,0,0,0,0,0,0,0}, // Korytarz do chodzenia
+                {0,9,0,9,0,9,0,9,0,9,0}, // Rząd 2: 5 biurek
+                {0,0,0,0,0,0,0,0,0,0,0}, // Korytarz do chodzenia
+                {0,9,0,9,0,9,0,9,0,9,0}, // Rząd 3: 5 biurek
+                {0,6,6,6,6,6,6,6,6,6,6}, // Ściana odgradzająca ogród (pierwsze pole '0' to drzwi na trawę!)
+                {0,0,0,0,0,0,0,0,0,0,0}, // Przestrzeń przed wyjściem
+                {0,0,0,0,0,0,0,0,0,0,0}  // Czysta trawa w ogródku
+        };
+
+                this.floorMap = floorLayout; // Zapis mapy podłóg dla renderera JavaFX
+
 
                 for(int y = 0; y <height; y++) {
                     for (int x = 0; x < width; x++) {
-                        String type = determineCellType(layout[y][x]);
+                        String type = determineCellType(objectLayout[y][x], floorLayout[y][x]);
                         grid[y][x] = new Cell(x, y, type);
                     }
                 }
     }
 
 
-    private String determineCellType(int value){
-        if (value == 1) return "desk";
-        if (value == 2) return "coffee";
-        if (value == 3) return "outdoor";
-        if (value == 4) return "boss_office";
-        return "floor"; // Domyślnie, jeśli wartość to 0 lub jakakolwiek inna
-    }
+    // POPRAWIONE: Metoda przyjmuje teraz obiekt i podłogę oraz korzysta z GameConfiguration
+    private String determineCellType(int objectValue, int floorValue) {
+        if (objectValue == GameConfiguration.OBJ_DESK) return "desk";
+        if (objectValue == GameConfiguration.OBJ_COFFEE) return "coffee";
+        if (objectValue == GameConfiguration.OBJ_WALL) return "wall";
 
+        if (floorValue == GameConfiguration.FLOOR_BOSS_OFFICE) return "boss_office";
+        if (floorValue == GameConfiguration.FLOOR_OUTDOOR) return "outdoor";
+
+        return "floor";
+    }
 
             //Zabezpieczenie przed wyjsciem poza tablicę
             public boolean isInBounds (int x, int y){
@@ -108,12 +129,13 @@ public class GameBoard {
 
     public boolean placeAgent(Agent agent, int x, int y) {
         Cell cell = getCell(x, y);
-        if (cell != null && cell.isEmpty()) {
+        if (cell != null && cell.isEmpty() && !cell.getType().equals("wall")) {
             cell.setAgent(agent);
             return true;
         }
         return false;
     }
+
 
     public void removeAgent(int x, int y) {
         Cell cell = getCell(x, y);
@@ -122,12 +144,13 @@ public class GameBoard {
         }
     }
 
+
     public boolean moveAgent(int oldX, int oldY, int newX, int newY) {
 
         Cell oldCell = getCell(oldX, oldY);
         Cell newCell = getCell(newX, newY);
 
-        if (oldCell != null && newCell != null && !oldCell.isEmpty() && newCell.isEmpty()) {
+        if (oldCell != null && newCell != null && !oldCell.isEmpty() && newCell.isEmpty() && !newCell.getType().equals("wall")) {
             Agent agent = oldCell.getAgent();
             oldCell.setAgent(null);
             newCell.setAgent(agent);
@@ -141,7 +164,11 @@ public class GameBoard {
     public int getWidth() { return width; }
     public int getHeight() { return height; }
 
-    //dodac placeAgent(); moveAgent(); removeAgent();✔️
+
+    public int[][] getFloorMap() {return floorMap;}
+}
+
+//dodac placeAgent(); moveAgent(); removeAgent();✔️
     //strasznie duzo rzeczy jest w konstruktorze - moze by zrobic osobne metody zeby byl clean code - void initializeBoard();✔️
     //trzeba bedzie albo dodac pare biurek albo powiekszyc plansze bo przy 10x10 mamy 12 biurek a max 15 workerow✔️
     //zrob biuro szefa bo jest bezdomny! ✔️
