@@ -1,4 +1,4 @@
-
+package game;
 
 public class GameBoard {
     private final int width = 11;
@@ -65,7 +65,7 @@ public class GameBoard {
     }
 
 
-    // POPRAWIONE: Metoda przyjmuje teraz obiekt i podłogę oraz korzysta z GameConfiguration
+    // POPRAWIONE: Metoda przyjmuje teraz obiekt i podłogę oraz korzysta z game.GameConfiguration
     private String determineCellType(int objectValue, int floorValue) {
         if (objectValue == GameConfiguration.OBJ_DESK) return "desk";
         if (objectValue == GameConfiguration.OBJ_COFFEE) return "coffee";
@@ -95,7 +95,7 @@ public class GameBoard {
 
             /*
             Ta metoda automatycznie pszeszukuje planszę w poszukiwaniu WOLNYCH MIEJSC,
-            Jest wywoływana w Simulation class i w zależności od tego co potzrebujemy to tam usatwia
+            Jest wywoływana w game.Simulation class i w zależności od tego co potzrebujemy to tam usatwia
             (Na przykład juniora).
              */
             public Cell findFirstEmptyCell(String type) {
@@ -177,5 +177,6 @@ public class GameBoard {
    /dobra to tak dodałam mu cały gabinet bo tak będzie łatwiej to w kodzie zapisać imo,
    Nie bedziemy musieli sprawdzać na jakim kafelku stoi w danym momencie,
    TYlko trzeba usatwić że pracownicy np. Juniorzy mają tam zakaz wstępu (To napiszemy jeszzce w klasie junior albo bezpośrednio w nadrzędnej klasie jeśli chcemy ten zakaz rozszerzyć dla seniora i juniora)
+   NEW: lekko zmieniłam oznaczenia w planszy i dodałam to w kodzie
 */
 

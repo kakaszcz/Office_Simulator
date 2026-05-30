@@ -1,3 +1,5 @@
+package game;
+
 public class Junior extends Worker{
     private int numberOfFails;
     private static int fails;
@@ -10,7 +12,7 @@ public class Junior extends Worker{
 
     @Override
     public boolean shouldBeFired() {
-        // Junior zostaje oznaczony do zwolnienia, gdy:
+        // game.Junior zostaje oznaczony do zwolnienia, gdy:
         // - liczba jego błędów (numberOfFails) wyniesie 5 lub więcej [
         // - jego ogólny performance spadnie poniżej 45%.
         // - przyłapanie na dworze

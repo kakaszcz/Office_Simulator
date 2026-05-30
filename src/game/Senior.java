@@ -1,3 +1,5 @@
+package game;
+
 public class Senior extends Worker {
 
     private double experienceBonus;
@@ -10,7 +12,7 @@ public class Senior extends Worker {
     @Override
     public void act() {
         // 1. Sprawdzenie bliskości szefa -> stan 'talking' [3, 4]
-        // Jeśli sąsiad == Boss? -> efficiency -= 10% i plotkuje 1 turę.
+        // Jeśli sąsiad == game.Boss? -> efficiency -= 10% i plotkuje 1 turę.
 
         // 2. Priorytet naprawy błędów -> stan 'repairing' [3]
         // Jeśli ogólne fails >= 1? -> wywołaj repairFail().

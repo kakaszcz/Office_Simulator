@@ -1,3 +1,5 @@
+package game;
+
 public abstract class Worker extends Agent {
 
     private double efficiency;

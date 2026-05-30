@@ -1,3 +1,5 @@
+package game;
+
 public class Cell {
     private int x;
     private int y;
@@ -13,7 +15,7 @@ public class Cell {
     }
 
     //metoda połączona z  findFirstEmptyCell
-    //zwraca true jęsli kafelek(Cell) jest pusty (nikt na nim nie stoi)
+    //zwraca true jęsli kafelek(game.Cell) jest pusty (nikt na nim nie stoi)
     public boolean isEmpty(){
         return this.agent == null;
     }

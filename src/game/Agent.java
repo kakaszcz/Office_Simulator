@@ -1,3 +1,5 @@
+package game;
+
 abstract public class Agent {
     private int x;
     private int y;

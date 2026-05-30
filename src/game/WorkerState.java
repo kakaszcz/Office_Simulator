@@ -1,3 +1,5 @@
+package game;
+
 public enum WorkerState {
     WAITING, //siedzi przy biurku czeka na taska
     MOVING_TO_REST, //idzie na kawe lub na dwor

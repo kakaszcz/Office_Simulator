@@ -1,3 +1,5 @@
+package game;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -37,8 +39,8 @@ public class Simulation {
         int juniorsToCreate = Math.min(numJuniors, 10);
 
         //stworzenie pracowników
-        createWorkers(seniorsToCreate, "Senior", rand);
-        createWorkers(juniorsToCreate, "Junior", rand);
+        createWorkers(seniorsToCreate, "game.Senior", rand);
+        createWorkers(juniorsToCreate, "game.Junior", rand);
 
     }
 
@@ -59,12 +61,12 @@ public class Simulation {
                 double exp;
 
                 Worker w;
-                if (type.equalsIgnoreCase("Junior")) {
-                    // Junior - doświadczenie od 10% do 40%
+                if (type.equalsIgnoreCase("game.Junior")) {
+                    // game.Junior - doświadczenie od 10% do 40%
                     exp = 0.1 + (0.4 - 0.1) * rand.nextDouble();
                     w = new Junior(freeDesk.getX(), freeDesk.getY(), eff, exp);
                 } else {
-                    // Senior - doświadczenie od 60% do 95%
+                    // game.Senior - doświadczenie od 60% do 95%
                     exp = 0.6 + (0.95 - 0.6) * rand.nextDouble();
                     w = new Senior(freeDesk.getX(), freeDesk.getY(), eff, exp);
                 }

@@ -1,3 +1,5 @@
+package game;
+
 public class Boss extends Agent{
     private String name;
     private int control_range;
@@ -15,7 +17,7 @@ public class Boss extends Agent{
     public void act() {
         // 1. Sprawdzenie coffeeTimer >= 10 -> idź do coffeeTable [1].
         // 2. Porównanie previousBudget z obecnym -> wybór celu w moveTo() [1].
-        // 3. Sprawdzenie sąsiadów (Junior -> boost/zwolnienie, Senior -> talking) [1].
+        // 3. Sprawdzenie sąsiadów (game.Junior -> boost/zwolnienie, game.Senior -> talking) [1].
     }
 
     public void moveTo() {}
