@@ -7,7 +7,7 @@ public class Simulation {
     //public static void main(String[] args) {
     //System.out.println("helool");
 
-    private Board board;
+    private GameBoard gameBoard;
     private List<Agent> agents;
     private String[] names = {"Mateusz", "Karolina", "Wiktoria", "Jan", "Anna", "Piotr", "Maria", "Krzysztof", "Kasia", "Tomasz", "Magda", "Michał", "Gienek", "Sebastian", "Brajan", "Artur",  "Zofia", "Marek", "Barbara", "Adam", "Ewa", "Paweł", "Małgorzata", "Robert"};
 
@@ -16,7 +16,7 @@ public class Simulation {
     private boolean isRunning;
 
     public Simulation(int numJuniors, int numSeniors, int initialBudget) {
-        this.board = new Board();
+        this.gameBoard = new GameBoard();
         this.agents = new ArrayList<>();
         this.budget = initialBudget;
         this.stepCount = 0;
@@ -29,7 +29,7 @@ public class Simulation {
         String bossName = names[rand.nextInt(names.length)];
         boss.setName(bossName);
         agents.add(boss);
-        board.getCell(2, 3).setAgent(boss);
+        gameBoard.getCell(2, 3).setAgent(boss);
         System.out.println("Stworzono szefa " + bossName + ".");
 
         //max ilość agentów - jeśli podamy więcej, niż limit to wybierze mniejszą liczbę z nawiasu
@@ -49,7 +49,7 @@ public class Simulation {
      */
 
         for (int i = 0; i < num; i++) {
-            Cell freeDesk = board.findFirstEmptyCell("desk");
+            Cell freeDesk = gameBoard.findFirstEmptyCell("desk");
 
             if (freeDesk != null) {
                 String randomName = names[rand.nextInt(names.length)];

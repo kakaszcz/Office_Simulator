@@ -1,29 +1,29 @@
-import java.util.ArrayList;
-import java.util.List;
 
-public class Board {
-    private int width = 11;
-    private int height = 11;
+
+public class GameBoard {
+    private final int width = 11;
+    private final int height = 11;
     private Cell[][] grid;
+    // NEW: Przechowujemy typy podłóg do renderowania w JavaFX
+    private int[][] floorMap;
+
 
     //Poprawiony konstruktor
-    public Board() {
+    public GameBoard() {
         createEmptyGrid();
         initalizeBoard();
     }
 
     private void createEmptyGrid() {
         this.grid = new Cell[height][width];
+        this.floorMap = new int[height][width]; // NEW: Inicjalizacja mapy podłóg
     }
 
     private void initalizeBoard(){
 
         //Plansza 10x10, wszytsko powinno się zmieścić, edit: jednak 11x11 bedzie symetrycznie
-        //0-floor
-        //1-desk
-        //2-coffee
-        //3-outdoor
-        //4-boss_office
+        //---------WARSTWA PODŁÓG ------------
+        //0-empty_floor, 3-outdoor(grass), 4- boss_floor
         int[][] layout = {
                 {2,2,0,0,0,0,0,4,4,4,4},
                 {2,2,0,0,0,0,0,4,4,4,4},
@@ -121,7 +121,6 @@ public class Board {
             cell.setAgent(null);
         }
     }
-
 
     public boolean moveAgent(int oldX, int oldY, int newX, int newY) {
 
