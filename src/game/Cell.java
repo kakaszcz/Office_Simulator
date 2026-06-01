@@ -47,4 +47,8 @@ public class Cell {
         return y;
     }
 
+    public boolean isWall(){
+        return "wall".equals(type);
+    }
+
 }

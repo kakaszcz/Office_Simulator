@@ -27,8 +27,8 @@ public class Simulation {
         Random rand = new Random();
 
         //stworzenie szefa
-        Boss boss = new Boss(2, 3);
         String bossName = names[rand.nextInt(names.length)];
+        Boss boss = new Boss(bossName, 2, 3);
         boss.setName(bossName);
         agents.add(boss);
         gameBoard.getCell(2, 3).setAgent(boss);
@@ -82,8 +82,29 @@ public class Simulation {
         }
     }
 
+    //============ GETTER PLANSZY potrzebny gameview
+
+    public GameBoard getGameBoard() {
+        return gameBoard;
+    }
+
+    //=============== GŁÓWNA PĘTLA CZASU
+    public void step() {
+        if (!isRunning) return; //czyli jak nic sie nie dzieje to nic nie rob
+        stepCount++;
+        System.out.println("--- TURA " + stepCount + " ---");
+
+        //kazdy agent wykonuje swoj jeden ruch
+        for (Agent agent : agents) {
+            agent.act(gameBoard);
+        }
+        //TUTAJ TRZEBA BEDZIE DAC BUDZET I WYDATKI ITP
+
+    }
+
+
     //do zrobienia tutaj
-    //metoda step() -> tury
+    //metoda step() -> tury ZROBIONA - K
     //metoda z mechanizmem wypłat
     //metoda checkBudget()
 

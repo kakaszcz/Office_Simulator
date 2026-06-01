@@ -10,7 +10,7 @@ public class Junior extends Worker{
         this.numberOfFails = 0;
     }
 
-    @Override
+
     public boolean shouldBeFired() {
         // game.Junior zostaje oznaczony do zwolnienia, gdy:
         // - liczba jego błędów (numberOfFails) wyniesie 5 lub więcej [
@@ -20,7 +20,7 @@ public class Junior extends Worker{
     }
 
     @Override
-    public void act() {
+    public void act(GameBoard board) {
         //interakcja z szefem
         //crying
         //konsekwencje przy outside

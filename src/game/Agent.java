@@ -16,7 +16,7 @@ abstract public class Agent {
     public void setName (String name) { this.name = name; }
 
     //metoda do obslugi tur
-    public abstract void act();
+    public abstract void act(GameBoard board);
 
     public int getX() { return x; }
     public int getY() { return y; }
