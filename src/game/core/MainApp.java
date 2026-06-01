@@ -1,5 +1,6 @@
-package game;
+package game.core;
 
+import game.view.GameView;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -45,7 +46,6 @@ public class MainApp extends Application {
             }
         };
 
-        // Odkomentuj poniższą linijkę, żeby wprawić czas w ruch!
         timer.start();
     }
 

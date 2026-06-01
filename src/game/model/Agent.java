@@ -1,4 +1,6 @@
-package game;
+package game.model;
+
+import game.core.Simulation;
 
 abstract public class Agent {
     private int x;
@@ -15,8 +17,10 @@ abstract public class Agent {
 
     public void setName (String name) { this.name = name; }
 
+    public String getName() { return name; }
+
     //metoda do obslugi tur
-    public abstract void act(GameBoard board);
+    public abstract void act(GameBoard board, Simulation sim);
 
     public int getX() { return x; }
     public int getY() { return y; }

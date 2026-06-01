@@ -1,10 +1,16 @@
-package game;
+package game.core;
 
 public class GameConfiguration {
 
     /*
     Ta klasa będzie przechowywała wszytskie wartości które pojawią się na planszy
      */
+
+    public static final int MAX_FAILS_LIMIT = 5;
+    public static final int MAX_JUNIORS = 10;
+    public static final int MAX_SENIORS = 5;
+    public static final double STARTING_BUDGET = 1000.0;
+    public static final double FATAL_ERROR_PENALTY = 500.0;
 
 //--- ROZMIAR PLANSZY ---
     public static final int MAP_WIDTH = 11;

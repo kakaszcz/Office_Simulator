@@ -1,4 +1,7 @@
-package game;
+package game.core;
+
+import game.model.Worker;
+import game.model.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +20,9 @@ public class Simulation {
     private int stepCount;
     private boolean isRunning;
 
+    // NOWE POLA
+    private int totalFails = 0;
+
     public Simulation(int numJuniors, int numSeniors, int initialBudget) {
         this.gameBoard = new GameBoard();
         this.agents = new ArrayList<>();
@@ -26,22 +32,19 @@ public class Simulation {
 
         Random rand = new Random();
 
-        //stworzenie szefa
+        // Stworzenie szefa
         String bossName = names[rand.nextInt(names.length)];
-        Boss boss = new Boss(bossName, 2, 3);
-        boss.setName(bossName);
+        Boss boss = new Boss(bossName, 2, 3, initialBudget);
         agents.add(boss);
         gameBoard.getCell(2, 3).setAgent(boss);
         System.out.println("Stworzono szefa " + bossName + ".");
 
-        //max ilość agentów - jeśli podamy więcej, niż limit to wybierze mniejszą liczbę z nawiasu
-        int seniorsToCreate = Math.min(numSeniors, 5);
-        int juniorsToCreate = Math.min(numJuniors, 10);
+        int seniorsToCreate = Math.min(numSeniors, GameConfiguration.MAX_SENIORS);
+        int juniorsToCreate = Math.min(numJuniors, GameConfiguration.MAX_JUNIORS);
 
-        //stworzenie pracowników
-        createWorkers(seniorsToCreate, "game.Senior", rand);
-        createWorkers(juniorsToCreate, "game.Junior", rand);
-
+        // Stworzenie pracowników
+        createWorkers(seniorsToCreate, "game.model.Senior", rand);
+        createWorkers(juniorsToCreate, "game.model.Junior", rand);
     }
 
     private void createWorkers (int num, String type, Random rand) {
@@ -61,12 +64,12 @@ public class Simulation {
                 double exp;
 
                 Worker w;
-                if (type.equalsIgnoreCase("game.Junior")) {
-                    // game.Junior - doświadczenie od 10% do 40%
+                if (type.endsWith("Junior")) {
+                    // game.model.Junior - doświadczenie od 10% do 40%
                     exp = 0.1 + (0.4 - 0.1) * rand.nextDouble();
                     w = new Junior(freeDesk.getX(), freeDesk.getY(), eff, exp);
                 } else {
-                    // game.Senior - doświadczenie od 60% do 95%
+                    // game.model.Senior - doświadczenie od 60% do 95%
                     exp = 0.6 + (0.95 - 0.6) * rand.nextDouble();
                     w = new Senior(freeDesk.getX(), freeDesk.getY(), eff, exp);
                 }
@@ -90,18 +93,70 @@ public class Simulation {
 
     //=============== GŁÓWNA PĘTLA CZASU
     public void step() {
-        if (!isRunning) return; //czyli jak nic sie nie dzieje to nic nie rob
+        if (!isRunning) return;
         stepCount++;
         System.out.println("--- TURA " + stepCount + " ---");
 
-        //kazdy agent wykonuje swoj jeden ruch
-        for (Agent agent : agents) {
-            agent.act(gameBoard);
-        }
-        //TUTAJ TRZEBA BEDZIE DAC BUDZET I WYDATKI ITP
+        // Tworzymy kopię listy agentów na czas trwania tej tury
+        List<Agent> agentsCopy = new ArrayList<>(this.agents);
 
+        for (Agent agent : agentsCopy) {
+            // Sprawdzamy, czy agent nie został zwolniony w tej samej turze (np. przez Szefa, który ruszał się wcześniej)
+            if (this.agents.contains(agent)) {
+                agent.act(gameBoard, this);
+            }
+        }
+        // TUTAJ TRZEBA BEDZIE DAC BUDZET I WYDATKI ITP
     }
 
+    // Metoda wywoływana, gdy Junior popełni błąd
+    public void reportJuniorFail() {
+        this.totalFails++;
+        System.out.println("!!! Wykryto błąd Juniora. Aktualna liczba błędów w firmie: " + totalFails);
+
+        // Używamy stałej konfiguracyjnej
+        if (this.totalFails >= GameConfiguration.MAX_FAILS_LIMIT) {
+            triggerFatalError();
+        }
+    }
+
+    // Metoda wywoływana, gdy Senior naprawi błąd
+    public void repairFail() {
+        if (this.totalFails > 0) {
+            this.totalFails--;
+            System.out.println("=== Senior naprawił błąd! Aktualna liczba błędów w firmie: " + totalFails);
+        }
+    }
+
+    // Obsługa krytycznego błędu i kary finansowej
+    private void triggerFatalError() {
+        double penalty = GameConfiguration.FATAL_ERROR_PENALTY;
+        this.budget -= penalty;
+        this.totalFails = 0; // Resetujemy licznik po naliczeniu kary (lub zgodnie z zasadami gry)
+        System.out.println("FATAL ERROR! Firma płaci karę: " + penalty + "$. Aktualny budżet: " + this.budget);
+
+        if (this.budget <= 0) {
+            System.out.println("BANKRUCTWO! Koniec gry.");
+            this.isRunning = false;
+        }
+    }
+
+    public int getTotalFails() { return totalFails; }
+
+    public double getBudget() {
+        return this.budget;
+    }
+
+    public List<Agent> getAgents() {
+        return this.agents;
+    }
+
+    public void removeAgent(Agent agent) {
+        if (this.agents.contains(agent)) {
+            this.agents.remove(agent);
+            System.out.println(agent.getName() + " został zwolniony.");
+        }
+    }
 
     //do zrobienia tutaj
     //metoda step() -> tury ZROBIONA - K
