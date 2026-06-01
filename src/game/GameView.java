@@ -104,6 +104,7 @@ public class GameView {
     // GETTER: jest potrzebny dla klasy MainApp, żeby pobrać płótno i włożyć je do okna
     public Canvas getCanvas() {
         return canvas;
+    }
 
 }
 

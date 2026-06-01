@@ -14,7 +14,20 @@ public class Boss extends Agent{
     }
 
     @Override
-    public void act() {
+    public void act(GameBoard board) {
+        int currentX = getX();
+        int currentY = getY();
+
+        int newX = currentX + (Math.random() > 0.5 ? 1 : (Math.random() > 0.5 ? -1 : 0));
+        int newY = currentY + (Math.random() > 0.5 ? 1 : (Math.random() > 0.5 ? -1 : 0));
+
+        if(board.moveAgent(currentX, currentY, newX, newY)) {
+            setX(newX);
+            setY(newY);
+            System.out.println(this.name + " moved to " + newX + ", " + newY);
+        }
+
+
         // 1. Sprawdzenie coffeeTimer >= 10 -> idź do coffeeTable [1].
         // 2. Porównanie previousBudget z obecnym -> wybór celu w moveTo() [1].
         // 3. Sprawdzenie sąsiadów (game.Junior -> boost/zwolnienie, game.Senior -> talking) [1].

@@ -36,7 +36,7 @@ public abstract class Worker extends Agent {
         }
     }
 
-    public boolean isShouldBeFired() { return shouldBeFired; }
+    public boolean ShouldBeFired() { return shouldBeFired; }
     public void markFired() {this.shouldBeFired = true; }
 
     public void doTask() {}

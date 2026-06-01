@@ -10,7 +10,7 @@ public class Senior extends Worker {
     }
 
     @Override
-    public void act() {
+    public void act(GameBoard board) {
         // 1. Sprawdzenie bliskości szefa -> stan 'talking' [3, 4]
         // Jeśli sąsiad == game.Boss? -> efficiency -= 10% i plotkuje 1 turę.
 
