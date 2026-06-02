@@ -1,11 +1,8 @@
 package game.states;
 
 import game.core.Simulation;
-import game.model.Worker;
+import game.model.*;
 import game.core.GameConfiguration;
-import game.model.Boss;
-import game.model.Cell;
-import game.model.GameBoard;
 
 public class RestingState implements WorkerState {
 
@@ -24,7 +21,7 @@ public class RestingState implements WorkerState {
     @Override
     public void act(Worker worker, GameBoard board, Simulation sim) {
         // 1. Unikalna zasada z diagramu: przyłapanie na dworze przez szefa
-        if (restPlaceType.equals("outside") && worker.isBossNeighbor(board)) {
+        if (worker instanceof Junior && restPlaceType.equals("outside") && worker.isBossNeighbor(board)) {
             worker.markFired(); // Flagujemy pracownika do wywalenia z firmy!
             System.out.println("!!! SKANDAL! Szef przyłapał pracownika " + worker.getName() + " na obijaniu się na dworze!");
         }

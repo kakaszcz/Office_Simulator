@@ -44,7 +44,7 @@ public class WaitingForTaskState implements WorkerState {
         // 2. UNIKALNA LOGIKA SENIORA: Czy są błędy do naprawy? (fails >= 1)
         if (worker instanceof Senior && sim.getTotalFails() >= 1) {
             System.out.println("  -> " + worker.getName() + " (Senior) zauważył błędy Juniorów i idzie je naprawiać!");
-            worker.changeState(new RepairingState());
+            worker.changeState(new RepairingState(sim));
             return;
         }
 
