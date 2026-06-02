@@ -73,7 +73,8 @@ public class Boss extends Agent {
 
     private void checkNeighborsAndFire(GameBoard board, Simulation sim) {
         // [3] Sprawdzenie sąsiadów - pracownicy reagują sami na szefa, my sprawdzamy tylko zwalnianie
-        int[][] directions = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}}; // Góra, dół, prawo, lewo
+        int[][] directions = {{0, 1}, {0, -1}, {1, 0}, {-1, 0},
+                {1, 1},  {1, -1}, {-1, 1}, {-1, -1}}; // Góra, dół, prawo, lewo, skosy
 
         for (int[] dir : directions) {
             int checkX = getX() + dir[0];

@@ -10,14 +10,13 @@ public class TalkingState implements WorkerState {
 
     @Override
     public void enter(Worker worker) {
+        worker.setEfficiency(Math.max(0.0, worker.getEfficiency() - 0.10));
         System.out.println("[STAN] Szef podszedł do Seniora. " + worker.getName() + " rozmawia z Szefem.");
     }
 
     @Override
     public void act(Worker worker, GameBoard board, Simulation sim) {
         talkingTurns--;
-        // Diagram: entry / efficiency -= 10%
-        worker.setEfficiency(Math.max(0.0, worker.getEfficiency() - 0.10));
 
         System.out.println("  -> " + worker.getName() + " kończy rozmowę z Szefem (Eff: " + String.format("%.2f", worker.getEfficiency()) + ")");
 

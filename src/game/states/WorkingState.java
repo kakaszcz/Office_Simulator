@@ -13,13 +13,12 @@ public class WorkingState implements WorkerState {
     @Override
     public void enter(Worker worker) {
         this.taskTimeRemaining = worker.computeTaskTime();
+        worker.setEfficiency(Math.max(0.0, worker.getEfficiency() - 0.10));
         System.out.println("[STAN] " + worker.getName() + " zaczyna pracę. Zadanie zajmie mu " + taskTimeRemaining + " tur.");
     }
 
     @Override
     public void act(Worker worker, GameBoard board, Simulation sim) {
-        // Spadek wydajności co turę pracy
-        worker.setEfficiency(Math.max(0.0, worker.getEfficiency() - 0.10));
         taskTimeRemaining--;
 
         System.out.println("  -> " + worker.getName() + " pracuje... Pozostało tur: " + taskTimeRemaining + " (Eff: " + String.format("%.2f", worker.getEfficiency()) + ")");

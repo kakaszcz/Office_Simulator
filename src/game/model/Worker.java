@@ -52,6 +52,26 @@ public abstract class Worker extends Agent {
         }
     }
 
+    public boolean isBossNeighbor(GameBoard board) {
+        int[][] directions = {
+                {0, 1},  {0, -1}, {1, 0},  {-1, 0}, // Kierunki główne
+                {1, 1},  {1, -1}, {-1, 1}, {-1, -1} // Skosy
+        };
+
+        for (int[] dir : directions) {
+            int checkX = getX() + dir[0];
+            int checkY = getY() + dir[1];
+
+            if (checkX >= 0 && checkX < board.getWidth() && checkY >= 0 && checkY < board.getHeight()) {
+                Cell cell = board.getCell(checkX, checkY);
+                if (cell != null && cell.getAgent() instanceof Boss) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public boolean shouldBeFired() { return shouldBeFired; }
     public void markFired() { this.shouldBeFired = true; }
 

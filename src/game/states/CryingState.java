@@ -10,7 +10,8 @@ public class CryingState implements WorkerState {
 
     @Override
     public void enter(Worker worker) {
-        System.out.println("[STAN] " + worker.getName() + " załamał się błędem i głośno płacze w kącie!");
+        worker.setEfficiency(Math.max(0.0, worker.getEfficiency() - 0.10));
+        System.out.println("[STAN] " + worker.getName() + " załamał się błędem i głośno płacze!");
     }
 
     @Override

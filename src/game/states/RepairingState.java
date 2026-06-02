@@ -12,13 +12,12 @@ public class RepairingState implements WorkerState {
     public void enter(Worker worker) {
         // Zgodnie z diagramem: do / repairTime = taskTime
         this.repairTimeRemaining = worker.computeTaskTime();
+        worker.setEfficiency(Math.max(0.0, worker.getEfficiency() - 0.10));
         System.out.println("[STAN] Senior " + worker.getName() + " rozpoczyna naprawianie bugów. Zajmie to: " + repairTimeRemaining + " tur.");
     }
 
     @Override
     public void act(Worker worker, GameBoard board, Simulation sim) {
-        // Zgodnie z diagramem: entry / efficiency -= 10%
-        worker.setEfficiency(Math.max(0.0, worker.getEfficiency() - 0.10));
         repairTimeRemaining--;
 
         System.out.println("  -> " + worker.getName() + " naprawia... Pozostało tur: " + repairTimeRemaining);

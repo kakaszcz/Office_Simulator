@@ -8,15 +8,25 @@ public class Junior extends Worker {
     private int numberOfFails;
     private double failChance;
 
+    private boolean wasBossNeighborInPreviousTurn = false;
+
     public Junior(int x, int y, double efficiency, double experience) {
         super(x, y, efficiency, experience);
         this.numberOfFails = 0;
 
         // Przykładowe obliczenie szansy na błąd (np. zależy odwrotnie od doświadczenia).
-        // Możesz wstawić tu własny wzór lub stałą wartość.
         this.failChance = Math.max(0.1, 1.0 - experience);
 
         this.changeState(new WaitingForTaskState());
+    }
+
+    // Gettery i settery dla nowej flagi
+    public boolean wasBossNeighborInPreviousTurn() {
+        return wasBossNeighborInPreviousTurn;
+    }
+
+    public void setWasBossNeighborInPreviousTurn(boolean value) {
+        this.wasBossNeighborInPreviousTurn = value;
     }
 
     @Override
@@ -35,7 +45,7 @@ public class Junior extends Worker {
     @Override
     public boolean shouldBeFired() {
         // Sprawdzamy flagę rodzica (przyłapanie) LUB limity Juniora (błędy i performance)
-        return super.shouldBeFired() || this.numberOfFails >= GameConfiguration.MAX_FAILS_LIMIT || this.getPerformance() < 0.45;
+        return super.shouldBeFired() || this.numberOfFails >= GameConfiguration.MAX_FAILS_LIMIT || this.getPerformance() < GameConfiguration.MIN_PERFORMANCE_THRESHOLD;
     }
 
     public int getNumberOfFails() {
