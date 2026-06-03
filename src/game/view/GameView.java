@@ -2,11 +2,11 @@ package game.view;
 
 import game.model.Cell;
 import game.model.GameBoard;
-import game.model.Agent; // Czy ścieżka jest poprawna? (np. game.model.Agent lub game.core.Agent)
-import game.model.Boss;  // Trzeba zobaczyc na pakiet czy się wszytsko zgadza
+import game.model.Agent;
+import game.model.Boss;
 import game.model.Senior;
 import game.model.Junior;
-import game.model.Worker;   //Import klasy, która ma metodę stanu
+import game.model.Worker;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
@@ -23,8 +23,7 @@ public class GameView {
 
     private static final int TILE_SIZE = 128;        //Rozmiar pojedyńczego kafelka w pixelach
 
-    // Obrazki tekstur - (których jeszcze nie ma)(ale będą) Edit: już są
-    // Obrazki tekstur otoczenia (zadeklarowane, żeby nie było błędów w render())
+    // Obrazki tekstur otoczenia
     private Image floorImage;
     private Image wallImage;
 
@@ -41,9 +40,6 @@ public class GameView {
     public GameView(GameBoard board) {
         this.board = board;
 
-        // Dynamicznie obliczamy rozmiar okna na podstawie wymiarów planszy,
-        //TEORETYCZNIE wymiar jest już ustalony 11x11, ale w razie gdybyśmy chcieli jakoś zmienić
-        //To wystarczy zmienić w klasie GameBoard -- a tutaj się samo zmieni
         int width = board.getWidth() * TILE_SIZE;
         int height = board.getHeight() * TILE_SIZE;
 
@@ -51,10 +47,9 @@ public class GameView {
         this.gc = canvas.getGraphicsContext2D();
 
         loadImages();               // Ładowanie tekstur
-
     }
 
-    private void loadImages() {         //Zabezpieczenie w chcwili zczytywania z pliku, żeby nic się nie wsyspało
+    private void loadImages() {
         try {
             // Ładowanie podstawowych postaci
             this.juniorImg = new Image(getClass().getResourceAsStream("/images/junior.png"));
@@ -75,109 +70,92 @@ public class GameView {
     }
 
     /**
-         ****** GŁÓWNA METODA *******
-     * Rysuje cały stan gry
-     * Będzie wywoływana w pętli gry przy każdym ruchu/odświeżeniu.
+     ****** GŁÓWNA METODA *******
+     * Rysuje cały stan gry z płynnymi animacjami agentów.
      */
-    public void render() {
+    public void render(game.core.Simulation sim) {
         // 1. Czyszczenie ekranu przed każdym rysowaniem
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
-        // 2. Rysowanie planszy (kafelek po kafelku)
+        // 2. Rysowanie planszy (kafelek po kafelku) - tło zostaje na kafelkach
         for (int y = 0; y < board.getHeight(); y++) {
             for (int x = 0; x < board.getWidth(); x++) {
                 Cell cell = board.getCell(x, y);
 
-                // Obliczamy pozycję rysowania w pikselach
                 int px = x * TILE_SIZE;
                 int py = y * TILE_SIZE;
 
-                // Sprawdzamy typ kafelka i rysujemy obrazek lub kolor zastępczy
                 if (cell.isWall()) {
                     if (wallImage != null) gc.drawImage(wallImage, px, py, TILE_SIZE, TILE_SIZE);
-                    else drawPlaceholder(px, py, Color.DARKGRAY); // ściana
+                    else drawPlaceholder(px, py, Color.DARKGRAY);
                 } else {
                     if (floorImage != null) gc.drawImage(floorImage, px, py, TILE_SIZE, TILE_SIZE);
-                    else drawPlaceholder(px, py, Color.LIGHTGRAY); // podłoga
+                    else drawPlaceholder(px, py, Color.LIGHTGRAY);
                 }
             }
         }
 
-        // 3. Rysowanie Agentów (z uwzględnieniem ich ról oraz stanów)
-        for (int y = 0; y < board.getHeight(); y++) {
-            for (int x = 0; x < board.getWidth(); x++) {
-                Cell cell = board.getCell(x, y);
+        // =========================================================================
+        // POPRAWIONY KROK 3: Rysowanie Agentów prosto z płaskiej listy z Simulation
+        // =========================================================================
+        for (Agent agent : sim.getAgents()) {
 
-                // Jeśli komórka nie jest pusta, oznacza to, że stoi na niej Agent
-                if (cell != null && !cell.isEmpty()) {
-                    Agent agent = cell.getAgent();
+            // KLUCZ DO PŁYNNOŚCI: Pozycja na ekranie bazuje na zmiennych visualX/Y (double)
+            double px = agent.getVisualX() * TILE_SIZE;
+            double py = agent.getVisualY() * TILE_SIZE;
 
-                    double px = x * TILE_SIZE;
-                    double py = y * TILE_SIZE;
+            // Domyślnie zakładamy, że agent nie pije kawy
+            boolean czyPijeKawe = false;
 
-                    // Domyślnie zakładamy, że agent nie pije kawy
-                    boolean czyPijeKawe = false;
-
-                    // 1. SPRAWDZENIE DLA SZEFA (na podstawie pozycji na polu z kawą)
-                    if (agent instanceof Boss) {
-                        // Pobieramy kafelek, na którym stoi Szef i sprawdzamy jego typ
-                        Cell currentCell = board.getCell(agent.getX(), agent.getY());
-                        if (currentCell != null && "coffee".equalsIgnoreCase(currentCell.getType())) {
-                            czyPijeKawe = true; // Szef dotarł do ekspresu i pije!
-                        }
-                    }
-                    // 2. SPRAWDZENIE DLA WORKERÓW (Junior/Senior - na podstawie ich maszyn stanów)
-                    else if (agent instanceof Worker) {
-                        Worker worker = (Worker) agent;
-                        String stanText = worker.getCurrentStateName();
-
-                        // Sprawdź, czy nazwa stanu zawiera słowo "Coffee"
-                        if (stanText != null && (stanText.equalsIgnoreCase("CoffeeState") || stanText.contains("Coffee"))) {
-                            czyPijeKawe = true;
-                        }
-                    }
-
-                    // Wybieramy odpowiedni obrazek do narysowania
-                    Image imgToDraw = juniorImg; // Domyślny bezpieczny wybór (Junior)
-
-                    if (agent instanceof Boss) {
-                        // Jeśli szef pije kawę i mamy obrazek, wybierz wersję kawową, w innym wypadku zwykłą
-                        imgToDraw = (czyPijeKawe && bossCoffeeImg != null) ? bossCoffeeImg : bossImg;
-                    } else if (agent instanceof Senior) {
-                        imgToDraw = (czyPijeKawe && seniorCoffeeImg != null) ? seniorCoffeeImg : seniorImg;
-                    } else if (agent instanceof Junior) {
-                        imgToDraw = (czyPijeKawe && juniorCoffeeImg != null) ? juniorCoffeeImg : juniorImg;
-                    }
-
-                    // Rysujemy dopasowany obrazek na płótnie JavaFX
-                    if (imgToDraw != null) {
-                        gc.drawImage(imgToDraw, px, py, TILE_SIZE, TILE_SIZE);
-                    } else {
-                        // Awaryjne rysowanie kółka (gdyby zapomniano wgrać pliku PNG)
-                        gc.setFill(agent instanceof Boss ? Color.RED : Color.BLUE);
-                        gc.fillOval(px + 32, py + 32, 64, 64);
-                    }
+            // 1. SPRAWDZENIE DLA SZEFA (na podstawie jego pozycji logicznej na kafelku)
+            if (agent instanceof Boss) {
+                Cell currentCell = board.getCell(agent.getX(), agent.getY());
+                if (currentCell != null && "coffee".equalsIgnoreCase(currentCell.getType())) {
+                    czyPijeKawe = true;
                 }
+            }
+            // 2. SPRAWDZENIE DLA WORKERÓW (na podstawie maszyn stanów)
+            else if (agent instanceof Worker) {
+                Worker worker = (Worker) agent;
+                String stanText = worker.getCurrentStateName();
+
+                if (stanText != null && (stanText.equalsIgnoreCase("CoffeeState") || stanText.contains("Coffee"))) {
+                    czyPijeKawe = true;
+                }
+            }
+
+            // Wybieramy odpowiedni obrazek do narysowania
+            Image imgToDraw = juniorImg;
+
+            if (agent instanceof Boss) {
+                imgToDraw = (czyPijeKawe && bossCoffeeImg != null) ? bossCoffeeImg : bossImg;
+            } else if (agent instanceof Senior) {
+                imgToDraw = (czyPijeKawe && seniorCoffeeImg != null) ? seniorCoffeeImg : seniorImg;
+            } else if (agent instanceof Junior) {
+                imgToDraw = (czyPijeKawe && juniorCoffeeImg != null) ? juniorCoffeeImg : juniorImg;
+            }
+
+            // Rysujemy dopasowany obrazek na PŁYNNEJ pozycji (px, py)
+            if (imgToDraw != null) {
+                gc.drawImage(imgToDraw, px, py, TILE_SIZE, TILE_SIZE);
+            } else {
+                // Awaryjne rysowanie kółka (współrzędne też zmienione na px, py!)
+                gc.setFill(agent instanceof Boss ? Color.RED : Color.BLUE);
+                gc.fillOval(px + 32, py + 32, 64, 64);
             }
         }
     }
 
-    // Pomocnicza metoda do rysowania kwadratów, (zanim będą wgrane grafiki png)
+    // Pomocnicza metoda do rysowania kwadratów
     private void drawPlaceholder(int x, int y, Color color) {
         gc.setFill(color);
         gc.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-        gc.setStroke(Color.WHITE); // siatka podziału biura
+        gc.setStroke(Color.WHITE);
         gc.setLineWidth(1);
         gc.strokeRect(x, y, TILE_SIZE, TILE_SIZE);
     }
 
-    // GETTER: jest potrzebny dla klasy MainApp, żeby pobrać płótno i włożyć je do okna
     public Canvas getCanvas() {
         return canvas;
     }
-
 }
-
-
-// Ad.3
-//Żeby odkomentować krok 3. musi być lista agentów w GameBoard lub Simulation.

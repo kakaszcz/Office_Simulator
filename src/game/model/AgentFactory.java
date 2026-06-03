@@ -1,4 +1,4 @@
-package game.model; // Zmień to na package game.core; lub package game.model; w zależności od tego, gdzie masz ten plik!
+package game.model;
 
 import java.util.Random;
 
@@ -9,8 +9,7 @@ public class AgentFactory {
     public AgentFactory() {
         this.rand = new Random();
     }
-
-    // Dodano parametr initialBudget, bo nowy konstruktor Boss tego wymaga!
+    
     public Boss createBoss(int x, int y, double initialBudget) {
         String name = getRandomName();
         // Przekazujemy imię i budżet od razu do konstruktora Bossa

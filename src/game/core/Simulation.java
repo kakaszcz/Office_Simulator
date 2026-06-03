@@ -43,7 +43,6 @@ public class Simulation {
         createWorkers(juniorsToCreate, "Junior");
     }
 
-    // Metoda jest teraz dużo czystsza, rand i tablica imion zniknęły!
     private void createWorkers(int num, String type) {
         for (int i = 0; i < num; i++) {
             Cell freeDesk = gameBoard.findFirstEmptyCell("desk");

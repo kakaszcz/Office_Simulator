@@ -1,5 +1,6 @@
 package game.core;
 
+import game.model.Agent;
 import game.view.GameView;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
@@ -41,24 +42,36 @@ public class MainApp extends Application {
 
         primaryStage.setTitle("Symulacja Biura IT");
         primaryStage.setScene(scene);
-        primaryStage.setResizable(false); // Blokujemy rozciąganie okna myszką(to nie popsuje proporcji)
+        primaryStage.setResizable(false); // Blokujemy rozciąganie okna myszką (to nie popsuje proporcji)
         primaryStage.show();
 
         // 4. Rysujemy początkowy stan przed ruchem
-        gameView.render();
+        gameView.render(simulation);
 
-        // 5. Konfiguracja Pętli Czasu (Game Loop)
+        // =========================================================================
+        // 5. NOWA PĘTLA CZASU (Game Loop) - Rozdzielenie Logiki i Płynnej Grafiki
+        // =========================================================================
         AnimationTimer timer = new AnimationTimer() {
             private long lastUpdate = 0;
 
             @Override
             public void handle(long now) {
-                // Wykonuj turę co 1 miliard nanosekund (czyli równo co 1 sekundę)
+                // A. LOGIKA GRY: Wykonuj turę w pamięci co 1 sekundę (1 000 000 000 ns)
+                // W tym momencie agenci natychmiastowo zmieniają swoje kafelki docelowe (x, y)
                 if (now - lastUpdate >= 1_000_000_000) {
-                    simulation.step();   // Logika symulacji (kolejna tura)
-                    gameView.render();   // Odświeżenie ekranu
+                    simulation.step();
                     lastUpdate = now;
                 }
+
+                // B. GRAFIKA GRY: Wywoływana w każdej klatce (60 razy na sekundę)
+                // Każdy agent płynnie przybliża się (visualX/Y) do swojego kafelka docelowego
+                for (Agent agent : simulation.getAgents()) {
+                    agent.updateVisual();
+                }
+
+                // C. RENDER: Odświeżamy ekran z pełną prędkością monitora (60 FPS)
+                // Rysujemy agentów na ich aktualnych, "pływających" pozycjach wizualnych
+                gameView.render(simulation);
             }
         };
 
