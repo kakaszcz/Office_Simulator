@@ -1,10 +1,6 @@
 package game.states;
 
-import game.model.Worker;
-import game.model.Senior;
-import game.model.Boss;
-import game.model.Cell;
-import game.model.GameBoard;
+import game.model.*;
 import game.core.Simulation;
 import game.core.GameConfiguration;
 
@@ -17,24 +13,38 @@ public class WaitingForTaskState implements WorkerState {
 
     @Override
     public void act(Worker worker, GameBoard board, Simulation sim) {
+        // Sprawdzamy obecność Bossa (używając nowej, wspólnej metody z klasy Worker)
+        boolean isBossPresentNow = worker.isBossNeighbor(board);
+
         // 1. Sprawdzamy interakcję z Szefem
-        if (isBossNeighbor(worker, board)) {
+        if (isBossPresentNow) {
             if (worker instanceof Senior) {
-                // Senior rozmawia z szefem (Zgodnie z diagramem Seniora)
                 worker.changeState(new TalkingState());
                 return;
-            } else {
-                // Junior się stresuje (Zgodnie z diagramem Juniora)
-                worker.setEfficiency(Math.max(0.0, worker.getEfficiency() - 0.10));
-                worker.setExperience(Math.min(1.0, worker.getExperience() + 0.20));
-                System.out.println("  -> Junior " + worker.getName() + " stresuje się przy szefie!");
+            } else if (worker instanceof Junior) {
+                Junior junior = (Junior) worker;
+
+                //Junior reaguje, gdy Boss podejdzie
+                if (!junior.wasBossNeighborInPreviousTurn()) {
+                    junior.setEfficiency(Math.min(1.0, junior.getEfficiency() + 0.10));
+                    junior.setExperience(Math.min(1.0, junior.getExperience() + 0.20));
+
+                    System.out.println("  -> [EVENT] Szef podszedł! Junior " + junior.getName()
+                            + " dostał motywacyjnego boosta!");
+                } else {
+                    System.out.println("  -> Junior " + junior.getName() + " pracuje w skupieniu pod czujnym okiem Szefa.");
+                }
+            }
+
+            if (worker instanceof Junior) {
+                ((Junior) worker).setWasBossNeighborInPreviousTurn(isBossPresentNow);
             }
         }
 
         // 2. UNIKALNA LOGIKA SENIORA: Czy są błędy do naprawy? (fails >= 1)
         if (worker instanceof Senior && sim.getTotalFails() >= 1) {
             System.out.println("  -> " + worker.getName() + " (Senior) zauważył błędy Juniorów i idzie je naprawiać!");
-            worker.changeState(new RepairingState());
+            worker.changeState(new RepairingState(sim));
             return;
         }
 
@@ -48,21 +58,5 @@ public class WaitingForTaskState implements WorkerState {
         if (worker.hasTask()) {
             worker.changeState(new WorkingState());
         }
-    }
-
-    private boolean isBossNeighbor(Worker worker, GameBoard board) {
-        int x = worker.getX();
-        int y = worker.getY();
-        int[][] neighbors = {{x + 1, y}, {x - 1, y}, {x, y + 1}, {x, y - 1}};
-
-        for (int[] pos : neighbors) {
-            if (pos[0] >= 0 && pos[0] < GameConfiguration.MAP_WIDTH && pos[1] >= 0 && pos[1] < GameConfiguration.MAP_HEIGHT) {
-                Cell cell = board.getCell(pos[0], pos[1]);
-                if (cell != null && cell.getAgent() instanceof Boss) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 }

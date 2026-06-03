@@ -7,26 +7,29 @@ import game.core.Simulation;
 public class RepairingState implements WorkerState {
 
     private int repairTimeRemaining;
+    private final Simulation sim;
+
+    // Konstruktor przyjmujący Simulation
+    public RepairingState(Simulation sim) {
+        this.sim = sim;
+    }
 
     @Override
     public void enter(Worker worker) {
         // Zgodnie z diagramem: do / repairTime = taskTime
         this.repairTimeRemaining = worker.computeTaskTime();
+        worker.setEfficiency(Math.max(0.0, worker.getEfficiency() - 0.10));
+        sim.repairFail();
         System.out.println("[STAN] Senior " + worker.getName() + " rozpoczyna naprawianie bugów. Zajmie to: " + repairTimeRemaining + " tur.");
     }
 
     @Override
     public void act(Worker worker, GameBoard board, Simulation sim) {
-        // Zgodnie z diagramem: entry / efficiency -= 10%
-        worker.setEfficiency(Math.max(0.0, worker.getEfficiency() - 0.10));
         repairTimeRemaining--;
 
         System.out.println("  -> " + worker.getName() + " naprawia... Pozostało tur: " + repairTimeRemaining);
 
         if (repairTimeRemaining <= 0) {
-            // Sukces naprawy! Informujemy Mediator (Simulation)
-            sim.repairFail();
-
             // Po naprawie sprawdzamy czy nie pora odpocząć
             if (worker.getEfficiency() < 0.45) {
                 worker.changeState(new MovingToRestState());

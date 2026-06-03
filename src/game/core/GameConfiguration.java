@@ -11,6 +11,7 @@ public class GameConfiguration {
     public static final int MAX_SENIORS = 5;
     public static final double STARTING_BUDGET = 1000.0;
     public static final double FATAL_ERROR_PENALTY = 500.0;
+    public static final double MIN_PERFORMANCE_THRESHOLD = 0.45;
 
 //--- ROZMIAR PLANSZY ---
     public static final int MAP_WIDTH = 11;
