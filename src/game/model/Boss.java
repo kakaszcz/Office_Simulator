@@ -20,16 +20,32 @@ public class Boss extends Agent {
     public void act(GameBoard board, Simulation sim) {
         this.coffeeTimer++;
 
-        // 1. ZNALEZIENIE CELU (Porównanie budżetu i sprawdzenie kawy)
-        Cell target = chooseTarget(board, sim);
+        // 1. KONTROLA KAWY - Głód kawowy zawsze wygrywa
+        if (this.coffeeTimer >= 10) {
+            Cell coffeeTarget = board.findFirstEmptyCell("coffee");
+            if (coffeeTarget != null) {
+                moveToTarget(coffeeTarget, board);
+            }
+        } else {
+            // 2. DYNAMICZNA SZANSA NA SPACER (Zależna od budżetu)
+            double chanceToMove = 0.40; // Domyślnie 40% szans na ruch (szef odpoczywa w gabinecie)
 
-        // 2. RUCH W STRONĘ CELU (Wywolanie metody moveTo)
-        if (target != null) {
-            moveTo(target, board);
+            // Jeśli obecny budżet jest mniejszy niż w poprzedniej turze -> Szef jest zły
+            if (sim.getBudget() < previousBudget) {
+                chanceToMove = 0.90; // Szansa wzrasta do 90% – szef natychmiast rusza na patrol!
+                System.out.println("Szef " + this.getName() + " zauważył spadek budżetu! Rusza na intensywny patrol (90% szans na ruch).");
+            }
+
+            // Losujemy, czy w tej turze szef faktycznie zrobi krok
+            if (Math.random() < chanceToMove) {
+                moveRandomly(board);
+            } else {
+                System.out.println("Szef " + this.getName() + " relaksuje się w gabinecie...");
+            }
         }
 
         // Jeśli szef wszedł na pole z kawą i minął czas -> pije kawę i resetuje timer
-        if (this.coffeeTimer >= 10 && board.getCell(getX(), getY()).getType().equals("coffee")) {
+        if (this.coffeeTimer >= 10 && board.getCell(getX(), getY()).getType().equalsIgnoreCase("coffee")) {
             this.coffeeTimer = 0;
             System.out.println("Szef " + this.getName() + " wypił kawę. Timer zresetowany!");
         }
@@ -37,8 +53,32 @@ public class Boss extends Agent {
         // 3. SPRAWDZENIE SĄSIADÓW (Czy kogoś zwolnić?)
         checkNeighborsAndFire(board, sim);
 
-        // Zapisanie budżetu na kolejną turę
+        // Zapisanie budżetu na kolejną turę (kluczowe do wykrycia spadku w następnym kroku!)
         this.previousBudget = sim.getBudget();
+    }
+
+    private void moveRandomly(GameBoard board) {
+        int[][] directions = {
+                {0, 1}, {0, -1}, {1, 0}, {-1, 0},
+                {1, 1}, {1, -1}, {-1, 1}, {-1, -1}
+        };
+
+        java.util.List<Integer> indices = new java.util.ArrayList<>();
+        for (int i = 0; i < directions.length; i++) indices.add(i);
+        java.util.Collections.shuffle(indices);
+
+        for (int index : indices) {
+            int nextX = getX() + directions[index][0];
+            int nextY = getY() + directions[index][1];
+
+            if (nextX >= 0 && nextX < board.getWidth() && nextY >= 0 && nextY < board.getHeight()) {
+                if (board.moveAgent(getX(), getY(), nextX, nextY)) {
+                    setX(nextX);
+                    setY(nextY);
+                    return;
+                }
+            }
+        }
     }
 
     private Cell chooseTarget(GameBoard board, Simulation sim) {
@@ -57,14 +97,13 @@ public class Boss extends Agent {
         }
     }
 
-    public void moveTo(Cell target, GameBoard board) {
-        if (getX() == target.getX() && getY() == target.getY()) return; // Szef jest na miejscu
+    // Metoda celowanego poruszania się (używana tylko, gdy szef idzie prosto do kawy)
+    private void moveToTarget(Cell target, GameBoard board) {
+        if (getX() == target.getX() && getY() == target.getY()) return;
 
-        // Proste obliczenie kierunku (o 1 pole w stronę celu)
         int nextX = getX() + Integer.compare(target.getX(), getX());
         int nextY = getY() + Integer.compare(target.getY(), getY());
 
-        // Próba ruchu przez planszę (silnik GameBoard sprawdza, czy pole nie jest ścianą)
         if (board.moveAgent(getX(), getY(), nextX, nextY)) {
             setX(nextX);
             setY(nextY);
@@ -82,10 +121,25 @@ public class Boss extends Agent {
 
             // Zabezpieczenie przed wyjściem poza mapę
             if (checkX >= 0 && checkX < board.getWidth() && checkY >= 0 && checkY < board.getHeight()) {
-                Agent neighbor = board.getCell(checkX, checkY).getAgent();
+
+                // 1. TUTAJ: Pobieramy cały kafelek sąsiada z planszy
+                Cell neighborCell = board.getCell(checkX, checkY);
+
+                // 2. TUTAJ: Z pobranego kafelka wyciągamy stojącego tam agenta
+                Agent neighbor = neighborCell.getAgent();
 
                 if (neighbor instanceof Worker) {
                     Worker worker = (Worker) neighbor;
+
+                    // Pobieramy nazwę stanu pracownika
+                    String state = worker.getCurrentStateName();
+
+                    // Szef go ignoruje – na kawie panuje immunitet!
+                    if ("CoffeeState".equalsIgnoreCase(state) ||
+                            "MovingToRestState".equalsIgnoreCase(state) ||
+                            neighborCell.getType().equalsIgnoreCase("coffee")) {
+                        continue; // Przeskakujemy tego pracownika, szef udaje, że go nie widzi
+                    }
                     if (worker.shouldBeFired()) {
                         fireWorker(worker, board, sim);
                     }

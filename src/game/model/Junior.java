@@ -16,8 +16,6 @@ public class Junior extends Worker {
 
         // Przykładowe obliczenie szansy na błąd (np. zależy odwrotnie od doświadczenia).
         this.failChance = Math.max(0.1, 1.0 - experience);
-
-        this.changeState(new WaitingForTaskState());
     }
 
     // Gettery i settery dla nowej flagi
