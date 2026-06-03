@@ -21,11 +21,25 @@ public class MainApp extends Application {
 
         // 3. Konfigurujemy okienko aplikacji
         StackPane root = new StackPane();
-        root.getChildren().add(gameView.getCanvas()); // Dodajemy płótno gry
+
+        // Tworzymy grupę, która idealnie dopasuje się do przeskalowanego płótna
+        javafx.scene.Group group = new javafx.scene.Group(gameView.getCanvas());
+        root.getChildren().add(group);
+
+        // Nakładamy skalowanie bezpośrednio na płótno gry
+        double skala = 0.5; // 0.5 to pomniejszenie o połowę
+        javafx.scene.transform.Scale scale = new javafx.scene.transform.Scale(skala, skala);
+        scale.setPivotX(0);
+        scale.setPivotY(0);
+        gameView.getCanvas().getTransforms().add(scale);
+
+        // Dzięki użyciu 'Group', poniższa linijka automatycznie stworzy scenę
+        // idealnie dopasowaną do widocznych, pomniejszonych wymiarów biura!
         Scene scene = new Scene(root);
 
         primaryStage.setTitle("Symulacja Biura IT");
         primaryStage.setScene(scene);
+        primaryStage.setResizable(false); // Blokujemy rozciąganie okna myszką(to nie popsuje proporcji)
         primaryStage.show();
 
         // 4. Rysujemy początkowy stan przed ruchem

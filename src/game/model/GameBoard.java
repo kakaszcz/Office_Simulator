@@ -17,38 +17,38 @@ public class GameBoard {
         this.floorMap = new int[GameConfiguration.MAP_HEIGHT][GameConfiguration.MAP_WIDTH];
     }
 
-    private void initalizeBoard(){
+    private void initalizeBoard() {
         int[][] floorLayout = {
-                {0,0,0,0,0,0,0,2,2,2,2},
-                {0,0,0,0,0,0,0,2,2,2,2},
-                {0,0,0,0,0,0,0,2,2,2,2},
-                {0,0,0,0,0,0,0,0,0,0,0},
-                {0,0,0,0,0,0,0,0,0,0,0},
-                {0,0,0,0,0,0,0,0,0,0,0},
-                {0,0,0,0,0,0,0,0,0,0,0},
-                {0,0,0,0,0,0,0,0,0,0,0},
-                {0,0,0,0,0,0,0,0,0,0,0},
-                {1,1,1,1,1,1,1,1,1,1,1},
-                {1,1,1,1,1,1,1,1,1,1,1}
+                {0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2},
+                {0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2},
+                {0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
         };
 
         int[][] objectLayout = {
-                {7,7,0,0,0,0,0,6,6,6,6},
-                {7,7,0,0,0,0,0,6,0,0,0},
-                {0,0,0,0,0,0,0,6,0,0,0},
-                {0,9,0,9,0,9,0,9,0,9,0},
-                {0,0,0,0,0,0,0,0,0,0,0},
-                {0,9,0,9,0,9,0,9,0,9,0},
-                {0,0,0,0,0,0,0,0,0,0,0},
-                {0,9,0,9,0,9,0,9,0,9,0},
-                {0,6,6,6,6,6,6,6,6,6,6},
-                {0,0,0,0,0,0,0,0,0,0,0},
-                {0,0,0,0,0,0,0,0,0,0,0}
+                {7, 7, 0, 0, 0, 0, 0, 6, 6, 6, 6},
+                {7, 7, 0, 0, 0, 0, 0, 6, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0},
+                {0, 9, 0, 9, 0, 9, 0, 9, 0, 9, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 9, 0, 9, 0, 9, 0, 9, 0, 9, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 9, 0, 9, 0, 9, 0, 9, 0, 9, 0},
+                {0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
         };
 
         this.floorMap = floorLayout;
 
-        for(int y = 0; y < GameConfiguration.MAP_HEIGHT; y++) {
+        for (int y = 0; y < GameConfiguration.MAP_HEIGHT; y++) {
             for (int x = 0; x < GameConfiguration.MAP_WIDTH; x++) {
                 String type = determineCellType(objectLayout[y][x], floorLayout[y][x]);
                 grid[y][x] = new Cell(x, y, type);
@@ -62,7 +62,7 @@ public class GameBoard {
         if (objectValue == GameConfiguration.OBJ_WALL) return "wall";
 
         if (floorValue == GameConfiguration.FLOOR_BOSS_OFFICE) return "boss_office";
-        if (floorValue == GameConfiguration.FLOOR_OUTDOOR) return "outdoor";
+        if (floorValue == GameConfiguration.FLOOR_OUTDOOR) return "outside";
 
         return "floor";
     }

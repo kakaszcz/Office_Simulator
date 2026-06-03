@@ -87,4 +87,15 @@ public abstract class Worker extends Agent {
     public int computeTaskTime() {
         return Math.max(1, (int) Math.round(1 + 4.0 / (1.0 + getPerformance())));
     }
+
+
+    //Połączenie klasy worker z gameView
+    //Dla wyświetlania stanów
+    public String getCurrentStateName() {
+        if (this.currentState == null) {//Bezpiecznik (sprawdza czy jest przypisany jakikolwiek stan)
+            return "IdleState"; // Domyślna nazwa awaryjna
+        }
+        // Pobiera czystą nazwę klasy stanu, np. "CoffeeState", "WorkingState", "WaitingForTaskState"
+        return this.currentState.getClass().getSimpleName();
+    }
 }

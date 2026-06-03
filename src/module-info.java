@@ -1,3 +1,4 @@
+
 module SymulacjaBiura {
     requires javafx.controls;
     requires javafx.graphics;
@@ -6,4 +7,6 @@ module SymulacjaBiura {
     exports game.states;
     exports game.core;
     exports game.view;
+
+    opens images to javafx.graphics;
 }
