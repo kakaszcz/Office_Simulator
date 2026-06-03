@@ -8,11 +8,6 @@ import java.util.Random;
 public class WorkingState implements WorkerState {
 
     private int taskTimeRemaining;
-
-    public int getTasktimeRemaining() {
-        return taskTimeRemaining;
-    }
-
     private final Random random = new Random();
 
     @Override
