@@ -71,7 +71,7 @@ public class Simulation {
         stepCount++;
         System.out.println("--- TURA " + stepCount + " ---");
 
-        // 1. ROZDZIELANIE ZADAŃ (Co 3 tury)
+        // ROZDZIELANIE ZADAŃ (Co 3 tury)
         if (stepCount % 3 == 0) {
             System.out.println(">>> [Manager] Rozdzielanie nowej puli zadań w tej turze!");
             for (Agent agent : this.agents) {
@@ -85,15 +85,13 @@ public class Simulation {
             }
         }
 
-        // 2. RUCH AGENTÓW ORAZ LOGIKA ZWALNIANIA / REKRUTACJI
+        // RUCH AGENTÓW ORAZ LOGIKA ZWALNIANIA / REKRUTACJI
         for (Agent agent : this.agents) {
             agent.act(gameBoard, this);
 
             if (agent instanceof Worker && ((Worker) agent).shouldBeFired()) {
                 System.out.println("!!! " + agent.getName() + " zostaje trwale wymazany z rejestru firmy.");
 
-                // ZMIANA: Zamiast ręcznego wybiórczego czyszczenia kafelka,
-                // wywołujemy dedykowaną, bezpieczną metodę czyszczącą całą planszę.
                 this.removeAgent(agent);
 
                 // Automatyczne zatrudnienie nowego Juniora na to miejsce

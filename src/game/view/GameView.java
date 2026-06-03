@@ -23,7 +23,6 @@ public class GameView {
 
     private static final int TILE_SIZE = 128; // Rozmiar kafelka na ekranie
 
-    // NOWOŚĆ: Zakładamy, że klatka w Twoim arkuszu (pliku .png) ma taki sam rozmiar bazowy
     private static final int SPRITE_WIDTH = 128;
     private static final int SPRITE_HEIGHT = 128;
 
@@ -65,10 +64,10 @@ public class GameView {
     }
 
     public void render(game.core.Simulation sim) {
-        // 1. Czyszczenie ekranu
+        // Czyszczenie ekranu
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
-        // 2. Rysowanie planszy (tło)
+        // Rysowanie planszy (tło)
         for (int y = 0; y < board.getHeight(); y++) {
             for (int x = 0; x < board.getWidth(); x++) {
                 Cell cell = board.getCell(x, y);
@@ -92,7 +91,7 @@ public class GameView {
             }
         }
 
-        // 3. Rysowanie Agentów z uwzględnieniem kierunku i animacji nóg
+        // Rysowanie Agentów z uwzględnieniem kierunku i animacji nóg
         for (Agent agent : sim.getAgents()) {
 
             double px = agent.getVisualX() * TILE_SIZE;
@@ -124,9 +123,6 @@ public class GameView {
             }
 
             if (imgToDraw != null) {
-                // =========================================================================
-                // OBLICZANIE WSPÓŁRZĘDNYCH WYCIĘCIA Z ARKUSZA (Spritesheet)
-                // =========================================================================
 
                 // Kolumna zależy od aktualnej klatki ruchu (0, 1, 2 lub 3)
                 double sx = agent.getAnimationFrame() * SPRITE_WIDTH;
@@ -150,7 +146,7 @@ public class GameView {
                  */
 
                 if (imgToDraw != null) {
-                    // Rysuje cały obrazek (postać zawsze patrzy w jedną stronę, ale rusza się super płynnie!)
+                    // Rysuje cały obrazek
                     gc.drawImage(imgToDraw, px, py, TILE_SIZE, TILE_SIZE);
                 }
 
@@ -160,7 +156,7 @@ public class GameView {
                 gc.fillOval(px + 32, py + 32, 64, 64);
             }
 
-            // --- D. RYSOWANIE IMIENIA NAD POSTACIĄ ---
+            // RYSOWANIE IMIENIA NAD POSTACIĄ
             gc.setFill(Color.BLACK);
             gc.setFont(Font.font("Arial", FontWeight.BOLD, 16));
             gc.setTextAlign(TextAlignment.CENTER);
@@ -178,11 +174,11 @@ public class GameView {
                     double barX = px + (TILE_SIZE - barWidth) / 2;  // Wyśrodkowanie paska nad ludzikiem
                     double barY = py - 15;                          // 15 pikseli NAD głową ludzika
 
-                    // 1. Rysujemy tło paska (ciemnoszare)
+                    // Rysujemy tło paska
                     gc.setFill(Color.web("#333333"));
                     gc.fillRect(barX, barY, barWidth, barHeight);
 
-                    // 2. Obliczamy, ile paska ma być zapełnione
+                    // Obliczamy, ile paska ma być zapełnione
                     int maxTury = worker.computeTaskTime(); // Maksymalny czas trwania zadania
                     if (maxTury <= 0) maxTury = 1;          // Ochrona przed dzieleniem przez 0
 
@@ -191,11 +187,11 @@ public class GameView {
                     if (progress > 1.0) progress = 1.0;
                     if (progress < 0.0) progress = 0.0;
 
-                    // 3. Rysujemy wypełnienie paska (np. ładny niebieski lub zielony)
+                    // Rysujemy wypełnienie paska
                     gc.setFill(Color.web("#00bcd4")); // Jasnoniebieski / Cyjan
                     gc.fillRect(barX, barY, barWidth * progress, barHeight);
 
-                    // 4. Rysujemy czarną ramkę wokół paska
+                    // Rysujemy czarną ramkę wokół paska
                     gc.setStroke(Color.BLACK);
                     gc.setLineWidth(1.5);
                     gc.strokeRect(barX, barY, barWidth, barHeight);

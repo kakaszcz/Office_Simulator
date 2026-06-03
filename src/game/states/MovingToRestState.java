@@ -16,7 +16,7 @@ public class MovingToRestState implements WorkerState {
 
     @Override
     public void enter(Worker worker) {
-        // Losowanie 50% na 50% zgodnie z diagramem
+        // Losowanie 50% na 50%
         if (random.nextBoolean()) {
             this.destinationType = "coffee";
             System.out.println("[STAN] " + worker.getName() + " poczuł zmęczenie. Postanawia iść do kuchni na kawę.");
@@ -38,9 +38,6 @@ public class MovingToRestState implements WorkerState {
             return;
         }
 
-        // =========================================================================
-        // NOWA INTELIGENTNA NAWIGACJA (Co 2 kafelki na sekundę)
-        // =========================================================================
         boolean reachedDestination = false;
 
         // Pętla wykona się maksymalnie 2 razy, aby zachować prędkość 2 kafelków na turę.

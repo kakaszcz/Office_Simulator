@@ -26,13 +26,11 @@ public class Junior extends Worker {
         sim.reportJuniorFail();
     }
 
-    // ZMIANA: Definiujemy, kiedy wyniki Juniora kwalifikują go do zwolnienia przez Szefa
+    // Definiujemy, kiedy wyniki Juniora kwalifikują go do zwolnienia przez Szefa
     @Override
     public boolean hasTerribleMetrics() {
         return super.hasTerribleMetrics() || this.numberOfFails >= GameConfiguration.MAX_FAILS_LIMIT;
     }
-
-    // ZMIANA: Usunięto nadpisanie shouldBeFired() – teraz w pełni polegamy na mechanizmie rodzica (decyzji Szefa)
 
     public int getNumberOfFails() { return numberOfFails; }
 

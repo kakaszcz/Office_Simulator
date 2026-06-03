@@ -29,7 +29,7 @@ public class PathFinder {
         Node targetNode = new Node(targetCell.getX(), targetCell.getY());
 
         PriorityQueue<Node> openList = new PriorityQueue<>();
-        // ZMIANA: Mapa pomocnicza drastycznie przyspieszająca wyszukiwanie węzłów
+
         Map<String, Node> openListMap = new HashMap<>();
         Map<String, Node> closedList = new HashMap<>();
 
@@ -84,8 +84,7 @@ public class PathFinder {
                         openList.add(neighbor);
                         openListMap.put(neighborKey, neighbor);
                     } else if (tentativeGCost < openNode.gCost) {
-                        // FIX: Aby PriorityQueue poprawnie zaktualizowało priorytet elementu,
-                        // musimy go najpierw usunąć, zmienić koszty i dodać ponownie!
+
                         openList.remove(openNode);
 
                         openNode.parent = currentNode;

@@ -23,16 +23,14 @@ public class Boss extends Agent {
         // Pobieramy aktualny kafelek, na którym stoi szef
         Cell currentCell = board.getCell(getX(), getY());
 
-        // 1. KONTROLA KAWY - Czy już stoimy przy ekspresie?
+        // KONTROLA KAWY - Czy już stoimy przy ekspresie?
         if (currentCell != null && currentCell.getType().equalsIgnoreCase("coffee")) {
             if (this.coffeeTimer >= 10) {
                 this.coffeeTimer = 0;
                 System.out.println("Szef " + this.getName() + " wypił kawę na miejscu. Timer zresetowany!");
             }
-            // Po napiciu się (lub jeśli jeszcze nie czas) szef może pokręcić się wokół
             moveRandomly(board);
         }
-        // Jeśli nie stoi przy kawie, ale bardzo jej chce:
         else if (this.coffeeTimer >= 10) {
             Cell coffeeTarget = board.findFirstEmptyCell("coffee");
             if (coffeeTarget != null) {
@@ -42,7 +40,7 @@ public class Boss extends Agent {
                 moveRandomly(board);
             }
         }
-        // 2. DYNAMICZNA SZANSA NA SPACER (Zależna od budżetu)
+        // DYNAMICZNA SZANSA NA SPACER (Zależna od budżetu)
         else {
             double chanceToMove = 0.40; // Domyślnie 40% szans na ruch
 
@@ -59,7 +57,7 @@ public class Boss extends Agent {
             }
         }
 
-        // 3. SPRAWDZENIE SĄSIADÓW
+        // SPRAWDZENIE SĄSIADÓW
         checkNeighborsAndFire(board, sim);
 
         // Zapisanie budżetu na kolejną turę
@@ -127,7 +125,7 @@ public class Boss extends Agent {
                         continue;
                     }
 
-                    // ZMIANA: Szef nie usuwa pracownika sam. Oznacza go jako "do zwolnienia".
+                    // Szef nie usuwa pracownika sam. Oznacza go jako "do zwolnienia".
                     // Centralna pętla Simulation.step() przechwyci to i poprawnie uruchomi rekrutację HR!
                     if (worker.shouldBeFired()) {
                         System.out.println("!!! SZEF " + this.getName() + " PRZYŁAPAŁ PRACOWNIKA " + worker.getName() + " NA ZŁYCH WYNIKACH !!!");
@@ -138,8 +136,6 @@ public class Boss extends Agent {
         }
     }
 
-    // TODO: Możesz w przyszłości podmienić moveRandomly() w act() na te metody,
-    // aby szef celowo ścigał pracowników, kiedy budżet spada!
     private Cell chooseTarget(GameBoard board, Simulation sim) {
         if (this.coffeeTimer >= 10) {
             return board.findFirstEmptyCell("coffee");

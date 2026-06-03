@@ -23,9 +23,6 @@ public class CryingState implements WorkerState {
         if (cryTurnsRemaining <= 0) {
             System.out.println("  -> " + worker.getName() + " uspokoił się.");
 
-            // USUNIĘTO: Logikę zwalniania. Od teraz tym zajmuje się wyłącznie Boss
-            // w swojej metodzie checkNeighborsAndFire()!
-
             // Po płaczu sprawdzamy, czy nie jest przemęczony
             if (worker.getEfficiency() < 0.45) {
                 worker.changeState(new MovingToRestState());

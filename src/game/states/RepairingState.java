@@ -16,7 +16,6 @@ public class RepairingState implements WorkerState {
 
     @Override
     public void enter(Worker worker) {
-        // Zgodnie z diagramem: do / repairTime = taskTime
         this.repairTimeRemaining = worker.computeTaskTime();
         worker.setEfficiency(Math.max(0.0, worker.getEfficiency() - 0.10));
         sim.repairFail();

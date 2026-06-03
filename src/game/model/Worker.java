@@ -73,8 +73,6 @@ public abstract class Worker extends Agent {
         return (efficiency + experience) / 2.0;
     }
 
-    // ZMIANA: Pracownicy sami z siebie mają dobre/złe wyniki, ale nie zwalniają się automatycznie.
-    // Tę metodę będzie sprawdzał Szef podczas patrolu.
     public boolean hasTerribleMetrics() {
         return getPerformance() < GameConfiguration.MIN_PERFORMANCE_THRESHOLD;
     }
@@ -105,7 +103,7 @@ public abstract class Worker extends Agent {
         return false;
     }
 
-    // ZMIANA: Zwraca true TYLKO wtedy, gdy Szef fizycznie ich zwolnił (postawił pieczątkę)
+    // Zwraca true TYLKO wtedy, gdy Szef fizycznie ich zwolnił (postawił pieczątkę)
     public boolean shouldBeFired() { return shouldBeFired; }
     public void markFired() { this.shouldBeFired = true; }
 

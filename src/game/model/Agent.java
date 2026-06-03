@@ -33,11 +33,8 @@ abstract public class Agent {
     // Metoda do obsługi tur (logika)
     public abstract void act(GameBoard board, Simulation sim);
 
-    // =========================================================================
-    // NOWA LOGIKA RUCHU: Ruch wektorowy (całkowicie zapobiega teleportacjom!)
-    // =========================================================================
     public void updateVisual() {
-        // STAŁA PRĘDKOŚĆ: (zmniejsz, jeśli chcesz żeby chodzili wolniej, np. 0.02)
+        // STAŁA PRĘDKOŚĆ
         double speed = 0.04;
 
         double diffX = this.x - this.visualX;
@@ -93,9 +90,6 @@ abstract public class Agent {
     public String getDirection() { return direction; }
     public int getAnimationFrame() { return animationFrame; }
 
-    // =========================================================================
-    // PROSTE SETTERY: Logika zmienia tylko x/y, a grafika sama wie, jak tam dojść
-    // =========================================================================
     public void setX(int x) { this.x = x; }
     public void setY(int y) { this.y = y; }
 }

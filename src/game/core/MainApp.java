@@ -45,9 +45,7 @@ public class MainApp extends Application {
         // 4. Rysujemy początkowy stan przed ruchem
         gameView.render(simulation);
 
-        // =========================================================================
         // 5. NOWA PĘTLA CZASU
-        // =========================================================================
         AnimationTimer timer = new AnimationTimer() {
             private long lastUpdate = 0;
             // Minimalny czas tury w nanosekundach (tu: 0.5 sekundy).
@@ -59,7 +57,7 @@ public class MainApp extends Application {
 
                 boolean somebodyWalking = false;
 
-                // B. GRAFIKA GRY
+                // GRAFIKA GRY
                 for (Agent agent : simulation.getAgents()) {
                     agent.updateVisual();
 
@@ -68,13 +66,13 @@ public class MainApp extends Application {
                     }
                 }
 
-                // A. LOGIKA GRY: Odpalamy turę gdy nikt nie idzie ORAZ minął czas
+                // LOGIKA GRY: Odpalamy turę gdy nikt nie idzie ORAZ minął czas
                 if (!somebodyWalking && (now - lastUpdate >= MIN_TURN_TIME)) {
                     simulation.step();
                     lastUpdate = now; // Resetujemy stoper
                 }
 
-                // C. RENDER
+                // RENDER
                 gameView.render(simulation);
             }
         };

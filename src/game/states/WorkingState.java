@@ -11,7 +11,6 @@ public class WorkingState implements WorkerState {
 
     @Override
     public void enter(Worker worker) {
-        // 1. Zamiast trzymać zmienną tutaj, zapisujemy czas prosto do PRACOWNIKA
         int czasPracy = worker.computeTaskTime();
         worker.setTurnsLeft(czasPracy);
 
@@ -21,12 +20,12 @@ public class WorkingState implements WorkerState {
 
     @Override
     public void act(Worker worker, GameBoard board, Simulation sim) {
-        // 2. Odegranie tury = odejmujemy czas z paska pracownika
+        // Odegranie tury = odejmujemy czas z paska pracownika
         worker.decrementTurnsLeft();
 
         System.out.println("  -> " + worker.getName() + " pracuje... Pozostało tur: " + worker.getTurnsLeft() + " (Eff: " + String.format("%.2f", worker.getEfficiency()) + ")");
 
-        // 3. Sprawdzamy, czy licznik pracownika dobił do zera
+        // Sprawdzamy, czy licznik pracownika dobił do zera
         if (worker.getTurnsLeft() <= 0) {
             evaluateTaskResult(worker, sim);
         }
