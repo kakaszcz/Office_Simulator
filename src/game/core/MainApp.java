@@ -25,18 +25,18 @@ public class MainApp extends Application {
         // 3. Konfigurujemy okienko aplikacji
         StackPane root = new StackPane();
 
-        // Tworzymy grupę
+
         javafx.scene.Group group = new javafx.scene.Group(gameView.getCanvas());
         root.getChildren().add(group);
 
-        // Nakładamy skalowanie bezpośrednio na płótno gry
+
         double skala = 0.5; // 0.5 to pomniejszenie o połowę
         javafx.scene.transform.Scale scale = new javafx.scene.transform.Scale(skala, skala);
         scale.setPivotX(0);
         scale.setPivotY(0);
         gameView.getCanvas().getTransforms().add(scale);
 
-        // przy użyciu 'Group', poniższa linijka automatycznie stworzy scenę
+
 
         Scene scene = new Scene(root);
 
@@ -69,7 +69,7 @@ public class MainApp extends Application {
                     agent.updateVisual();
                 }
 
-                // C. RENDER: Odświeżamy ekran z pełną prędkością monitora (60 FPS)
+                // C. RENDER: Odświeżamy ekran
                 // Rysujemy agentów na ich aktualnych, "pływających" pozycjach wizualnych
                 gameView.render(simulation);
             }
@@ -82,3 +82,5 @@ public class MainApp extends Application {
         launch(args); // Ta metoda odpala bibliotekę JavaFX
     }
 }
+
+//

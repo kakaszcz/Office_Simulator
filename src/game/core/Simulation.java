@@ -5,7 +5,7 @@ import game.model.*;
 import game.model.AgentFactory;
 
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList; // NOWY IMPORT!
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Simulation {
 

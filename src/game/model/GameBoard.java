@@ -45,6 +45,7 @@ public class GameBoard {
                 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
         };
+        //7 - coffee, 9 - desk, 6 - wall, 0 - floor,
 
         this.floorMap = floorLayout;
 
