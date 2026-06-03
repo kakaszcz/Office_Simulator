@@ -9,9 +9,6 @@ public class Senior extends Worker {
     public Senior(int x, int y, double efficiency, double experience) {
         super(x, y, efficiency, experience);
         this.experienceBonus = 0.15; // Dodatkowy bonus dla Seniora
-
-        // Od razu po stworzeniu, Senior siada przy biurku i czeka na zadania
-        this.changeState(new WaitingForTaskState());
     }
 
     @Override

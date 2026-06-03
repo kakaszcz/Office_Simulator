@@ -16,6 +16,7 @@ public class MovingToDeskState implements WorkerState {
 
     @Override
     public void act(Worker worker, GameBoard board, Simulation sim) {
+        // 1. Jeśli nie mamy jeszcze biurka docelowego, szukamy go na planszy
         if (targetDesk == null) {
             targetDesk = board.findFirstEmptyCell("desk");
         }
@@ -25,33 +26,22 @@ public class MovingToDeskState implements WorkerState {
             return;
         }
 
-        // Pętla na maksymalnie 2 kroki w tej samej turze
+        // 2. INTELIGENTNA NAWIGACJA (Maksymalnie 2 kroki w tej samej turze)
+        boolean reachedDestination = false;
+
         for (int i = 0; i < 2; i++) {
-            int curX = worker.getX();
-            int curY = worker.getY();
-            int targetX = targetDesk.getX();
-            int targetY = targetDesk.getY();
+            // Wywołujemy nasz PathFinder ukryty w klasie Worker
+            worker.navigateTo(targetDesk, board);
 
-            // Jeśli dotarł na miejsce (w kroku 1 lub 2)
-            if (curX == targetX && curY == targetY) {
-                System.out.println("  -> " + worker.getName() + " usiadł przy swoim biurku.");
-                worker.changeState(new WaitingForTaskState());
-                return; // Przerywamy całą metodę act, bo cel został osiągnięty
-            }
-
-            int nextX = curX + Integer.compare(targetX, curX);
-            int nextY = curY + Integer.compare(targetY, curY);
-
-            if (board.moveAgent(curX, curY, nextX, nextY)) {
-                worker.setX(nextX);
-                worker.setY(nextY);
-            } else {
-                break; // Ściana lub inny agent – zatrzymaj się w tej turze
+            // Sprawdzamy na bieżąco, czy pracownik dotarł już do biurka
+            if (worker.getX() == targetDesk.getX() && worker.getY() == targetDesk.getY()) {
+                reachedDestination = true;
+                break; // Dotarł, przerywamy pętlę ruchu
             }
         }
 
-        // Ostateczne sprawdzenie stanu po wykonaniu pętli ruchów
-        if (worker.getX() == targetDesk.getX() && worker.getY() == targetDesk.getY()) {
+        // 3. ZMIANA STANU - Jeśli dotarł do celu, siada i czeka na zadania
+        if (reachedDestination) {
             System.out.println("  -> " + worker.getName() + " usiadł przy swoim biurku.");
             worker.changeState(new WaitingForTaskState());
         }

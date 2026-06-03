@@ -22,6 +22,7 @@ public class AgentFactory {
 
         Junior junior = new Junior(x, y, eff, exp);
         junior.setName(getRandomName());
+        junior.changeState(new game.states.WaitingForTaskState());
         return junior;
     }
 
@@ -31,6 +32,7 @@ public class AgentFactory {
 
         Senior senior = new Senior(x, y, eff, exp);
         senior.setName(getRandomName());
+        senior.changeState(new game.states.WaitingForTaskState());
         return senior;
     }
 

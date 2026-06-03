@@ -2,12 +2,19 @@ package game.model;
 
 import game.states.*;
 import game.core.Simulation;
+import game.model.PathFinder;
+
+import java.util.List;
 
 public abstract class Worker extends Agent {
 
     private double efficiency;
     private double experience;
     protected WorkerState currentState;
+
+    private final PathFinder pathfinder = new PathFinder();
+    private List<Cell> currentPath;
+    private Cell currentTargetCell;
 
     private boolean shouldBeFired = false;
     private boolean hasTask = false;
@@ -29,6 +36,35 @@ public abstract class Worker extends Agent {
     public void act(GameBoard board, Simulation sim) {
         if (currentState != null) {
             currentState.act(this, board, sim);
+        }
+    }
+
+    public void navigateTo(Cell targetCell, GameBoard board) {
+        // 1. Sprawdzamy, czy cel jest osiągalny
+        if (targetCell == null) return;
+
+        // 2. Jeśli cel się zmienił, lub nie mamy jeszcze ścieżki, przeliczamy ją.
+        if (this.currentPath == null || !targetCell.equals(this.currentTargetCell)) {
+            this.currentTargetCell = targetCell;
+            Cell startCell = board.getCell(this.getX(), this.getY());
+            this.currentPath = pathfinder.findPath(startCell, targetCell, board);
+        }
+
+        // 3. Jeśli ścieżka istnieje i nie jest pusta, robimy krok.
+        if (this.currentPath != null && !this.currentPath.isEmpty()) {
+            // Pobieramy pierwszy kafelek z zaplanowanej ścieżki
+            Cell nextCell = this.currentPath.get(0);
+
+            // Próba wykonania ruchu. board.moveAgent musi sprawdzać ściany.
+            if (board.moveAgent(this.getX(), this.getY(), nextCell.getX(), nextCell.getY())) {
+                this.setX(nextCell.getX());
+                this.setY(nextCell.getY());
+                // Ruch udany! Usuwamy ten kafelek z zaplanowanej ścieżki.
+                this.currentPath.remove(0);
+            } else {
+                // Ścieżka została zablokowana (np. przez innego agenta), wymuś przeliczenie w kolejnej turze.
+                this.currentPath = null;
+            }
         }
     }
 

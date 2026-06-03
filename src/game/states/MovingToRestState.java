@@ -1,3 +1,4 @@
+// In game/states/MovingToRestState.java
 package game.states;
 
 import game.core.Simulation;
@@ -37,47 +38,26 @@ public class MovingToRestState implements WorkerState {
             return;
         }
 
-        // --- RUCH AGENTA ---
-        // Tutaj docelowo wywołasz swoją logikę poruszania się (np. krok w stronę targetCell).
-        // Na ten moment, aby przetestować działanie stanów, zasymulujmy zbliżanie się:
-        boolean reachedDestination = simulateMovement(worker, targetCell, board);
+        // =========================================================================
+        // NOWA INTELIGENTNA NAWIGACJA (Co 2 kafelki na sekundę)
+        // =========================================================================
+        boolean reachedDestination = false;
+
+        // Pętla wykona się maksymalnie 2 razy, aby zachować prędkość 2 kafelków na turę.
+        for (int i = 0; i < 2; i++) {
+            // Wykonaj krok z użyciem inteligentnego pathfinding
+            worker.navigateTo(targetCell, board);
+
+            // Sprawdź czy po wykonaniu tego kroku pracownik jest już na miejscu
+            if (worker.getX() == targetCell.getX() && worker.getY() == targetCell.getY()) {
+                reachedDestination = true;
+                break; // Przerwij pętlę, nie rób drugiego kroku.
+            }
+        }
 
         if (reachedDestination) {
             // Dotarł na miejsce! Przechodzi w stan właściwego odpoczynku
             worker.changeState(new RestingState(destinationType));
         }
-    }
-
-    private boolean simulateMovement(Worker worker, Cell target, GameBoard board) {
-        // Pętla wykona się maksymalnie 2 razy w ciągu jednej tury symulacji - poruszanie o 2 kafelki
-        for (int i = 0; i < 2; i++) {
-            int curX = worker.getX();
-            int curY = worker.getY();
-            int targetX = target.getX();
-            int targetY = target.getY();
-
-            // Jeśli już stoi na celu (np. dotarł w pierwszym kroku), kończymy ruch
-            if (curX == targetX && curY == targetY) {
-                return true;
-            }
-
-            // Obliczamy pojedynczy krok (-1, 0, lub 1)
-            int nextX = curX + Integer.compare(targetX, curX);
-            int nextY = curY + Integer.compare(targetY, curY);
-
-            // Próba wykonania pojedynczego kroku
-            if (board.moveAgent(curX, curY, nextX, nextY)) {
-                worker.setX(nextX);
-                worker.setY(nextY);
-                System.out.println("  -> " + worker.getName() + " biegnie... (" + nextX + ", " + nextY + ")");
-            } else {
-                // Jeśli napotkał przeszkodę (ścianę), przerywamy pętlę – nie zrobi drugiego kroku
-                System.out.println("  -> " + worker.getName() + " został zablokowany na kafelku.");
-                break;
-            }
-        }
-
-        // Zwraca true tylko jeśli po obu krokach stoi dokładnie na celu
-        return worker.getX() == target.getX() && worker.getY() == target.getY();
     }
 }
