@@ -11,6 +11,9 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.TextAlignment;
 
 public class GameView {
 
@@ -131,10 +134,10 @@ public class GameView {
                 // Wiersz zależy od kierunku, w którym idzie agent
                 double sy = 0;
                 switch (agent.getDirection()) {
-                    case "DOWN"  -> sy = 0 * SPRITE_HEIGHT;
-                    case "LEFT"  -> sy = 1 * SPRITE_HEIGHT;
+                    case "DOWN" -> sy = 0 * SPRITE_HEIGHT;
+                    case "LEFT" -> sy = 1 * SPRITE_HEIGHT;
                     case "RIGHT" -> sy = 2 * SPRITE_HEIGHT;
-                    case "UP"    -> sy = 3 * SPRITE_HEIGHT;
+                    case "UP" -> sy = 3 * SPRITE_HEIGHT;
                 }
 
                 // JavaFX drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh)
@@ -155,6 +158,48 @@ public class GameView {
                 // Awaryjny placeholder, jeśli pliki graficzne nie są załadowane
                 gc.setFill(agent instanceof Boss ? Color.RED : Color.BLUE);
                 gc.fillOval(px + 32, py + 32, 64, 64);
+            }
+
+            // --- D. RYSOWANIE IMIENIA NAD POSTACIĄ ---
+            gc.setFill(Color.BLACK);
+            gc.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+            gc.setTextAlign(TextAlignment.CENTER);
+            gc.fillText(agent.getName(), px + (TILE_SIZE / 2), py + 20);
+
+            if (agent instanceof Worker) {
+                Worker worker = (Worker) agent;
+
+                if (worker.hasTask()) {
+                    int pozostaleTury = worker.getTurnsLeft();
+
+                    // Parametry paska
+                    double barWidth = 80;                           // Szerokość paska w pikselach
+                    double barHeight = 10;                          // Wysokość paska
+                    double barX = px + (TILE_SIZE - barWidth) / 2;  // Wyśrodkowanie paska nad ludzikiem
+                    double barY = py - 15;                          // 15 pikseli NAD głową ludzika
+
+                    // 1. Rysujemy tło paska (ciemnoszare)
+                    gc.setFill(Color.web("#333333"));
+                    gc.fillRect(barX, barY, barWidth, barHeight);
+
+                    // 2. Obliczamy, ile paska ma być zapełnione
+                    int maxTury = worker.computeTaskTime(); // Maksymalny czas trwania zadania
+                    if (maxTury <= 0) maxTury = 1;          // Ochrona przed dzieleniem przez 0
+
+                    // Proporcja paska (pozostały czas)
+                    double progress = (double) pozostaleTury / maxTury;
+                    if (progress > 1.0) progress = 1.0;
+                    if (progress < 0.0) progress = 0.0;
+
+                    // 3. Rysujemy wypełnienie paska (np. ładny niebieski lub zielony)
+                    gc.setFill(Color.web("#00bcd4")); // Jasnoniebieski / Cyjan
+                    gc.fillRect(barX, barY, barWidth * progress, barHeight);
+
+                    // 4. Rysujemy czarną ramkę wokół paska
+                    gc.setStroke(Color.BLACK);
+                    gc.setLineWidth(1.5);
+                    gc.strokeRect(barX, barY, barWidth, barHeight);
+                }
 
                 // Mały wskaźnik kierunku (kropka), żeby na kółkach też było widać, gdzie idą
                 gc.setFill(Color.WHITE);

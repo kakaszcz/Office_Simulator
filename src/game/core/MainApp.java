@@ -24,7 +24,7 @@ public class MainApp extends Application {
         // 3. Konfigurujemy okienko aplikacji
         StackPane root = new StackPane();
 
-        // Tworzymy grupę, która idealnie dopasuje się do przeskalowanego płótna
+        // Tworzymy grupę
         javafx.scene.Group group = new javafx.scene.Group(gameView.getCanvas());
         root.getChildren().add(group);
 
@@ -39,14 +39,14 @@ public class MainApp extends Application {
 
         primaryStage.setTitle("Symulacja Biura IT");
         primaryStage.setScene(scene);
-        primaryStage.setResizable(false); // Blokujemy rozciąganie okna myszką
+        primaryStage.setResizable(false); // Blokujemy rozciąganie okna
         primaryStage.show();
 
         // 4. Rysujemy początkowy stan przed ruchem
         gameView.render(simulation);
 
         // =========================================================================
-        // 5. NOWA PĘTLA CZASU (Game Loop) - Grafika steruje Logiką!
+        // 5. NOWA PĘTLA CZASU
         // =========================================================================
         AnimationTimer timer = new AnimationTimer() {
             private long lastUpdate = 0;

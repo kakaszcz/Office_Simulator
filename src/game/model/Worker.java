@@ -126,4 +126,14 @@ public abstract class Worker extends Agent {
         }
         return this.currentState.getClass().getSimpleName();
     }
+
+    private int turnsLeft = 0;
+
+    public int getTurnsLeft() { return turnsLeft; }
+
+    public void setTurnsLeft(int turns) { this.turnsLeft = turns; }
+
+    public void decrementTurnsLeft() {
+        if (this.turnsLeft > 0) this.turnsLeft--;
+    }
 }

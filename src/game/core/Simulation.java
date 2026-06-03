@@ -3,7 +3,7 @@ package game.core;
 import game.model.Worker;
 import game.model.*;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArrayList; // NOWY IMPORT!
 
 public class Simulation {
 
