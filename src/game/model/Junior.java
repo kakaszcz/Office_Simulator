@@ -18,7 +18,7 @@ public class Junior extends Worker {
         this.failChance = Math.max(0.1, 1.0 - experience);
     }
 
-    // Gettery i settery dla nowej flagi
+    // Gettery i settery
     public boolean wasBossNeighborInPreviousTurn() {
         return wasBossNeighborInPreviousTurn;
     }
@@ -42,7 +42,7 @@ public class Junior extends Worker {
 
     @Override
     public boolean shouldBeFired() {
-        // Sprawdzamy flagę rodzica (przyłapanie) LUB limity Juniora (błędy i performance)
+        // Sprawdzamy przyłapanie LUB limity Juniora (błędy i performance)
         return super.shouldBeFired() || this.numberOfFails >= GameConfiguration.MAX_FAILS_LIMIT || this.getPerformance() < GameConfiguration.MIN_PERFORMANCE_THRESHOLD;
     }
 

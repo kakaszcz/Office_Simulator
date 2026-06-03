@@ -1,5 +1,7 @@
 package game.view;
 
+import game.states.WorkingState;
+import game.model.Worker;
 import game.model.Cell;
 import game.model.GameBoard;
 import game.model.Agent;
@@ -11,6 +13,10 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
+
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.TextAlignment;
 
 public class GameView {
     /*
@@ -61,9 +67,9 @@ public class GameView {
             this.seniorCoffeeImg = new Image(getClass().getResourceAsStream("/images/senior_coffee.png"));
             this.bossCoffeeImg = new Image(getClass().getResourceAsStream("/images/boss_coffee.png"));
 
-            // Opcjonalnie: Jeśli będziecie mieć już grafiki ścian i podłóg, odkomentujcie poniższe:
-            // this.floorImage = new Image(getClass().getResourceAsStream("/images/floor.png"));
-            // this.wallImage = new Image(getClass().getResourceAsStream("/images/wall.png"));
+            // GDY BEDZIEMY JUZ MIEC GRAFIKI SCIAN I PODLOGI TO ODKOMENTOWAC PONIZEJ
+            //this.floorImage = new Image(getClass().getResourceAsStream("/images/floor.png"));
+            //this.wallImage = new Image(getClass().getResourceAsStream("/images/wall.png"));
         } catch (Exception e) {
             System.out.println("Nie udało się załadować obrazków, używam kolorów zastępczych.");
         }
@@ -96,36 +102,23 @@ public class GameView {
         }
 
         // =========================================================================
-        // POPRAWIONY KROK 3: Rysowanie Agentów prosto z płaskiej listy z Simulation
+        // KROK 3: Rysowanie Agentów z listy z Simulation
         // =========================================================================
         for (Agent agent : sim.getAgents()) {
 
-            // KLUCZ DO PŁYNNOŚCI: Pozycja na ekranie bazuje na zmiennych visualX/Y (double)
+            // Pozycja na ekranie bazuje na zmiennych visualX/Y (płynne animacje!)
             double px = agent.getVisualX() * TILE_SIZE;
             double py = agent.getVisualY() * TILE_SIZE;
 
-            // Domyślnie zakładamy, że agent nie pije kawy
+            // --- A. SPRAWDZANIE KAWY (Uniwersalne dla wszystkich) ---
             boolean czyPijeKawe = false;
-
-            // 1. SPRAWDZENIE DLA SZEFA (na podstawie jego pozycji logicznej na kafelku)
-            if (agent instanceof Boss) {
-                Cell currentCell = board.getCell(agent.getX(), agent.getY());
-                if (currentCell != null && "coffee".equalsIgnoreCase(currentCell.getType())) {
-                    czyPijeKawe = true;
-                }
-            }
-            // 2. SPRAWDZENIE DLA WORKERÓW (na podstawie maszyn stanów)
-            else if (agent instanceof Worker) {
-                Worker worker = (Worker) agent;
-                String stanText = worker.getCurrentStateName();
-
-                if (stanText != null && (stanText.equalsIgnoreCase("CoffeeState") || stanText.contains("Coffee"))) {
-                    czyPijeKawe = true;
-                }
+            Cell currentCell = board.getCell(agent.getX(), agent.getY());
+            if (currentCell != null && "coffee".equalsIgnoreCase(currentCell.getType())) {
+                czyPijeKawe = true;
             }
 
-            // Wybieramy odpowiedni obrazek do narysowania
-            Image imgToDraw = juniorImg;
+            // --- B. WYBÓR OBRAZKA DO NARYSOWANIA ---
+            Image imgToDraw = juniorImg; // Domyślny obrazek juniora
 
             if (agent instanceof Boss) {
                 imgToDraw = (czyPijeKawe && bossCoffeeImg != null) ? bossCoffeeImg : bossImg;
@@ -135,13 +128,46 @@ public class GameView {
                 imgToDraw = (czyPijeKawe && juniorCoffeeImg != null) ? juniorCoffeeImg : juniorImg;
             }
 
-            // Rysujemy dopasowany obrazek na PŁYNNEJ pozycji (px, py)
+            // --- C. RYSOWANIE POSTACI ---
             if (imgToDraw != null) {
                 gc.drawImage(imgToDraw, px, py, TILE_SIZE, TILE_SIZE);
             } else {
-                // Awaryjne rysowanie kółka (współrzędne też zmienione na px, py!)
-                gc.setFill(agent instanceof Boss ? Color.RED : Color.BLUE);
+                // Awaryjne rysowanie kółka (gdyby brakowalo grafiki)
+                gc.setFill(agent instanceof Boss ? Color.RED : Color.BLUE); //dla bossa czerwony dla pozostalych niebieski
                 gc.fillOval(px + 32, py + 32, 64, 64);
+            }
+
+            // --- D. RYSOWANIE IMIENIA NAD POSTACIĄ ---
+            gc.setFill(Color.BLACK);
+            gc.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+            gc.setTextAlign(TextAlignment.CENTER);
+            gc.fillText(agent.getName(), px + (TILE_SIZE / 2), py + 20);
+
+            // =========================================================
+            // ==== RYSUNEK PASKA TASKA =============
+            // =========================================================
+            if (agent instanceof Worker) {
+                Worker worker = (Worker) agent;
+
+                // Sprawdzamy, czy pracownik w ogóle ma przypisane zadanie
+                if (worker.hasTask()) {
+
+                    // POBRANIE LICZBY TUR
+                    int pozostaleTury = worker.getTurnsLeft();
+
+                    // 1. Budujemy pasek z minusów w zależności od liczby tur
+                    String pasek = "";
+                    for (int i = 0; i < pozostaleTury; i++) {
+                        pasek += "-"; // Doklejamy jeden minus za każdą turę
+                    }
+
+                    // Styl paska
+                    gc.setFill(Color.BLUE);
+                    gc.setFont(Font.font("Arial", FontWeight.EXTRA_BOLD, 24));
+
+                    // 3. Rysujemy minusy pod imieniem (py + 10)
+                    gc.fillText(pasek, px + (TILE_SIZE / 2), py + 10);
+                }
             }
         }
     }
