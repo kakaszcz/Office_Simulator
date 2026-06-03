@@ -118,14 +118,21 @@ public class GameView {
                     // Domyślnie zakładamy, że agent nie pije kawy
                     boolean czyPijeKawe = false;
 
-                    // Ponieważ metoda stanu jest w klasie Worker, musimy sprawdzić, czy nasz agent jest Workerem
-                    if (agent instanceof Worker) {
+                    // 1. SPRAWDZENIE DLA SZEFA (na podstawie pozycji na polu z kawą)
+                    if (agent instanceof Boss) {
+                        // Pobieramy kafelek, na którym stoi Szef i sprawdzamy jego typ
+                        Cell currentCell = board.getCell(agent.getX(), agent.getY());
+                        if (currentCell != null && "coffee".equalsIgnoreCase(currentCell.getType())) {
+                            czyPijeKawe = true; // Szef dotarł do ekspresu i pije!
+                        }
+                    }
+                    // 2. SPRAWDZENIE DLA WORKERÓW (Junior/Senior - na podstawie ich maszyn stanów)
+                    else if (agent instanceof Worker) {
                         Worker worker = (Worker) agent;
                         String stanText = worker.getCurrentStateName();
 
-                        // Tutaj wpisz dokładną nazwę klasy stanu, która odpowiada za picie kawy w Waszym projekcie!
-                        // Na przykład: "CoffeeState" lub "DrinkingCoffeeState"
-                        if (stanText != null && stanText.equalsIgnoreCase("CoffeeState")) {
+                        // Sprawdź, czy nazwa stanu zawiera słowo "Coffee"
+                        if (stanText != null && (stanText.equalsIgnoreCase("CoffeeState") || stanText.contains("Coffee"))) {
                             czyPijeKawe = true;
                         }
                     }
