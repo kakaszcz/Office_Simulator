@@ -3,7 +3,6 @@ package game.model;
 import game.core.GameConfiguration;
 
 public class GameBoard {
-    // Usunięte pola width i height - pobieramy je bezpośrednio z konfiguracji globalnej!
     private Cell[][] grid;
     private int[][] floorMap;
 
@@ -40,11 +39,17 @@ public class GameBoard {
                 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                 {0, 9, 0, 9, 0, 9, 0, 9, 0, 9, 0},
                 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 9, 0, 9, 0, 9, 0, 9, 0, 9, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                 {0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6},
                 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
         };
+
+        // ZMIANA: Twarda weryfikacja poprawności danych konfiguracyjnych
+        if (floorLayout.length != GameConfiguration.MAP_HEIGHT || floorLayout[0].length != GameConfiguration.MAP_WIDTH ||
+                objectLayout.length != GameConfiguration.MAP_HEIGHT || objectLayout[0].length != GameConfiguration.MAP_WIDTH) {
+            throw new IllegalStateException("BŁĄD KRYTYCZNY: Wymiary tablic floorLayout/objectLayout w GameBoard nie zgadzają się z parametrami MAP_WIDTH/MAP_HEIGHT w GameConfiguration!");
+        }
 
         this.floorMap = floorLayout;
 
@@ -88,23 +93,16 @@ public class GameBoard {
     }
 
     public Cell findBossOfficeCell(){
-        return findFirstEmptyCell("boss_office"); // Wykorzystujemy już istniejącą logikę wyszukiwania!
+        return findFirstEmptyCell("boss_office");
     }
 
     public boolean placeAgent(Agent agent, int x, int y) {
         Cell cell = getCell(x, y);
-        if (cell != null && cell.isEmpty() && !cell.isWall()) { // Zmiana na czytelniejsze .isWall()
+        if (cell != null && cell.isEmpty() && !cell.isWall()) {
             cell.setAgent(agent);
             return true;
         }
         return false;
-    }
-
-    public void removeAgent(int x, int y) {
-        Cell cell = getCell(x, y);
-        if (cell != null) {
-            cell.setAgent(null);
-        }
     }
 
     public boolean moveAgent(int oldX, int oldY, int newX, int newY) {

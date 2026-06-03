@@ -51,4 +51,10 @@ public class Cell {
         return "wall".equals(type);
     }
 
+    public boolean isDesk(){
+        return "desk".equals(type);
+    }
+
+    public boolean isCoffee(){ return "coffee".equals(type); }
+
 }
