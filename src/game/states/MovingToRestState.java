@@ -49,16 +49,35 @@ public class MovingToRestState implements WorkerState {
     }
 
     private boolean simulateMovement(Worker worker, Cell target, GameBoard board) {
-        // Prosta tymczasowa logika teleportacji lub kroku na potrzeby testów pętli stanów:
-        // Czyścimy starą komórkę
-        board.getCell(worker.getX(), worker.getY()).setAgent(null);
+        // Pętla wykona się maksymalnie 2 razy w ciągu jednej tury symulacji - poruszanie o 2 kafelki
+        for (int i = 0; i < 2; i++) {
+            int curX = worker.getX();
+            int curY = worker.getY();
+            int targetX = target.getX();
+            int targetY = target.getY();
 
-        // Przypisujemy nową pozycję (na razie bezpośrednio cel, żeby sprawdzić stany)
-        worker.setX(target.getX());
-        worker.setY(target.getY());
-        target.setAgent(worker);
+            // Jeśli już stoi na celu (np. dotarł w pierwszym kroku), kończymy ruch
+            if (curX == targetX && curY == targetY) {
+                return true;
+            }
 
-        System.out.println("  -> " + worker.getName() + " przemieścił się do strefy: " + destinationType);
-        return true; // Zwraca true, jeśli stanął dokładnie na polu docelowym
+            // Obliczamy pojedynczy krok (-1, 0, lub 1)
+            int nextX = curX + Integer.compare(targetX, curX);
+            int nextY = curY + Integer.compare(targetY, curY);
+
+            // Próba wykonania pojedynczego kroku
+            if (board.moveAgent(curX, curY, nextX, nextY)) {
+                worker.setX(nextX);
+                worker.setY(nextY);
+                System.out.println("  -> " + worker.getName() + " biegnie... (" + nextX + ", " + nextY + ")");
+            } else {
+                // Jeśli napotkał przeszkodę (ścianę), przerywamy pętlę – nie zrobi drugiego kroku
+                System.out.println("  -> " + worker.getName() + " został zablokowany na kafelku.");
+                break;
+            }
+        }
+
+        // Zwraca true tylko jeśli po obu krokach stoi dokładnie na celu
+        return worker.getX() == target.getX() && worker.getY() == target.getY();
     }
 }
