@@ -39,6 +39,9 @@ public class WorkingState implements WorkerState {
         } else {
             // SUKCES
             worker.setHasTask(false);
+
+            sim.earnMoney(10.0);
+
             System.out.println("  -> Zadanie zakończone SUKCESEM przez " + worker.getName() + ".");
 
             // Sprawdzamy zmęczenie od razu po oddaniu taska

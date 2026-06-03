@@ -109,6 +109,11 @@ public class Simulation {
         }
     }
 
+    public void earnMoney(double amount) {
+        this.budget += amount;
+        System.out.println("$$$ Wpływ na konto: +" + amount + "$. Aktualny budżet: " + this.budget + "$");
+    }
+
     public int getTotalFails() { return totalFails; }
     public double getBudget() { return this.budget; }
     public List<Agent> getAgents() { return this.agents; }

@@ -11,6 +11,8 @@ public class MainApp extends Application {
     private Simulation simulation;
     private GameView gameView;
 
+
+    //OKIENKO
     @Override
     public void start(Stage primaryStage) {
         // 1. Tworzymy świat (np. 5 juniorów, 3 seniorów, 1000$ budżetu)
@@ -33,8 +35,8 @@ public class MainApp extends Application {
         scale.setPivotY(0);
         gameView.getCanvas().getTransforms().add(scale);
 
-        // Dzięki użyciu 'Group', poniższa linijka automatycznie stworzy scenę
-        // idealnie dopasowaną do widocznych, pomniejszonych wymiarów biura!
+        // przy użyciu 'Group', poniższa linijka automatycznie stworzy scenę
+
         Scene scene = new Scene(root);
 
         primaryStage.setTitle("Symulacja Biura IT");
