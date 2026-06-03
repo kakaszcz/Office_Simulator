@@ -12,7 +12,6 @@ public class MainApp extends Application {
     private Simulation simulation;
     private GameView gameView;
 
-
     //OKIENKO
     @Override
     public void start(Stage primaryStage) {
@@ -25,18 +24,16 @@ public class MainApp extends Application {
         // 3. Konfigurujemy okienko aplikacji
         StackPane root = new StackPane();
 
-
+        // Tworzymy grupę
         javafx.scene.Group group = new javafx.scene.Group(gameView.getCanvas());
         root.getChildren().add(group);
 
-
+        // Nakładamy skalowanie bezpośrednio na płótno gry
         double skala = 0.5; // 0.5 to pomniejszenie o połowę
         javafx.scene.transform.Scale scale = new javafx.scene.transform.Scale(skala, skala);
         scale.setPivotX(0);
         scale.setPivotY(0);
         gameView.getCanvas().getTransforms().add(scale);
-
-
 
         Scene scene = new Scene(root);
 
@@ -48,29 +45,34 @@ public class MainApp extends Application {
         // 4. Rysujemy początkowy stan przed ruchem
         gameView.render(simulation);
 
-        // =========================================================================
         // 5. NOWA PĘTLA CZASU
-        // =========================================================================
         AnimationTimer timer = new AnimationTimer() {
             private long lastUpdate = 0;
+            // Minimalny czas tury w nanosekundach (tu: 0.5 sekundy).
+            // Zapobiega "przewijaniu" gry, gdy wszyscy stoją w miejscu.
+            private final long MIN_TURN_TIME = 500_000_000;
 
             @Override
             public void handle(long now) {
-                // Wykonuj turę w pamięci co 1 sekundę (1 000 000 000 ns)
-                // W tym momencie agenci natychmiastowo zmieniają swoje kafelki docelowe (x, y)
-                if (now - lastUpdate >= 1_000_000_000) {
-                    simulation.step();
-                    lastUpdate = now;
-                }
 
-                // Wywoływana w każdej klatce (60 razy na sekundę)
-                // Każdy agent przybliża się (visualX/Y) do swojego kafelka docelowego
+                boolean somebodyWalking = false;
+
+                // GRAFIKA GRY
                 for (Agent agent : simulation.getAgents()) {
                     agent.updateVisual();
+
+                    if (agent.isCurrentlyWalking()) {
+                        somebodyWalking = true;
+                    }
                 }
 
-                // C. RENDER: Odświeżamy ekran
-                // Rysujemy agentów na ich aktualnych, "pływających" pozycjach wizualnych
+                // LOGIKA GRY: Odpalamy turę gdy nikt nie idzie ORAZ minął czas
+                if (!somebodyWalking && (now - lastUpdate >= MIN_TURN_TIME)) {
+                    simulation.step();
+                    lastUpdate = now; // Resetujemy stoper
+                }
+
+                // RENDER
                 gameView.render(simulation);
             }
         };
@@ -82,5 +84,3 @@ public class MainApp extends Application {
         launch(args); // Ta metoda odpala bibliotekę JavaFX
     }
 }
-
-//

@@ -43,9 +43,6 @@ public class GameView {
     private Image seniorCoffeeImg;
     private Image bossCoffeeImg;
 
-    //obrazek jak junior placze
-    private Image juniorCryingImg;
-
     public GameView(GameBoard board) {
         this.board = board;
 
@@ -69,7 +66,6 @@ public class GameView {
             this.juniorCoffeeImg = new Image(getClass().getResourceAsStream("/images/junior_coffee.png"));
             this.seniorCoffeeImg = new Image(getClass().getResourceAsStream("/images/senior_coffee.png"));
             this.bossCoffeeImg = new Image(getClass().getResourceAsStream("/images/boss_coffee.png"));
-            this.juniorCryingImg = new Image(getClass().getResourceAsStream("/images/junior_crying.png"));
 
             // GDY BEDZIEMY JUZ MIEC GRAFIKI SCIAN I PODLOGI TO ODKOMENTOWAC PONIZEJ
             //this.floorImage = new Image(getClass().getResourceAsStream("/images/floor.png"));
@@ -130,12 +126,6 @@ public class GameView {
                 imgToDraw = (czyPijeKawe && seniorCoffeeImg != null) ? seniorCoffeeImg : seniorImg;
             } else if (agent instanceof Junior) {
                 imgToDraw = (czyPijeKawe && juniorCoffeeImg != null) ? juniorCoffeeImg : juniorImg;
-            }
-
-            if (agent instanceof Junior) {
-                Junior junior = (Junior) agent;
-
-                if("CryingState".equals(junior.getCurrentStateName()) && juniorCryingImg != null) imgToDraw = juniorCryingImg;
             }
 
             // --- C. RYSOWANIE POSTACI ---

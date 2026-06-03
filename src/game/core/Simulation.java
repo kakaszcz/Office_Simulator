@@ -2,15 +2,13 @@ package game.core;
 
 import game.model.Worker;
 import game.model.*;
-import game.model.AgentFactory;
-
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Simulation {
 
     private GameBoard gameBoard;
-    private List<Agent> agents; // Ta lista będzie teraz typu CopyOnWriteArrayList
+    private List<Agent> agents;
     private double budget;
     private int stepCount;
     private boolean isRunning;
@@ -20,18 +18,23 @@ public class Simulation {
 
     public Simulation(int numJuniors, int numSeniors, int initialBudget) {
         this.gameBoard = new GameBoard();
-        // ZMIANA: Zastąpienie ArrayList
         this.agents = new CopyOnWriteArrayList<>();
         this.budget = initialBudget;
         this.stepCount = 0;
         this.isRunning = true;
-
         this.factory = new AgentFactory();
 
+        // ZMIANA: Zabezpieczenie przed NullPointerException przy tworzeniu Szefa
         Boss boss = factory.createBoss(2, 3, initialBudget);
-        agents.add(boss);
-        gameBoard.getCell(2, 3).setAgent(boss);
-        System.out.println("Stworzono szefa " + boss.getName() + ".");
+        Cell bossCell = gameBoard.getCell(2, 3);
+
+        if (bossCell != null) {
+            agents.add(boss);
+            bossCell.setAgent(boss);
+            System.out.println("Stworzono szefa " + boss.getName() + " w gabinecie (2,3).");
+        } else {
+            System.out.println("OSTRZEŻENIE: Nie można umieścić Szefa na pozycji (2,3). Kafelek nie istnieje!");
+        }
 
         int seniorsToCreate = Math.min(numSeniors, GameConfiguration.MAX_SENIORS);
         int juniorsToCreate = Math.min(numJuniors, GameConfiguration.MAX_JUNIORS);
@@ -61,25 +64,19 @@ public class Simulation {
         }
     }
 
-    public GameBoard getGameBoard() {
-        return gameBoard;
-    }
+    public GameBoard getGameBoard() { return gameBoard; }
 
     public void step() {
         if (!isRunning) return;
         stepCount++;
-        System.out.println("============= TURA " + stepCount + "|Stan konta:" + this.budget + "$" + " =============");
+        System.out.println("--- TURA " + stepCount + " ---");
 
-        // =========================================================================
-        // 1. ROZDZIELANIE ZADAŃ (Co 3 tury)
-        // =========================================================================
+        // ROZDZIELANIE ZADAŃ (Co 3 tury)
         if (stepCount % 3 == 0) {
             System.out.println(">>> [Manager] Rozdzielanie nowej puli zadań w tej turze!");
-
             for (Agent agent : this.agents) {
                 if (agent instanceof Worker) {
                     Worker worker = (Worker) agent;
-
                     if (!worker.hasTask() && "WaitingForTaskState".equalsIgnoreCase(worker.getCurrentStateName())) {
                         worker.assignTask();
                         System.out.println("   -> Zadanie przydzielone dla: " + worker.getName());
@@ -88,26 +85,14 @@ public class Simulation {
             }
         }
 
-        // =========================================================================
-        // RUCH AGENTÓW ORAZ LOGIKA ZWALNIANIA / REKRUTACJI (W KAŻDEJ TURZE)
-        // =========================================================================
+        // RUCH AGENTÓW ORAZ LOGIKA ZWALNIANIA / REKRUTACJI
         for (Agent agent : this.agents) {
-
-            // Każdy agent wykonuje swoją akcję / ruch (Szef może teraz bezkarnie dawać boosty i zmieniać stany innych)
             agent.act(gameBoard, this);
 
-            // Sprawdzamy, czy po wykonaniu akcji agent powinien zostać zwolniony
             if (agent instanceof Worker && ((Worker) agent).shouldBeFired()) {
                 System.out.println("!!! " + agent.getName() + " zostaje trwale wymazany z rejestru firmy.");
 
-                // Zwalniamy krzesło na planszy
-                Cell cell = this.gameBoard.getCell(agent.getX(), agent.getY());
-                if (cell != null && cell.getAgent() == agent) {
-                    cell.setAgent(null);
-                }
-
-                // natychmiastowe usunięcie z listy
-                this.agents.remove(agent);
+                this.removeAgent(agent);
 
                 // Automatyczne zatrudnienie nowego Juniora na to miejsce
                 if (agent instanceof Junior) {
@@ -117,8 +102,6 @@ public class Simulation {
                     if (freeDesk != null) {
                         Junior newJunior = this.factory.createJunior(freeDesk.getX(), freeDesk.getY());
                         freeDesk.setAgent(newJunior);
-
-                        // ZMIANA: Wrzucamy nowego rekruta bezpośrednio do głównej listy agents!
                         this.agents.add(newJunior);
 
                         System.out.println(">>> [HR] Zatrudniono nowego Juniora: " + newJunior.getName() + "!");
@@ -170,16 +153,14 @@ public class Simulation {
         if (this.agents.contains(agent)) {
             this.agents.remove(agent);
 
-            // czyścimy KAŻDY kafelek na planszy, który przypadkiem wciąż trzyma tego agenta
             for (int x = 0; x < gameBoard.getWidth(); x++) {
                 for (int y = 0; y < gameBoard.getHeight(); y++) {
                     Cell cell = gameBoard.getCell(x, y);
                     if (cell != null && cell.getAgent() == agent) {
-                        cell.setAgent(null); // Całkowite wyczyszczenie (biurka, korytarza, czegokolwiek)
+                        cell.setAgent(null);
                     }
                 }
             }
-
             System.out.println(agent.getName() + " został zwolniony.");
         }
     }

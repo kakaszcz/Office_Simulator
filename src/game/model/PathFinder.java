@@ -6,9 +6,9 @@ public class PathFinder {
     private static class Node implements Comparable<Node> {
         int x, y;
         Node parent;
-        double gCost = 0; // Koszt drogi od startu
-        double hCost = 0; // Szacowany koszt do celu
-        double fCost = 0; // f = g + h
+        double gCost = 0;
+        double hCost = 0;
+        double fCost = 0;
 
         Node(int x, int y) {
             this.x = x;
@@ -29,80 +29,77 @@ public class PathFinder {
         Node targetNode = new Node(targetCell.getX(), targetCell.getY());
 
         PriorityQueue<Node> openList = new PriorityQueue<>();
+
+        Map<String, Node> openListMap = new HashMap<>();
         Map<String, Node> closedList = new HashMap<>();
 
         startNode.hCost = calculateHeuristic(startNode, targetNode);
         startNode.fCost = startNode.hCost;
         openList.add(startNode);
+        openListMap.put(startNode.x + "," + startNode.y, startNode);
 
         while (!openList.isEmpty()) {
             Node currentNode = openList.poll();
             String currentKey = currentNode.x + "," + currentNode.y;
+            openListMap.remove(currentKey);
             closedList.put(currentKey, currentNode);
 
-            // Cel osiągnięty?
             if (currentNode.x == targetNode.x && currentNode.y == targetNode.y) {
                 return reconstructPath(currentNode, board);
             }
 
-            // Sprawdzamy sąsiadów
             for (int dx = -1; dx <= 1; dx++) {
                 for (int dy = -1; dy <= 1; dy++) {
-                    if (dx == 0 && dy == 0) continue; // Pomiń samego siebie
+                    if (dx == 0 && dy == 0) continue;
 
                     int nextX = currentNode.x + dx;
                     int nextY = currentNode.y + dy;
 
-                    // 1. Sprawdzenie granic planszy
                     if (nextX < 0 || nextX >= board.getWidth() || nextY < 0 || nextY >= board.getHeight()) continue;
 
                     Cell neighborCell = board.getCell(nextX, nextY);
 
-                    // 2. Sprawdzenie czy pole to nie ściana
                     if (neighborCell.isWall()) continue;
 
-                    // 3. ZABEZPIECZENIE: Jeśli pole jest zajęte przez innego agenta, omijamy je.
-                    // Wyjątek: pozwalamy wejść, jeśli to pole to nasz ostateczny cel (targetCell).
                     if (neighborCell.getAgent() != null && !neighborCell.equals(targetCell)) {
                         continue;
                     }
 
                     Node neighbor = new Node(nextX, nextY);
                     String neighborKey = nextX + "," + nextY;
-                    if (closedList.containsKey(neighborKey)) continue; // Już przetworzony
+                    if (closedList.containsKey(neighborKey)) continue;
 
-                    // Oblicz gCost
-                    double moveCost = (dx != 0 && dy != 0) ? 1.414 : 1.0; // Koszt dla ruchu na skos vs prosto
+                    double moveCost = (dx != 0 && dy != 0) ? 1.414 : 1.0;
                     double tentativeGCost = currentNode.gCost + moveCost;
 
-                    Node openNode = getFromOpenList(openList, neighborKey);
+                    // ZMIANA: Błyskawiczne pobieranie z mapy zamiast powolnej pętli po kolejce
+                    Node openNode = openListMap.get(neighborKey);
+
                     if (openNode == null) {
-                        openList.add(neighbor);
                         neighbor.parent = currentNode;
                         neighbor.gCost = tentativeGCost;
                         neighbor.hCost = calculateHeuristic(neighbor, targetNode);
                         neighbor.fCost = neighbor.gCost + neighbor.hCost;
+
+                        openList.add(neighbor);
+                        openListMap.put(neighborKey, neighbor);
                     } else if (tentativeGCost < openNode.gCost) {
-                        // Znaleziono lepszą drogę do istniejącego węzła
+
+                        openList.remove(openNode);
+
                         openNode.parent = currentNode;
                         openNode.gCost = tentativeGCost;
                         openNode.fCost = openNode.gCost + openNode.hCost;
+
+                        openList.add(openNode);
                     }
                 }
             }
-        }
-        return null; // Nie znaleziono ścieżki (np. cel jest całkowicie otoczony ścianami)
-    }
-
-    private Node getFromOpenList(PriorityQueue<Node> openList, String key) {
-        for (Node n : openList) {
-            if ((n.x + "," + n.y).equals(key)) return n;
         }
         return null;
     }
 
     private double calculateHeuristic(Node a, Node b) {
-        // Dystans euklidesowy
         return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
     }
 

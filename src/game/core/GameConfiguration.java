@@ -2,9 +2,8 @@ package game.core;
 
 public class GameConfiguration {
 
-    /*
-    Ta klasa będzie przechowywała wszytskie wartości które pojawią się na planszy
-     */
+
+    //Ta klasa będzie przechowywała wszytskie wartości które pojawią się na planszy
 
     public static final int MAX_FAILS_LIMIT = 5;
     public static final int MAX_JUNIORS = 10;

@@ -12,7 +12,6 @@ public class AgentFactory {
     
     public Boss createBoss(int x, int y, double initialBudget) {
         String name = getRandomName();
-        // Przekazujemy imię i budżet od razu do konstruktora Bossa
         return new Boss(name, x, y, initialBudget);
     }
 

@@ -7,7 +7,7 @@ import game.model.Worker;
 
 public class CryingState implements WorkerState {
 
-    private int cryTurnsRemaining = 2; // Czas trwania płaczu (np. 2 tury)
+    private int cryTurnsRemaining = 2;
 
     @Override
     public void enter(Worker worker) {
@@ -22,17 +22,6 @@ public class CryingState implements WorkerState {
 
         if (cryTurnsRemaining <= 0) {
             System.out.println("  -> " + worker.getName() + " uspokoił się.");
-
-            if (worker instanceof Junior) {
-                Junior junior = (Junior) worker;
-                // Zakładam, że w klasie Junior (lub Worker) masz metodę pobierającą liczbę błędów
-                if (junior.getNumberOfFails() >= 5) {
-                    junior.markFired(); // Flagujemy do usunięcia z planszy
-                    System.out.println("!!! ZWOLNIENIE! Junior " + junior.getName()
-                            + " popełnił już " + junior.getNumberOfFails() + " błędów. Zostaje wyrzucony z firmy!");
-                    return; // Przerywamy działanie, agent kończy swój żywot w symulacji
-                }
-            }
 
             // Po płaczu sprawdzamy, czy nie jest przemęczony
             if (worker.getEfficiency() < 0.45) {

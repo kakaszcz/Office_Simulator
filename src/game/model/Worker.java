@@ -2,7 +2,7 @@ package game.model;
 
 import game.states.*;
 import game.core.Simulation;
-import game.model.PathFinder;
+import game.core.GameConfiguration; // NOWY IMPORT
 
 import java.util.List;
 
@@ -40,46 +40,41 @@ public abstract class Worker extends Agent {
     }
 
     public void navigateTo(Cell targetCell, GameBoard board) {
-        // 1. Sprawdzamy, czy cel jest osiągalny
         if (targetCell == null) return;
 
-        // 2. Jeśli cel się zmienił, lub nie mamy jeszcze ścieżki, przeliczamy ją.
         if (this.currentPath == null || !targetCell.equals(this.currentTargetCell)) {
             this.currentTargetCell = targetCell;
             Cell startCell = board.getCell(this.getX(), this.getY());
             this.currentPath = pathfinder.findPath(startCell, targetCell, board);
         }
 
-        // 3. Jeśli ścieżka istnieje i nie jest pusta, robimy krok.
         if (this.currentPath != null && !this.currentPath.isEmpty()) {
-            // Pobieramy pierwszy kafelek z zaplanowanej ścieżki
             Cell nextCell = this.currentPath.get(0);
 
-            // Próba wykonania ruchu. board.moveAgent musi sprawdzać ściany.
             if (board.moveAgent(this.getX(), this.getY(), nextCell.getX(), nextCell.getY())) {
                 this.setX(nextCell.getX());
                 this.setY(nextCell.getY());
-                // Ruch udany! Usuwamy ten kafelek z zaplanowanej ścieżki.
                 this.currentPath.remove(0);
             } else {
-                // Ścieżka została zablokowana (np. przez innego agenta), wymuś przeliczenie w kolejnej turze.
                 this.currentPath = null;
             }
         }
     }
 
-    // Ta metoda zostanie nadpisana w klasie Junior!
     public double getFailChance() {
         return 0.0;
     }
 
-    //  Pozwalamy konkretnemu pracownikowi obsłużyć porażkę zadania
     public void handleTaskFailure(Simulation sim) {
-        // Domyślnie (np. dla Seniora) nic się nie dzieje
+        // Domyślnie nic się nie dzieje
     }
 
     public double getPerformance() {
         return (efficiency + experience) / 2.0;
+    }
+
+    public boolean hasTerribleMetrics() {
+        return getPerformance() < GameConfiguration.MIN_PERFORMANCE_THRESHOLD;
     }
 
     public void assignTask() {
@@ -90,15 +85,15 @@ public abstract class Worker extends Agent {
 
     public boolean isBossNeighbor(GameBoard board) {
         int[][] directions = {
-                {0, 1},  {0, -1}, {1, 0},  {-1, 0}, // Kierunki główne
-                {1, 1},  {1, -1}, {-1, 1}, {-1, -1} // Skosy
+                {0, 1},  {0, -1}, {1, 0},  {-1, 0},
+                {1, 1},  {1, -1}, {-1, 1}, {-1, -1}
         };
 
         for (int[] dir : directions) {
             int checkX = getX() + dir[0];
             int checkY = getY() + dir[1];
 
-            if (checkX >= 0 && checkX < board.getWidth() && checkY >= 0 && checkY < board.getHeight()) {
+            if (board.isInBounds(checkX, checkY)) {
                 Cell cell = board.getCell(checkX, checkY);
                 if (cell != null && cell.getAgent() instanceof Boss) {
                     return true;
@@ -108,15 +103,14 @@ public abstract class Worker extends Agent {
         return false;
     }
 
+    // Zwraca true TYLKO wtedy, gdy Szef fizycznie ich zwolnił (postawił pieczątkę)
     public boolean shouldBeFired() { return shouldBeFired; }
     public void markFired() { this.shouldBeFired = true; }
 
     public double getEfficiency() { return efficiency; }
     public void setEfficiency(double efficiency) { this.efficiency = efficiency; }
-
     public double getExperience() { return experience; }
     public void setExperience(double experience) { this.experience = experience; }
-
     public boolean hasTask() { return hasTask; }
     public void setHasTask(boolean hasTask) { this.hasTask = hasTask; }
 
@@ -124,21 +118,20 @@ public abstract class Worker extends Agent {
         return Math.max(1, (int) Math.round(1 + 4.0 / (1.0 + getPerformance())));
     }
 
-    public int getTurnsLeft() {
-        if (this.currentState instanceof WorkingState) {
-            WorkingState workingState = (WorkingState) this.currentState;
-            return workingState.getTasktimeRemaining();
+    public String getCurrentStateName() {
+        if (this.currentState == null) {
+            return "IdleState";
         }
-        return 0; // Jeśli nie pracuje, zostaje 0 tur do końca
+        return this.currentState.getClass().getSimpleName();
     }
 
-    //Połączenie klasy worker z gameView
-    //Dla wyświetlania stanów
-    public String getCurrentStateName() {
-        if (this.currentState == null) {//Bezpiecznik (sprawdza czy jest przypisany jakikolwiek stan)
-            return "IdleState"; // Domyślna nazwa awaryjna
-        }
-        // Pobiera czystą nazwę klasy stanu, np. "CoffeeState", "WorkingState", "WaitingForTaskState"
-        return this.currentState.getClass().getSimpleName();
+    private int turnsLeft = 0;
+
+    public int getTurnsLeft() { return turnsLeft; }
+
+    public void setTurnsLeft(int turns) { this.turnsLeft = turns; }
+
+    public void decrementTurnsLeft() {
+        if (this.turnsLeft > 0) this.turnsLeft--;
     }
 }

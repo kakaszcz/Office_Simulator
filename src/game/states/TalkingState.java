@@ -6,7 +6,7 @@ import game.core.Simulation;
 
 public class TalkingState implements WorkerState {
 
-    private int talkingTurns = 1; // Zgodnie z diagramem: "1 tura"
+    private int talkingTurns = 1;
 
     @Override
     public void enter(Worker worker) {

@@ -16,7 +16,7 @@ public class MovingToDeskState implements WorkerState {
 
     @Override
     public void act(Worker worker, GameBoard board, Simulation sim) {
-        // 1. Jeśli nie mamy jeszcze biurka docelowego, szukamy go na planszy
+        // Jeśli nie mamy jeszcze biurka docelowego, szukamy go na planszy
         if (targetDesk == null) {
             targetDesk = board.findFirstEmptyCell("desk");
         }
@@ -26,7 +26,6 @@ public class MovingToDeskState implements WorkerState {
             return;
         }
 
-        // 2. INTELIGENTNA NAWIGACJA (Maksymalnie 2 kroki w tej samej turze)
         boolean reachedDestination = false;
 
         for (int i = 0; i < 2; i++) {
@@ -40,7 +39,7 @@ public class MovingToDeskState implements WorkerState {
             }
         }
 
-        // 3. ZMIANA STANU - Jeśli dotarł do celu, siada i czeka na zadania
+        // Jeśli dotarł do celu, siada i czeka na zadania
         if (reachedDestination) {
             System.out.println("  -> " + worker.getName() + " usiadł przy swoim biurku.");
             worker.changeState(new WaitingForTaskState());
