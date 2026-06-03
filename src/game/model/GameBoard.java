@@ -3,7 +3,7 @@ package game.model;
 import game.core.GameConfiguration;
 
 public class GameBoard {
-    // Usunięto pola width i height - pobieramy je bezpośrednio z konfiguracji globalnej!
+    // Usunięte pola width i height - pobieramy je bezpośrednio z konfiguracji globalnej!
     private Cell[][] grid;
     private int[][] floorMap;
 

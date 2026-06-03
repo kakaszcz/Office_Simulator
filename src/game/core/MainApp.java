@@ -25,7 +25,7 @@ public class MainApp extends Application {
         // 3. Konfigurujemy okienko aplikacji
         StackPane root = new StackPane();
 
-        // Tworzymy grupę, która idealnie dopasuje się do przeskalowanego płótna
+        // Tworzymy grupę
         javafx.scene.Group group = new javafx.scene.Group(gameView.getCanvas());
         root.getChildren().add(group);
 
@@ -42,29 +42,29 @@ public class MainApp extends Application {
 
         primaryStage.setTitle("Symulacja Biura IT");
         primaryStage.setScene(scene);
-        primaryStage.setResizable(false); // Blokujemy rozciąganie okna myszką (to nie popsuje proporcji)
+        primaryStage.setResizable(false); // Blokujemy rozciąganie okna
         primaryStage.show();
 
         // 4. Rysujemy początkowy stan przed ruchem
         gameView.render(simulation);
 
         // =========================================================================
-        // 5. NOWA PĘTLA CZASU (Game Loop) - Rozdzielenie Logiki i Płynnej Grafiki
+        // 5. NOWA PĘTLA CZASU
         // =========================================================================
         AnimationTimer timer = new AnimationTimer() {
             private long lastUpdate = 0;
 
             @Override
             public void handle(long now) {
-                // A. LOGIKA GRY: Wykonuj turę w pamięci co 1 sekundę (1 000 000 000 ns)
+                // Wykonuj turę w pamięci co 1 sekundę (1 000 000 000 ns)
                 // W tym momencie agenci natychmiastowo zmieniają swoje kafelki docelowe (x, y)
                 if (now - lastUpdate >= 1_000_000_000) {
                     simulation.step();
                     lastUpdate = now;
                 }
 
-                // B. GRAFIKA GRY: Wywoływana w każdej klatce (60 razy na sekundę)
-                // Każdy agent płynnie przybliża się (visualX/Y) do swojego kafelka docelowego
+                // Wywoływana w każdej klatce (60 razy na sekundę)
+                // Każdy agent przybliża się (visualX/Y) do swojego kafelka docelowego
                 for (Agent agent : simulation.getAgents()) {
                     agent.updateVisual();
                 }

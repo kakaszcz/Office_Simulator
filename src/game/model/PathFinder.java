@@ -7,7 +7,7 @@ public class PathFinder {
         int x, y;
         Node parent;
         double gCost = 0; // Koszt drogi od startu
-        double hCost = 0; // Szacowany koszt (Heurystyka) do celu
+        double hCost = 0; // Szacowany koszt do celu
         double fCost = 0; // f = g + h
 
         Node(int x, int y) {

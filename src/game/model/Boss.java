@@ -122,10 +122,10 @@ public class Boss extends Agent {
             // Zabezpieczenie przed wyjściem poza mapę
             if (checkX >= 0 && checkX < board.getWidth() && checkY >= 0 && checkY < board.getHeight()) {
 
-                // 1. TUTAJ: Pobieramy cały kafelek sąsiada z planszy
+                // Pobieramy cały kafelek sąsiada z planszy
                 Cell neighborCell = board.getCell(checkX, checkY);
 
-                // 2. TUTAJ: Z pobranego kafelka wyciągamy stojącego tam agenta
+                //  Z pobranego kafelka wyciągamy stojącego tam agenta
                 Agent neighbor = neighborCell.getAgent();
 
                 if (neighbor instanceof Worker) {
@@ -154,7 +154,7 @@ public class Boss extends Agent {
         // Zwalniamy miejsce na planszy
         board.getCell(worker.getX(), worker.getY()).setAgent(null);
 
-        // Mediator usuwa go z gry
+        // usuwa go z gry
         sim.removeAgent(worker);
     }
 

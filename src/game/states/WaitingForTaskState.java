@@ -13,7 +13,7 @@ public class WaitingForTaskState implements WorkerState {
 
     @Override
     public void act(Worker worker, GameBoard board, Simulation sim) {
-        // Sprawdzamy obecność Bossa (używając nowej, wspólnej metody z klasy Worker)
+        // Sprawdzamy obecność Bossa (używając, wspólnej metody z klasy Worker)
         boolean isBossPresentNow = worker.isBossNeighbor(board);
 
         // 1. Sprawdzamy interakcję z Szefem

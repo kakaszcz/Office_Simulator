@@ -20,7 +20,7 @@ public class Simulation {
 
     public Simulation(int numJuniors, int numSeniors, int initialBudget) {
         this.gameBoard = new GameBoard();
-        // ZMIANA: Zastąpienie ArrayList przez wątkowo-bezpieczną i odporną na modyfikacje w pętli listę
+        // ZMIANA: Zastąpienie ArrayList
         this.agents = new CopyOnWriteArrayList<>();
         this.budget = initialBudget;
         this.stepCount = 0;
@@ -68,7 +68,7 @@ public class Simulation {
     public void step() {
         if (!isRunning) return;
         stepCount++;
-        System.out.println("--- TURA " + stepCount + " ---");
+        System.out.println("============= TURA " + stepCount + "|Stan konta:" + this.budget + "$" + " =============");
 
         // =========================================================================
         // 1. ROZDZIELANIE ZADAŃ (Co 3 tury)
@@ -89,13 +89,11 @@ public class Simulation {
         }
 
         // =========================================================================
-        // 2. RUCH AGENTÓW ORAZ LOGIKA ZWALNIANIA / REKRUTACJI (W KAŻDEJ TURZE)
+        // RUCH AGENTÓW ORAZ LOGIKA ZWALNIANIA / REKRUTACJI (W KAŻDEJ TURZE)
         // =========================================================================
-        // Dzięki CopyOnWriteArrayList możemy używać zwykłej, czystej pętli for-each
-        // i bez obaw dodawać/usuwać elementy z listy w trakcie jej trwania!
         for (Agent agent : this.agents) {
 
-            // Każdy agent wykonuje swoją akcję / ruch (Szef może teraz bezkarnie dawać boosty i zmieniać stany innych!)
+            // Każdy agent wykonuje swoją akcję / ruch (Szef może teraz bezkarnie dawać boosty i zmieniać stany innych)
             agent.act(gameBoard, this);
 
             // Sprawdzamy, czy po wykonaniu akcji agent powinien zostać zwolniony
@@ -108,7 +106,7 @@ public class Simulation {
                     cell.setAgent(null);
                 }
 
-                // Bezpieczne, natychmiastowe usunięcie z listy
+                // natychmiastowe usunięcie z listy
                 this.agents.remove(agent);
 
                 // Automatyczne zatrudnienie nowego Juniora na to miejsce

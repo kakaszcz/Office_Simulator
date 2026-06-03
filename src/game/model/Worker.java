@@ -73,7 +73,7 @@ public abstract class Worker extends Agent {
         return 0.0;
     }
 
-    // POLIMORFIZM: Pozwalamy konkretnemu pracownikowi obsłużyć porażkę zadania
+    //  Pozwalamy konkretnemu pracownikowi obsłużyć porażkę zadania
     public void handleTaskFailure(Simulation sim) {
         // Domyślnie (np. dla Seniora) nic się nie dzieje
     }
@@ -124,6 +124,13 @@ public abstract class Worker extends Agent {
         return Math.max(1, (int) Math.round(1 + 4.0 / (1.0 + getPerformance())));
     }
 
+    public int getTurnsLeft() {
+        if (this.currentState instanceof WorkingState) {
+            WorkingState workingState = (WorkingState) this.currentState;
+            return workingState.getTasktimeRemaining();
+        }
+        return 0; // Jeśli nie pracuje, zostaje 0 tur do końca
+    }
 
     //Połączenie klasy worker z gameView
     //Dla wyświetlania stanów
