@@ -21,20 +21,20 @@ public class MainApp extends Application {
 
         // 3. Konfigurujemy okienko aplikacji
         StackPane root = new StackPane();
-        root.getChildren().add(gameView.getCanvas()); // Dodajemy płótno gry
 
-        // --------- -------SKALOWANIE --------
-        // 0.5 oznacza pomniejszenie okna o 50% na ekranie, przy zachowaniu ostrości grafik 128px
-        double skala = 0.5;
+        // Tworzymy grupę, która idealnie dopasuje się do przeskalowanego płótna
+        javafx.scene.Group group = new javafx.scene.Group(gameView.getCanvas());
+        root.getChildren().add(group);
+
+        // Nakładamy skalowanie bezpośrednio na płótno gry
+        double skala = 0.5; // 0.5 to pomniejszenie o połowę
         javafx.scene.transform.Scale scale = new javafx.scene.transform.Scale(skala, skala);
         scale.setPivotX(0);
         scale.setPivotY(0);
         gameView.getCanvas().getTransforms().add(scale);
 
-        // Dynamicznie obliczamy mniejszy rozmiar okna--za pomocą skali
-        double windowWidth = gameView.getCanvas().getWidth() * skala;
-        double windowHeight = gameView.getCanvas().getHeight() * skala;
-
+        // Dzięki użyciu 'Group', poniższa linijka automatycznie stworzy scenę
+        // idealnie dopasowaną do widocznych, pomniejszonych wymiarów biura!
         Scene scene = new Scene(root);
 
         primaryStage.setTitle("Symulacja Biura IT");

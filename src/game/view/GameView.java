@@ -2,6 +2,11 @@ package game.view;
 
 import game.model.Cell;
 import game.model.GameBoard;
+import game.model.Agent; // Czy ścieżka jest poprawna? (np. game.model.Agent lub game.core.Agent)
+import game.model.Boss;  // Trzeba zobaczyc na pakiet czy się wszytsko zgadza
+import game.model.Senior;
+import game.model.Junior;
+import game.model.Worker;   //Import klasy, która ma metodę stanu
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
@@ -18,10 +23,20 @@ public class GameView {
 
     private static final int TILE_SIZE = 128;        //Rozmiar pojedyńczego kafelka w pixelach
 
-    // Obrazki tekstur - (których jeszcze nie ma)(ale będą)
+    // Obrazki tekstur - (których jeszcze nie ma)(ale będą) Edit: już są
+    // Obrazki tekstur otoczenia (zadeklarowane, żeby nie było błędów w render())
     private Image floorImage;
     private Image wallImage;
-    private Image workerImage;
+
+    // Obrazki tekstur agentów (podstawowe)
+    private Image juniorImg;
+    private Image seniorImg;
+    private Image bossImg;
+
+    // Obrazki tekstur agentów przy ekspresie (stoisku z kawą)
+    private Image juniorCoffeeImg;
+    private Image seniorCoffeeImg;
+    private Image bossCoffeeImg;
 
     public GameView(GameBoard board) {
         this.board = board;
@@ -36,14 +51,24 @@ public class GameView {
         this.gc = canvas.getGraphicsContext2D();
 
         loadImages();               // Ładowanie tekstur
+
     }
 
     private void loadImages() {         //Zabezpieczenie w chcwili zczytywania z pliku, żeby nic się nie wsyspało
         try {
-            //Tutaj doda się te obrazki ****
-            // floorImage = new Image(getClass().getResourceAsStream("/images/floor.png"));
-            // wallImage = new Image(getClass().getResourceAsStream("/images/wall.png"));
-            // workerImage = new Image(getClass().getResourceAsStream("/images/worker.png"));
+            // Ładowanie podstawowych postaci
+            this.juniorImg = new Image(getClass().getResourceAsStream("/images/junior.png"));
+            this.seniorImg = new Image(getClass().getResourceAsStream("/images/senior.png"));
+            this.bossImg = new Image(getClass().getResourceAsStream("/images/boss.png"));
+
+            // Ładowanie postaci z kawą
+            this.juniorCoffeeImg = new Image(getClass().getResourceAsStream("/images/junior_coffee.png"));
+            this.seniorCoffeeImg = new Image(getClass().getResourceAsStream("/images/senior_coffee.png"));
+            this.bossCoffeeImg = new Image(getClass().getResourceAsStream("/images/boss_coffee.png"));
+
+            // Opcjonalnie: Jeśli będziecie mieć już grafiki ścian i podłóg, odkomentujcie poniższe:
+            // this.floorImage = new Image(getClass().getResourceAsStream("/images/floor.png"));
+            // this.wallImage = new Image(getClass().getResourceAsStream("/images/wall.png"));
         } catch (Exception e) {
             System.out.println("Nie udało się załadować obrazków, używam kolorów zastępczych.");
         }
@@ -78,20 +103,56 @@ public class GameView {
             }
         }
 
-        // krok 3. Rysowanie agentów (pracowników) na planszy
-        /*
-        for (Agent agent : board.getAgents()) {
-            int px = agent.getX() * TILE_SIZE;
-            int py = agent.getY() * TILE_SIZE;
+        // 3. Rysowanie Agentów (z uwzględnieniem ich ról oraz stanów)
+        for (int y = 0; y < board.getHeight(); y++) {
+            for (int x = 0; x < board.getWidth(); x++) {
+                Cell cell = board.getCell(x, y);
 
-            if (workerImage != null) {
-                gc.drawImage(workerImage, px, py, TILE_SIZE, TILE_SIZE);
-            } else {
-                gc.setFill(Color.BLUE);
-                gc.fillOval(px + 10, py + 10, TILE_SIZE - 20, TILE_SIZE - 20); // Kropka zamiast pracownika
+                // Jeśli komórka nie jest pusta, oznacza to, że stoi na niej Agent
+                if (cell != null && !cell.isEmpty()) {
+                    Agent agent = cell.getAgent();
+
+                    double px = x * TILE_SIZE;
+                    double py = y * TILE_SIZE;
+
+                    // Domyślnie zakładamy, że agent nie pije kawy
+                    boolean czyPijeKawe = false;
+
+                    // Ponieważ metoda stanu jest w klasie Worker, musimy sprawdzić, czy nasz agent jest Workerem
+                    if (agent instanceof Worker) {
+                        Worker worker = (Worker) agent;
+                        String stanText = worker.getCurrentStateName();
+
+                        // Tutaj wpisz dokładną nazwę klasy stanu, która odpowiada za picie kawy w Waszym projekcie!
+                        // Na przykład: "CoffeeState" lub "DrinkingCoffeeState"
+                        if (stanText != null && stanText.equalsIgnoreCase("CoffeeState")) {
+                            czyPijeKawe = true;
+                        }
+                    }
+
+                    // Wybieramy odpowiedni obrazek do narysowania
+                    Image imgToDraw = juniorImg; // Domyślny bezpieczny wybór (Junior)
+
+                    if (agent instanceof Boss) {
+                        // Jeśli szef pije kawę i mamy obrazek, wybierz wersję kawową, w innym wypadku zwykłą
+                        imgToDraw = (czyPijeKawe && bossCoffeeImg != null) ? bossCoffeeImg : bossImg;
+                    } else if (agent instanceof Senior) {
+                        imgToDraw = (czyPijeKawe && seniorCoffeeImg != null) ? seniorCoffeeImg : seniorImg;
+                    } else if (agent instanceof Junior) {
+                        imgToDraw = (czyPijeKawe && juniorCoffeeImg != null) ? juniorCoffeeImg : juniorImg;
+                    }
+
+                    // Rysujemy dopasowany obrazek na płótnie JavaFX
+                    if (imgToDraw != null) {
+                        gc.drawImage(imgToDraw, px, py, TILE_SIZE, TILE_SIZE);
+                    } else {
+                        // Awaryjne rysowanie kółka (gdyby zapomniano wgrać pliku PNG)
+                        gc.setFill(agent instanceof Boss ? Color.RED : Color.BLUE);
+                        gc.fillOval(px + 32, py + 32, 64, 64);
+                    }
+                }
             }
         }
-        */
     }
 
     // Pomocnicza metoda do rysowania kwadratów, (zanim będą wgrane grafiki png)
