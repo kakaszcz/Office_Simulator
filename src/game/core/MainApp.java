@@ -4,9 +4,16 @@ import game.model.Agent;
 import game.view.GameView;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Scene;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 
 public class MainApp extends Application {
     private Simulation simulation;
@@ -22,11 +29,9 @@ public class MainApp extends Application {
         gameView = new GameView(simulation.getGameBoard());
 
         // 3. Konfigurujemy okienko aplikacji
-        StackPane root = new StackPane();
-
-        // Tworzymy grupę
+        StackPane gameRoot = new StackPane();
         javafx.scene.Group group = new javafx.scene.Group(gameView.getCanvas());
-        root.getChildren().add(group);
+        gameRoot.getChildren().add(group);
 
         // Nakładamy skalowanie bezpośrednio na płótno gry
         double skala = 0.5; // 0.5 to pomniejszenie o połowę
@@ -35,7 +40,29 @@ public class MainApp extends Application {
         scale.setPivotY(0);
         gameView.getCanvas().getTransforms().add(scale);
 
-        Scene scene = new Scene(root);
+        TextArea logArea = new TextArea();
+        logArea.setEditable(false);
+        logArea.setPrefWidth(400);
+        logArea.setWrapText(true);
+        logArea.setStyle("-fx-font-family: 'Consolas'; -fx-font-size: 13px;");
+
+        OutputStream out = new OutputStream() {
+            @Override
+            public void write(int b) {
+                Platform.runLater(() -> logArea.appendText(String.valueOf((char) b)));
+            }
+
+            public void write(byte[] b, int off, int len) {
+                String text = new String(b, off, len);
+                Platform.runLater(() -> logArea.appendText(text));
+            }
+        };
+        System.setOut(new PrintStream(out, true));
+
+        HBox mainLayout = new HBox();
+        mainLayout.getChildren().addAll(gameRoot, logArea);
+
+        Scene scene = new Scene(mainLayout);
 
         primaryStage.setTitle("Symulacja Biura IT");
         primaryStage.setScene(scene);
