@@ -59,7 +59,7 @@ public class PathFinder {
 
                     Cell neighborCell = board.getCell(nextX, nextY);
 
-                    if (neighborCell.isWall()) continue;
+                    if (neighborCell.isWall() && !neighborCell.equals(targetCell)) continue;
 
                     if (neighborCell.getAgent() != null && !neighborCell.equals(targetCell)) {
                         continue;
