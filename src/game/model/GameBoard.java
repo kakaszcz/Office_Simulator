@@ -44,6 +44,7 @@ public class GameBoard {
                 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
         };
+        //7 - coffee, 9 - desk, 6 - wall, 0 - floor,
 
         // ZMIANA: Twarda weryfikacja poprawności danych konfiguracyjnych
         if (floorLayout.length != GameConfiguration.MAP_HEIGHT || floorLayout[0].length != GameConfiguration.MAP_WIDTH ||
@@ -82,14 +83,24 @@ public class GameBoard {
     }
 
     public Cell findFirstEmptyCell(String type) {
+        // 1. Tworzymy listę na wszystkie pasujące i wolne kafelki
+        java.util.List<Cell> emptyCells = new java.util.ArrayList<>();
+
         for (int y = 0; y < GameConfiguration.MAP_HEIGHT; y++) {
             for (int x = 0; x < GameConfiguration.MAP_WIDTH; x++) {
                 if (grid[y][x].getType().equals(type) && grid[y][x].isEmpty()) {
-                    return grid[y][x];
+                    emptyCells.add(grid[y][x]); // Dodajemy do listy
                 }
             }
         }
-        return null;
+
+        // 2. Jeśli są jakieś wolne miejsca, LOSUJEMY jedno z nich
+        if (!emptyCells.isEmpty()) {
+            java.util.Random rand = new java.util.Random();
+            return emptyCells.get(rand.nextInt(emptyCells.size()));
+        }
+
+        return null; // Brak wolnych miejsc na całej mapie
     }
 
     public Cell findBossOfficeCell(){

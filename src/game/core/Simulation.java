@@ -3,7 +3,7 @@ package game.core;
 import game.model.Worker;
 import game.model.*;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList; // NOWY IMPORT!
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Simulation {
 
@@ -69,7 +69,7 @@ public class Simulation {
     public void step() {
         if (!isRunning) return;
         stepCount++;
-        System.out.println("--- TURA " + stepCount + " ---");
+        System.out.println("============= TURA " + stepCount + " | Stan konta: " + this.budget + "$ =============");
 
         // ROZDZIELANIE ZADAŃ (Co 3 tury)
         if (stepCount % 3 == 0) {
