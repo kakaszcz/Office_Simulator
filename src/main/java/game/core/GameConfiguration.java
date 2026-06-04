@@ -31,4 +31,8 @@ public class GameConfiguration {
     public static final int OBJ_WALL_RIGHT = 5;
     public static final int OBJ_WALL_BACK = 10;     // Dla wallBackObj.png
     public static final int OBJ_WALL_CORNER = 11;   // Dla wallCornerObj.png
+    public static final int OBJ_WALL_SR_CORNER = 12; // Dla wallSRCorner.png
+    public static final int OBJ_WALL_NR_CORNER = 13; // Dla wallNRCorner.png
+    public static final int OBJ_WALL_NL_CORNER = 14; // Dla wallNLCorner.png
+    public static final int OBJ_WALL_LEFT = 15; // Dla wallLeftObj.png
 }

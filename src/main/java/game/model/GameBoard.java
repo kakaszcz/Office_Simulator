@@ -18,7 +18,7 @@ public class GameBoard {
 
     private void initalizeBoard() {
         int[][] floorLayout = {
-                {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2},
                 {1, 1, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 2, 2, 2},
                 {1, 1, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 2, 2, 2},
                 {1, 1, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 2, 2, 2},
@@ -32,16 +32,16 @@ public class GameBoard {
         //1 - grass, 0-floor, 2-boss_office_floor, 3-wallNotWalkable, 4- floorNotWalkable
 
         int[][] objectLayout = {
-                {0, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
-                {0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 8, 0}, // 8 to biurko bossa
-                {0, 0, 5, 0, 9, 0, 9, 0, 9, 0, 9, 0, 0, 5, 0, 0},
-                {0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 6, 0},
-                {0, 0, 5, 0, 9, 0, 9, 0, 9, 0, 9, 0, 0, 0, 0, 0}, // Zwykłe biurki (9)
-                {0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 5, 0, 9, 0, 9, 0, 9, 0, 9, 0, 0, 0, 0, 0},
-                {0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7},
-                {0, 0, 5, 0, 9, 0, 9, 0, 9, 0, 9, 0, 0, 0, 0, 0},
-                {0, 0, 11, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6}
+                {0, 0, 14, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 14, 10, 13},
+                {0, 0,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  8, 15}, // 8 to biurko bossa
+                {0, 0,  5,  0,  9,  0,  9,  0,  9,  0,  9,  0,  0,  5,  0, 15},
+                {0, 0,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 11,  6, 12},
+                {0, 0,  5,  0,  9,  0,  9,  0,  9,  0,  9,  0,  0,  0,  0, 15}, // Zwykłe biurka (9)
+                {0, 0,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 15},
+                {0, 0,  5,  0,  9,  0,  9,  0,  9,  0,  9,  0,  0,  0,  0, 15},
+                {0, 0,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  7,  7, 15},
+                {0, 0,  5,  0,  9,  0,  9,  0,  9,  0,  9,  0,  0,  0,  0, 15},
+                {0, 0, 11,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6, 12}
         };
         //7 - coffeeObj, 9 - worker_deskObj, 6 - wallObj, 0 - floor, 8 - boss_deskObj, 5-wallRightObj
 
@@ -67,6 +67,10 @@ public class GameBoard {
         if (objectValue == GameConfiguration.OBJ_COFFEE) return "coffee";
         if (objectValue == GameConfiguration.OBJ_WALL) return "wall";
         if (objectValue == GameConfiguration.OBJ_WALL_RIGHT) return "wall_right";
+        if (objectValue == GameConfiguration.OBJ_WALL_SR_CORNER) return "wall_sr_corner";
+        if (objectValue == GameConfiguration.OBJ_WALL_NR_CORNER) return "wall_nr_corner";
+        if (objectValue == GameConfiguration.OBJ_WALL_NL_CORNER) return "wall_nl_corner";
+        if (objectValue == GameConfiguration.OBJ_WALL_LEFT) return "wall_left";
 
         // --- OTO NOWE MAPOWANIE NAZW ---
         if (objectValue == GameConfiguration.OBJ_WALL_BACK) return "wall_back";

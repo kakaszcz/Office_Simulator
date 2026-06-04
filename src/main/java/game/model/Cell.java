@@ -41,13 +41,16 @@ public class Cell {
         return y;
     }
 
-    // ZMIANA: Teraz ta metoda blokuje WSZYSTKIE kafelki, po których nie wolno chodzić!
-    public boolean isWall(){
-        return "wall".equals(type) ||
-                "wall_not_walkable".equals(type) ||
-                "floor_not_walkable".equals(type) ||
-                "desk".equals(type) ||
-                "boss_desk".equals(type);
+    public boolean isWall() {
+        return type.equals("wall")
+                || type.equals("wall_not_walkable")
+                || type.equals("wall_right")
+                || type.equals("wall_back")
+                || type.equals("wall_corner")
+                || type.equals("wall_sr_corner")  // <-- ZABLOKOWANY NOWY CORNER
+                || type.equals("wall_nr_corner")  // <-- ZABLOKOWANY NOWY CORNER
+                || type.equals("wall_nl_corner") // <-- ZABLOKOWANY NOWY CORNER
+                || type.equals("wall_left"); // <-- BLOKADA DLA NOWEJ LEWEJ ŚCIANY
     }
 
     // ZMIANA: Uniwersalne sprawdzenie dla obu rodzajów biurek

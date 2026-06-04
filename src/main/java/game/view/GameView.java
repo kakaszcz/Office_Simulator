@@ -36,7 +36,11 @@ public class GameView {
     private Image wallObjImage; // Dla obiektów ścian (6 / "wall")
     private Image wallRightObjImage;
     private Image wallBackObjImage;
-    private Image wallCornerObjImage;
+    private Image wallCornerObjImage; //to jest ten podstawowy
+    private Image wallSRCornerImage;
+    private Image wallNRCornerImage;
+    private Image wallNLCornerImage;
+    private Image wallLeftObjImage;
 
     //Agenci
     private Image juniorImg;
@@ -84,6 +88,10 @@ public class GameView {
         this.wallRightObjImage = safeLoad("/images/wallRightObj.png");
         this.wallBackObjImage = safeLoad("/images/wallBackObj.png");
         this.wallCornerObjImage = safeLoad("/images/wallCornerObj.png");
+        this.wallSRCornerImage = safeLoad("/images/wallSRCorner.png");
+        this.wallNRCornerImage = safeLoad("/images/wallNRCorner.png");
+        this.wallNLCornerImage = safeLoad("/images/wallNLCorner.png");
+        this.wallLeftObjImage = safeLoad("/images/wallLeftObj.png");
     }
 
     // Magiczna metoda pomocnicza, która sprawdzi w konsoli KAŻDY plik z osobna
@@ -104,7 +112,6 @@ public class GameView {
     public void render(game.core.Simulation sim) {
         // 1. Czyszczenie ekranu przed każdym rysowaniem
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-
 
 // 2. Rysowanie planszy (AUTOMATYCZNE DWUWARSTWOWE)
         for (int y = 0; y < board.getHeight(); y++) {
@@ -162,23 +169,42 @@ public class GameView {
                         else drawPlaceholder(px, py, Color.GRAY);
                         break;
 
-                    case "wall_right": // Twoja nowa prawa ściana odcinająca trawę
+                    case "wall_right": // Prawa ściana odcinająca trawę
                         if (wallRightObjImage != null) gc.drawImage(wallRightObjImage, px, py, TILE_SIZE, TILE_SIZE);
                         else drawPlaceholder(px, py, Color.GRAY);
                         break;
 
-                    // --- TUTAJ SĄ DODANE TWOJE 2 NOWE OBIEKTY ŚCIAN ---
-                    case "wall_back": // Tylna ściana (dla cyfry 10)
+                    case "wall_back": // Tylna ściana
                         if (wallBackObjImage != null) gc.drawImage(wallBackObjImage, px, py, TILE_SIZE, TILE_SIZE);
                         else drawPlaceholder(px, py, Color.GRAY);
                         break;
 
-                    case "wall_corner": // Narożna ściana (dla cyfry 11)
+                    case "wall_corner": // Narożna ściana
                         if (wallCornerObjImage != null) gc.drawImage(wallCornerObjImage, px, py, TILE_SIZE, TILE_SIZE);
                         else drawPlaceholder(px, py, Color.GRAY);
                         break;
 
-                    // Dla czystych podłóg ("floor", "outside", "boss_office") nic dodatkowego nie nakładamy
+                    case "wall_sr_corner":
+                        if (wallSRCornerImage != null) gc.drawImage(wallSRCornerImage, px, py, TILE_SIZE, TILE_SIZE);
+                        else drawPlaceholder(px, py, Color.GRAY);
+                        break;
+
+                    case "wall_nr_corner":
+                        if (wallNRCornerImage != null) gc.drawImage(wallNRCornerImage, px, py, TILE_SIZE, TILE_SIZE);
+                        else drawPlaceholder(px, py, Color.GRAY);
+                        break;
+
+                    case "wall_nl_corner":
+                        if (wallNLCornerImage != null) gc.drawImage(wallNLCornerImage, px, py, TILE_SIZE, TILE_SIZE);
+                        else drawPlaceholder(px, py, Color.GRAY);
+                        break;
+
+                    // --- OTO TA JEDNA DODANA LEWA ŚCIANA ---
+                    case "wall_left":
+                        if (wallLeftObjImage != null) gc.drawImage(wallLeftObjImage, px, py, TILE_SIZE, TILE_SIZE);
+                        else drawPlaceholder(px, py, Color.GRAY);
+                        break;
+
                     default:
                         break;
                 }
