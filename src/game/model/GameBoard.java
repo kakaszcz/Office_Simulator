@@ -16,6 +16,7 @@ public class GameBoard {
         this.floorMap = new int[GameConfiguration.MAP_HEIGHT][GameConfiguration.MAP_WIDTH];
     }
 
+    //plansza 11x11
     private void initalizeBoard() {
         int[][] floorLayout = {
                 {0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2},
@@ -30,6 +31,9 @@ public class GameBoard {
                 {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
                 {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
         };
+        //0 - floor
+        //1 - outside
+        //2 - boss_office
 
         int[][] objectLayout = {
                 {7, 7, 0, 0, 0, 0, 0, 6, 6, 6, 6},
@@ -44,6 +48,10 @@ public class GameBoard {
                 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
         };
+        //6 - wall
+        //7 - coffee_table
+        //9 - desk
+        //0 - free_space
 
         // ZMIANA: Twarda weryfikacja poprawności danych konfiguracyjnych
         if (floorLayout.length != GameConfiguration.MAP_HEIGHT || floorLayout[0].length != GameConfiguration.MAP_WIDTH ||
