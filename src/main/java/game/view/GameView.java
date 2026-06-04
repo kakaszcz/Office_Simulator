@@ -1,6 +1,5 @@
 package game.view;
 
-import game.states.WorkingState;
 import game.model.Worker;
 import game.model.Cell;
 import game.model.GameBoard;
@@ -25,6 +24,8 @@ public class GameView {
     private static final int TILE_SIZE = 128;
 
     private Image floorImage;
+    private Image bossOfficeImage;
+    private Image outsideImage;
     private Image wallImage;
 
     private Image juniorImg;
@@ -60,6 +61,12 @@ public class GameView {
 
             // Ładowanie obrazka płaczącego Juniora
             this.juniorCryingImg = new Image(getClass().getResourceAsStream("/images/junior_crying.png"));
+
+            floorImage = new Image(getClass().getResourceAsStream("/images/floor.png"));
+            bossOfficeImage = new Image(getClass().getResourceAsStream("/images/boss_office.png"));
+            outsideImage = new Image(getClass().getResourceAsStream("/images/outside.png"));
+            wallImage = new Image(getClass().getResourceAsStream("/images/wall.png"));
+
         } catch (Exception e) {
             System.out.println("Nie udało się załadować obrazków, używam kolorów zastępczych.");
         }
@@ -69,7 +76,7 @@ public class GameView {
         // 1. Czyszczenie ekranu przed każdym rysowaniem
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
-        // 2. Rysowanie planszy
+// 2. Rysowanie planszy
         for (int y = 0; y < board.getHeight(); y++) {
             for (int x = 0; x < board.getWidth(); x++) {
                 Cell cell = board.getCell(x, y);
@@ -77,12 +84,31 @@ public class GameView {
                 int px = x * TILE_SIZE;
                 int py = y * TILE_SIZE;
 
-                if (cell.isWall()) {
-                    if (wallImage != null) gc.drawImage(wallImage, px, py, TILE_SIZE, TILE_SIZE);
-                    else drawPlaceholder(px, py, Color.DARKGRAY);
-                } else {
-                    if (floorImage != null) gc.drawImage(floorImage, px, py, TILE_SIZE, TILE_SIZE);
-                    else drawPlaceholder(px, py, Color.LIGHTGRAY);
+                // Pobieramy typ tekstowy z komórki, który ustawia GameBoard
+                String cellType = cell.getType();
+
+                switch (cellType) {
+                    case "wall":
+                        if (wallImage != null) gc.drawImage(wallImage, px, py, TILE_SIZE, TILE_SIZE);
+                        else drawPlaceholder(px, py, Color.DARKGRAY);
+                        break;
+
+                    case "boss_office":
+                        if (bossOfficeImage != null) gc.drawImage(bossOfficeImage, px, py, TILE_SIZE, TILE_SIZE);
+                        else drawPlaceholder(px, py, Color.LIGHTGOLDENRODYELLOW);
+                        break;
+
+                    case "outside":
+                        if (outsideImage != null) gc.drawImage(outsideImage, px, py, TILE_SIZE, TILE_SIZE);
+                        else drawPlaceholder(px, py, Color.GREEN);
+                        break;
+
+                    default:
+                        // Domyślnie dla zwykłej podłogi ("floor"), ale też "desk" i "coffee",
+                        // dopóki nie dodasz dla nich osobnych rysunków mebli.
+                        if (floorImage != null) gc.drawImage(floorImage, px, py, TILE_SIZE, TILE_SIZE);
+                        else drawPlaceholder(px, py, Color.LIGHTGRAY);
+                        break;
                 }
             }
         }
@@ -146,7 +172,7 @@ public class GameView {
                 }
             }
         } // <--- Koniec pętli for (agent)
-    } // <--- Koniec metody render (TUTAJ BRAKOWAŁO KLAMERKI!)
+    } // <--- Koniec metody render
 
     // Pomocnicza metoda do rysowania kwadratów (Bezpiecznie na zewnątrz)
     private void drawPlaceholder(int x, int y, Color color) {

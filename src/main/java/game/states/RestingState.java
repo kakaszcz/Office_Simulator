@@ -2,7 +2,6 @@ package game.states;
 
 import game.core.Simulation;
 import game.model.*;
-import game.core.GameConfiguration;
 
 public class RestingState implements WorkerState {
 

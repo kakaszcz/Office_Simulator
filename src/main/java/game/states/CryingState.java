@@ -2,7 +2,6 @@ package game.states;
 
 import game.core.Simulation;
 import game.model.GameBoard;
-import game.model.Junior;
 import game.model.Worker;
 
 public class CryingState implements WorkerState {

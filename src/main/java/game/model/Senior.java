@@ -1,7 +1,5 @@
 package game.model;
 
-import game.states.WaitingForTaskState;
-
 public class Senior extends Worker {
 
     private double experienceBonus;
