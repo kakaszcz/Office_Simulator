@@ -51,6 +51,7 @@ public class MainApp extends Application {
 
         // okienka tekstowe logi
 
+
         //okienko na system i finanse
         Label lblSys = new Label("SYSTEM I FINANSE:");
         TextArea sysArea = new TextArea();
@@ -119,8 +120,23 @@ public class MainApp extends Application {
         }
 
         //  Złożenie okna w całość (Lewa + Prawa)
+        // --- NOWE: ZAKŁADKI (TABS) ---
+        javafx.scene.control.TabPane rightPanel = new javafx.scene.control.TabPane();
+
+        javafx.scene.control.Tab logTab = new javafx.scene.control.Tab("Dziennik Zdarzeń");
+        logTab.setClosable(false);
+        logTab.setContent(logsPanel); // Wrzucamy tu nasze 3 okienka z logami
+
+        javafx.scene.control.Tab statsTab = new javafx.scene.control.Tab("Analityka (Wykresy)");
+        statsTab.setClosable(false);
+        game.view.StatisticsDashboard dashboard = new game.view.StatisticsDashboard();
+        statsTab.setContent(dashboard.getLayout()); // Wrzucamy tu wykresy
+
+        rightPanel.getTabs().addAll(logTab, statsTab);
+
+        // 5. Złożenie okna w całość (Gra + Zakładki po prawej)
         HBox mainLayout = new HBox();
-        mainLayout.getChildren().addAll(gameRoot, logsPanel);
+        mainLayout.getChildren().addAll(gameRoot, rightPanel); // <--- Zmiana z logsPanel na rightPanel!
 
         Scene scene = new Scene(mainLayout);
         primaryStage.setTitle("Symulacja Biura IT");
@@ -134,10 +150,24 @@ public class MainApp extends Application {
         AnimationTimer timer = new AnimationTimer() {
             private long lastUpdate = 0;
 
+
             @Override
             public void handle(long now) {
                 if (now - lastUpdate >= 1_000_000_000) {
                     simulation.step();
+
+                    // --- TO JEST TEN BRAKUJĄCY FRAGMENT OD WYKRESÓW ---
+                    Platform.runLater(() -> {
+                        dashboard.updateCharts(
+                                simulation.getStepCount(),
+                                simulation.getBudget(),
+                                simulation.getTotalFails(),
+                                simulation.getAverageEfficiency(),
+                                simulation.getCoffeesDrunk()
+                        );
+                    });
+                    // --------------------------------------------------
+
                     lastUpdate = now;
                 }
 
@@ -148,6 +178,8 @@ public class MainApp extends Application {
                 gameView.render(simulation);
             }
         };
+
+        timer.start();
 
         timer.start();
     }
