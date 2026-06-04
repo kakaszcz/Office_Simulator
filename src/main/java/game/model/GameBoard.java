@@ -18,38 +18,36 @@ public class GameBoard {
 
     private void initalizeBoard() {
         int[][] floorLayout = {
-                {0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2},
-                {0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2},
-                {0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2},
-                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+                {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {1, 1, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 2, 2, 2},
+                {1, 1, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 2, 2, 2},
+                {1, 1, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 2, 2, 2},
+                {1, 1, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {1, 1, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {1, 1, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {1, 1, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
         };
+        //1 - grass, 0-floor, 2-boss_office_floor, 3-wallNotWalkable, 4- floorNotWalkable
 
         int[][] objectLayout = {
-                {7, 7, 0, 0, 0, 0, 0, 6, 6, 6, 6},
-                {7, 7, 0, 0, 0, 0, 0, 6, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0},
-                {0, 9, 0, 9, 0, 9, 0, 9, 0, 9, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 9, 0, 9, 0, 9, 0, 9, 0, 9, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6},
-                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+                {0, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
+                {0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 8, 0}, // 8 to biurko bossa
+                {0, 0, 5, 0, 9, 0, 9, 0, 9, 0, 9, 0, 0, 5, 0, 0},
+                {0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 6, 0},
+                {0, 0, 5, 0, 9, 0, 9, 0, 9, 0, 9, 0, 0, 0, 0, 0}, // Zwykłe biurki (9)
+                {0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 5, 0, 9, 0, 9, 0, 9, 0, 9, 0, 0, 0, 0, 0},
+                {0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7},
+                {0, 0, 5, 0, 9, 0, 9, 0, 9, 0, 9, 0, 0, 0, 0, 0},
+                {0, 0, 11, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6}
         };
-        //7 - coffee, 9 - desk, 6 - wall, 0 - floor,
+        //7 - coffeeObj, 9 - worker_deskObj, 6 - wallObj, 0 - floor, 8 - boss_deskObj, 5-wallRightObj
 
-        // ZMIANA: Twarda weryfikacja poprawności danych konfiguracyjnych
         if (floorLayout.length != GameConfiguration.MAP_HEIGHT || floorLayout[0].length != GameConfiguration.MAP_WIDTH ||
                 objectLayout.length != GameConfiguration.MAP_HEIGHT || objectLayout[0].length != GameConfiguration.MAP_WIDTH) {
-            throw new IllegalStateException("BŁĄD KRYTYCZNY: Wymiary tablic floorLayout/objectLayout w GameBoard nie zgadzają się z parametrami MAP_WIDTH/MAP_HEIGHT w GameConfiguration!");
+            throw new IllegalStateException("BŁĄD KRYTYCZNY: Wymiary tablic nie zgadzają się z GameConfiguration!");
         }
 
         this.floorMap = floorLayout;
@@ -63,12 +61,22 @@ public class GameBoard {
     }
 
     private String determineCellType(int objectValue, int floorValue) {
+        // 1. Najpierw sprawdzamy obiekty z objectLayout
         if (objectValue == GameConfiguration.OBJ_DESK) return "desk";
+        if (objectValue == GameConfiguration.OBJ_BOSS_DESK) return "boss_desk";
         if (objectValue == GameConfiguration.OBJ_COFFEE) return "coffee";
         if (objectValue == GameConfiguration.OBJ_WALL) return "wall";
+        if (objectValue == GameConfiguration.OBJ_WALL_RIGHT) return "wall_right";
 
-        if (floorValue == GameConfiguration.FLOOR_BOSS_OFFICE) return "boss_office";
+        // --- OTO NOWE MAPOWANIE NAZW ---
+        if (objectValue == GameConfiguration.OBJ_WALL_BACK) return "wall_back";
+        if (objectValue == GameConfiguration.OBJ_WALL_CORNER) return "wall_corner";
+
+        // 2. Jeśli w danym miejscu nie ma obiektu, sprawdzamy podłogi z floorLayout
         if (floorValue == GameConfiguration.FLOOR_OUTDOOR) return "outside";
+        if (floorValue == GameConfiguration.FLOOR_BOSS_OFFICE) return "boss_office";
+        if (floorValue == GameConfiguration.FLOOR_WALL_NOT_WALKABLE) return "wall_not_walkable";
+        if (floorValue == GameConfiguration.FLOOR_NOT_WALKABLE) return "floor_not_walkable";
 
         return "floor";
     }
@@ -104,7 +112,7 @@ public class GameBoard {
     }
 
     public Cell findBossOfficeCell(){
-        return findFirstEmptyCell("boss_office");
+        return findFirstEmptyCell("boss_office_floor");
     }
 
     public boolean placeAgent(Agent agent, int x, int y) {

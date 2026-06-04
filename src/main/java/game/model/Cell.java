@@ -3,26 +3,21 @@ package game.model;
 public class Cell {
     private int x;
     private int y;
-    private String type;    //zmienna bedzie przyjmowała wartości: 'desk', 'coffee', 'outdoor', 'floor'
-    private Agent agent;    //referencja do agenta
+    private String type;
+    private Agent agent;
 
-    //Konstruktor - wywoływany przez klasę board
     public Cell(int x, int y, String type) {
         this.x = x;
         this.y = y;
         this.type = type;
-        this.agent = null;      //ustawienie flagi początkowej na 0
+        this.agent = null;
     }
 
-    //metoda połączona z  findFirstEmptyCell
-    //zwraca true jęsli kafelek(game.model.Cell) jest pusty (nikt na nim nie stoi)
     public boolean isEmpty(){
         return this.agent == null;
     }
 
-    // Gettery i Settery
-    // Wyciągają wartości private HERMETYZACJA
-    public String getType(){    //
+    public String getType(){
         return type;
     }
 
@@ -34,7 +29,6 @@ public class Cell {
         return agent;
     }
 
-    //Ta metoda będzie przydzielała biurka i je zabierała
     public void setAgent(Agent agent){
         this.agent = agent;
     }
@@ -47,14 +41,21 @@ public class Cell {
         return y;
     }
 
+    // ZMIANA: Teraz ta metoda blokuje WSZYSTKIE kafelki, po których nie wolno chodzić!
     public boolean isWall(){
-        return "wall".equals(type);
+        return "wall".equals(type) ||
+                "wall_not_walkable".equals(type) ||
+                "floor_not_walkable".equals(type) ||
+                "desk".equals(type) ||
+                "boss_desk".equals(type);
     }
 
+    // ZMIANA: Uniwersalne sprawdzenie dla obu rodzajów biurek
     public boolean isDesk(){
-        return "desk".equals(type);
+        return "desk".equals(type) || "boss_desk".equals(type);
     }
 
-    public boolean isCoffee(){ return "coffee".equals(type); }
-
+    public boolean isCoffee(){
+        return "coffee".equals(type);
+    }
 }

@@ -23,11 +23,22 @@ public class GameView {
 
     private static final int TILE_SIZE = 128;
 
+    //Plansza floor
     private Image floorImage;
     private Image bossOfficeImage;
     private Image outsideImage;
     private Image wallImage;
 
+    //Plansza Object
+    private Image deskImage;
+    private Image bossDeskImage;
+    private Image coffeeImage;
+    private Image wallObjImage; // Dla obiektów ścian (6 / "wall")
+    private Image wallRightObjImage;
+    private Image wallBackObjImage;
+    private Image wallCornerObjImage;
+
+    //Agenci
     private Image juniorImg;
     private Image seniorImg;
     private Image bossImg;
@@ -50,25 +61,43 @@ public class GameView {
     }
 
     private void loadImages() {
+        // Postacie
+        juniorImg = safeLoad("/images/junior.png");
+        seniorImg = safeLoad("/images/senior.png");
+        bossImg = safeLoad("/images/boss.png");
+        juniorCoffeeImg = safeLoad("/images/junior_coffee.png");
+        seniorCoffeeImg = safeLoad("/images/senior_coffee.png");
+        bossCoffeeImg = safeLoad("/images/boss_coffee.png");
+        juniorCryingImg = safeLoad("/images/junior_crying.png");
+
+        // Podłogi
+        floorImage = safeLoad("/images/floor.png");
+        bossOfficeImage = safeLoad("/images/boss_office_floor.png");
+        outsideImage = safeLoad("/images/grass.png");
+        wallImage = safeLoad("/images/wallNotWalkable.png");
+
+        // Obiekty / Meble
+        deskImage = safeLoad("/images/worker_deskObj.png");
+        bossDeskImage = safeLoad("/images/boss_deskObj.png");
+        coffeeImage = safeLoad("/images/coffeeObj.png");
+        wallObjImage = safeLoad("/images/wallObj.png"); // Teraz nic jej nie zablokuje!
+        this.wallRightObjImage = safeLoad("/images/wallRightObj.png");
+        this.wallBackObjImage = safeLoad("/images/wallBackObj.png");
+        this.wallCornerObjImage = safeLoad("/images/wallCornerObj.png");
+    }
+
+    // Magiczna metoda pomocnicza, która sprawdzi w konsoli KAŻDY plik z osobna
+    private Image safeLoad(String path) {
         try {
-            this.juniorImg = new Image(getClass().getResourceAsStream("/images/junior.png"));
-            this.seniorImg = new Image(getClass().getResourceAsStream("/images/senior.png"));
-            this.bossImg = new Image(getClass().getResourceAsStream("/images/boss.png"));
-
-            this.juniorCoffeeImg = new Image(getClass().getResourceAsStream("/images/junior_coffee.png"));
-            this.seniorCoffeeImg = new Image(getClass().getResourceAsStream("/images/senior_coffee.png"));
-            this.bossCoffeeImg = new Image(getClass().getResourceAsStream("/images/boss_coffee.png"));
-
-            // Ładowanie obrazka płaczącego Juniora
-            this.juniorCryingImg = new Image(getClass().getResourceAsStream("/images/junior_crying.png"));
-
-            floorImage = new Image(getClass().getResourceAsStream("/images/floor.png"));
-            bossOfficeImage = new Image(getClass().getResourceAsStream("/images/boss_office.png"));
-            outsideImage = new Image(getClass().getResourceAsStream("/images/outside.png"));
-            wallImage = new Image(getClass().getResourceAsStream("/images/wall.png"));
-
+            java.io.InputStream stream = getClass().getResourceAsStream(path);
+            if (stream == null) {
+                System.out.println("❌ Nie znaleziono pliku na dysku: " + path);
+                return null;
+            }
+            return new Image(stream);
         } catch (Exception e) {
-            System.out.println("Nie udało się załadować obrazków, używam kolorów zastępczych.");
+            System.out.println("❌ Błąd podczas ładowania pliku: " + path);
+            return null;
         }
     }
 
@@ -76,7 +105,8 @@ public class GameView {
         // 1. Czyszczenie ekranu przed każdym rysowaniem
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
-// 2. Rysowanie planszy
+
+// 2. Rysowanie planszy (AUTOMATYCZNE DWUWARSTWOWE)
         for (int y = 0; y < board.getHeight(); y++) {
             for (int x = 0; x < board.getWidth(); x++) {
                 Cell cell = board.getCell(x, y);
@@ -84,30 +114,72 @@ public class GameView {
                 int px = x * TILE_SIZE;
                 int py = y * TILE_SIZE;
 
-                // Pobieramy typ tekstowy z komórki, który ustawia GameBoard
-                String cellType = cell.getType();
+                // --- WARSTWA 1: NAJPIERW ZAWSZE RYSUJEMY PODŁOGĘ (z floorLayout) ---
+                int[][] floorMap = board.getFloorMap();
+                int floorType = floorMap[y][x];
 
-                switch (cellType) {
-                    case "wall":
-                        if (wallImage != null) gc.drawImage(wallImage, px, py, TILE_SIZE, TILE_SIZE);
-                        else drawPlaceholder(px, py, Color.DARKGRAY);
-                        break;
-
-                    case "boss_office":
-                        if (bossOfficeImage != null) gc.drawImage(bossOfficeImage, px, py, TILE_SIZE, TILE_SIZE);
-                        else drawPlaceholder(px, py, Color.LIGHTGOLDENRODYELLOW);
-                        break;
-
-                    case "outside":
+                switch (floorType) {
+                    case 1: // Trawa / Outside
                         if (outsideImage != null) gc.drawImage(outsideImage, px, py, TILE_SIZE, TILE_SIZE);
                         else drawPlaceholder(px, py, Color.GREEN);
                         break;
-
+                    case 2: // Gabinet Szefa
+                        if (bossOfficeImage != null) gc.drawImage(bossOfficeImage, px, py, TILE_SIZE, TILE_SIZE);
+                        else drawPlaceholder(px, py, Color.LIGHTGOLDENRODYELLOW);
+                        break;
+                    case 3: // Górna ściana (niechodzalna)
+                        if (wallImage != null) gc.drawImage(wallImage, px, py, TILE_SIZE, TILE_SIZE);
+                        else drawPlaceholder(px, py, Color.DARKGRAY);
+                        break;
+                    case 0: // Zwykła podłoga biura
                     default:
-                        // Domyślnie dla zwykłej podłogi ("floor"), ale też "desk" i "coffee",
-                        // dopóki nie dodasz dla nich osobnych rysunków mebli.
                         if (floorImage != null) gc.drawImage(floorImage, px, py, TILE_SIZE, TILE_SIZE);
                         else drawPlaceholder(px, py, Color.LIGHTGRAY);
+                        break;
+                }
+
+                // --- WARSTWA 2: NA TO NAKŁADAMY MEBEL / OBIEKT (jeśli istnieje w tej komórce) ---
+                String cellType = cell.getType();
+
+                switch (cellType) {
+                    case "desk":
+                        if (deskImage != null) gc.drawImage(deskImage, px, py, TILE_SIZE, TILE_SIZE);
+                        else drawPlaceholder(px, py, Color.LIGHTBLUE);
+                        break;
+
+                    case "boss_desk":
+                        if (bossDeskImage != null) gc.drawImage(bossDeskImage, px, py, TILE_SIZE, TILE_SIZE);
+                        else drawPlaceholder(px, py, Color.GOLD);
+                        break;
+
+                    case "coffee":
+                        if (coffeeImage != null) gc.drawImage(coffeeImage, px, py, TILE_SIZE, TILE_SIZE);
+                        else drawPlaceholder(px, py, Color.ORANGE);
+                        break;
+
+                    case "wall": // Dolna ściana
+                        if (wallObjImage != null) gc.drawImage(wallObjImage, px, py, TILE_SIZE, TILE_SIZE);
+                        else drawPlaceholder(px, py, Color.GRAY);
+                        break;
+
+                    case "wall_right": // Twoja nowa prawa ściana odcinająca trawę
+                        if (wallRightObjImage != null) gc.drawImage(wallRightObjImage, px, py, TILE_SIZE, TILE_SIZE);
+                        else drawPlaceholder(px, py, Color.GRAY);
+                        break;
+
+                    // --- TUTAJ SĄ DODANE TWOJE 2 NOWE OBIEKTY ŚCIAN ---
+                    case "wall_back": // Tylna ściana (dla cyfry 10)
+                        if (wallBackObjImage != null) gc.drawImage(wallBackObjImage, px, py, TILE_SIZE, TILE_SIZE);
+                        else drawPlaceholder(px, py, Color.GRAY);
+                        break;
+
+                    case "wall_corner": // Narożna ściana (dla cyfry 11)
+                        if (wallCornerObjImage != null) gc.drawImage(wallCornerObjImage, px, py, TILE_SIZE, TILE_SIZE);
+                        else drawPlaceholder(px, py, Color.GRAY);
+                        break;
+
+                    // Dla czystych podłóg ("floor", "outside", "boss_office") nic dodatkowego nie nakładamy
+                    default:
                         break;
                 }
             }
