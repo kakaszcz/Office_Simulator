@@ -132,11 +132,13 @@ public class GameBoard {
         Cell oldCell = getCell(oldX, oldY);
         Cell newCell = getCell(newX, newY);
 
-        if (oldCell != null && newCell != null && !oldCell.isEmpty() && newCell.isEmpty() && !newCell.isWall()) {
-            Agent agent = oldCell.getAgent();
-            oldCell.setAgent(null);
-            newCell.setAgent(agent);
-            return true;
+        if (oldCell != null && newCell != null && !oldCell.isEmpty() && newCell.isEmpty()) {
+            if(!newCell.isWall() || newCell.isDesk()){
+                Agent agent = oldCell.getAgent();
+                oldCell.setAgent(null);
+                newCell.setAgent(agent);
+                return true;
+            }
         }
         return false;
     }
