@@ -27,6 +27,7 @@ public class Boss extends Agent {
         if (currentCell != null && currentCell.getType().equalsIgnoreCase("coffee")) {
             if (this.coffeeTimer >= 10) {
                 this.coffeeTimer = 0;
+                sim.recordCoffeeDrunk(); //doliczanie szefa do statystyk picia kawy
                 System.out.println("Szef " + this.getName() + " wypił kawę na miejscu. Timer zresetowany!");
             }
             moveRandomly(board);

@@ -13,6 +13,7 @@ public class Simulation {
     private int stepCount;
     private boolean isRunning;
     private int totalFails = 0;
+    private int coffeesDrunk = 0;
 
     private AgentFactory factory;
 
@@ -149,6 +150,27 @@ public class Simulation {
     public double getBudget() { return this.budget; }
     public List<Agent> getAgents() { return this.agents; }
 
+    //liczenie wypitych kaw
+    public void recordCoffeeDrunk() {
+        this.coffeesDrunk++;
+    }
+    public int getCoffeesDrunk() {
+        return this.coffeesDrunk;
+    }
+
+    //liczenie lacznej sredniej wydajnosci wszystkich pracownikow
+    public double getAverageEfficiency() {
+        double total = 0.0;
+        int count = 0;
+        for (Agent agent : this.agents) {
+            if (agent instanceof Worker) {
+                total += ((Worker) agent).getEfficiency();
+                count++;
+            }
+        }
+        return count == 0 ? 0 : total / count;
+    }
+
     public void removeAgent(Agent agent) {
         if (this.agents.contains(agent)) {
             this.agents.remove(agent);
@@ -164,4 +186,5 @@ public class Simulation {
             System.out.println(agent.getName() + " został zwolniony.");
         }
     }
+    public int getStepCount() { return stepCount; }
 }

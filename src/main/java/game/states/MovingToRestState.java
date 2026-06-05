@@ -52,7 +52,11 @@ public class MovingToRestState implements WorkerState {
             }
         }
 
+        //dodane zeby jak dojdzie do kawy to dodawac do statystyk
         if (reachedDestination) {
+            if (destinationType.equals("coffee")) {
+                sim.recordCoffeeDrunk();
+            }
             // Dotarł na miejsce! Przechodzi w stan właściwego odpoczynku
             worker.changeState(new RestingState(destinationType));
         }
