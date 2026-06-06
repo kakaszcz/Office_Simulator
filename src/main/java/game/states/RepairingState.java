@@ -1,6 +1,6 @@
 package game.states;
 
-import game.model.Worker;
+import game.agents.Worker;
 import game.model.GameBoard;
 import game.core.Simulation;
 
@@ -16,6 +16,7 @@ public class RepairingState implements WorkerState {
 
     @Override
     public void enter(Worker worker) {
+        worker.recordBugRepaired();
         this.repairTimeRemaining = worker.computeTaskTime();
         worker.setEfficiency(Math.max(0.0, worker.getEfficiency() - 0.10));
         sim.repairFail();

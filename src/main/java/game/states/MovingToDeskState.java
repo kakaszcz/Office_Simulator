@@ -1,7 +1,8 @@
 package game.states;
 
+import game.core.GameConfiguration;
 import game.core.Simulation;
-import game.model.Worker;
+import game.agents.Worker;
 import game.model.Cell;
 import game.model.GameBoard;
 
@@ -16,9 +17,14 @@ public class MovingToDeskState implements WorkerState {
 
     @Override
     public void act(Worker worker, GameBoard board, Simulation sim) {
-        // Jeśli nie mamy jeszcze biurka docelowego, szukamy go na planszy
+        // Jeśli ktoś zajął nasze biurko w międzyczasie, porzuć je i szukaj od nowa
+        if (targetDesk != null && !targetDesk.isEmpty() && targetDesk.getAgent() != worker) {
+            System.out.println("  -> " + worker.getName() + " zauważył, że biurko zostało podkradzione! Szuka innego...");
+            targetDesk = null;
+        }
+
         if (targetDesk == null) {
-            targetDesk = board.findFirstEmptyCell("desk");
+            targetDesk = board.findFirstEmptyCell(GameConfiguration.TILE_TYPE_DESK);
         }
 
         if (targetDesk == null) {
@@ -28,7 +34,8 @@ public class MovingToDeskState implements WorkerState {
 
         boolean reachedDestination = false;
 
-        for (int i = 0; i < 2; i++) {
+        int steps = GameConfiguration.WORKER_MOVE_STEPS_PER_TURN;
+        for (int i = 0; i < steps; i++) {
             // Wywołujemy nasz PathFinder ukryty w klasie Worker
             worker.navigateTo(targetDesk, board);
 

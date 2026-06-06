@@ -2,7 +2,7 @@ package game.states;
 
 import game.core.Simulation;
 import game.model.GameBoard;
-import game.model.Worker;
+import game.agents.Worker;
 
 public interface WorkerState {
     // Metoda wywoływana jednorazowo przy zmianie stanu (odpowiednik akcji "entry" z diagramu)

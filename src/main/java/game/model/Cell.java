@@ -1,5 +1,8 @@
 package game.model;
 
+import game.agents.Agent;
+import game.core.GameConfiguration; // Import naszej konfiguracji
+
 public class Cell {
     private int x;
     private int y;
@@ -13,52 +16,56 @@ public class Cell {
         this.agent = null;
     }
 
-    public boolean isEmpty(){
+    public boolean isEmpty() {
         return this.agent == null;
     }
 
-    public String getType(){
+    public String getType() {
         return type;
     }
 
-    public void setType(String type){
+    public void setType(String type) {
         this.type = type;
     }
 
-    public Agent getAgent(){
+    public Agent getAgent() {
         return agent;
     }
 
-    public void setAgent(Agent agent){
+    public void setAgent(Agent agent) {
         this.agent = agent;
     }
 
-    public int getX(){
+    public int getX() {
         return x;
     }
 
-    public int getY(){
+    public int getY() {
         return y;
     }
 
+    /**
+     * Sprawdza, czy kafelek jest ścianą (blokuje ruch agentów).
+     * REFAKTOR: Zamiast wielkiego ciągu '||', sprawdzamy czy typ kafelka zaczyna się od "wall".
+     * Gwarantuje to automatyczną blokadę dla każdego nowego podtypu ściany dodanego w edytorze mapy.
+     */
     public boolean isWall() {
-        return type.equals("wall")
-                || type.equals("wall_not_walkable")
-                || type.equals("wall_right")
-                || type.equals("wall_back")
-                || type.equals("wall_corner")
-                || type.equals("wall_sr_corner")  // <-- ZABLOKOWANY NOWY CORNER
-                || type.equals("wall_nr_corner")  // <-- ZABLOKOWANY NOWY CORNER
-                || type.equals("wall_nl_corner") // <-- ZABLOKOWANY NOWY CORNER
-                || type.equals("wall_left"); // <-- BLOKADA DLA NOWEJ LEWEJ ŚCIANY
+        if (type == null) return false;
+        return type.toLowerCase().startsWith("wall");
     }
 
-    // ZMIANA: Uniwersalne sprawdzenie dla obu rodzajów biurek
-    public boolean isDesk(){
-        return "desk".equals(type) || "boss_desk".equals(type);
+    /**
+     * Uniwersalne sprawdzenie dla obu rodzajów biurek na podstawie konfiguracji.
+     */
+    public boolean isDesk() {
+        return GameConfiguration.TILE_TYPE_DESK.equals(type)
+                || GameConfiguration.TILE_TYPE_BOSS_DESK.equals(type);
     }
 
-    public boolean isCoffee(){
-        return "coffee".equals(type);
+    /**
+     * Sprawdza, czy kafelek jest ekspresem do kawy na podstawie konfiguracji.
+     */
+    public boolean isCoffee() {
+        return GameConfiguration.TILE_TYPE_COFFEE.equals(type);
     }
 }

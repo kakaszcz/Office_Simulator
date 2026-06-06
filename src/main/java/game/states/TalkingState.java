@@ -1,6 +1,6 @@
 package game.states;
 
-import game.model.Worker;
+import game.agents.Worker;
 import game.model.GameBoard;
 import game.core.Simulation;
 
@@ -10,6 +10,7 @@ public class TalkingState implements WorkerState {
 
     @Override
     public void enter(Worker worker) {
+        worker.recordBossTalk();
         worker.setEfficiency(Math.max(0.0, worker.getEfficiency() - 0.10));
         System.out.println("[STAN] Szef podszedł do Seniora. " + worker.getName() + " rozmawia z Szefem.");
     }

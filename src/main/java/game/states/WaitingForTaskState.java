@@ -1,6 +1,10 @@
 package game.states;
 
-import game.model.*;
+import game.agents.Junior;
+import game.agents.Senior;
+import game.agents.Worker;
+import game.core.GameConfiguration;
+import game.model.GameBoard;
 import game.core.Simulation;
 
 public class WaitingForTaskState implements WorkerState {
@@ -12,8 +16,8 @@ public class WaitingForTaskState implements WorkerState {
 
     @Override
     public void act(Worker worker, GameBoard board, Simulation sim) {
-        // Sprawdzamy obecność Bossa raz na początku
-        boolean isBossPresentNow = worker.isBossNeighbor(board);
+
+        boolean isBossPresentNow = worker.isBossNeighbor(sim);
 
         // 1. Obsługa Juniora (Boost motywacyjny i aktualizacja pamięci)
         if (worker instanceof Junior) {
@@ -22,8 +26,13 @@ public class WaitingForTaskState implements WorkerState {
             if (isBossPresentNow) {
                 if (!junior.wasBossNeighborInPreviousTurn()) {
                     // Boss właśnie podszedł (w poprzedniej turze go tu nie było)
-                    junior.setEfficiency(Math.min(1.0, junior.getEfficiency() + 0.10));
-                    junior.setExperience(Math.min(1.0, junior.getExperience() + 0.20));
+                    // REFAKTOR: Zastąpienie surowych liczb stałymi konfiguracyjnymi
+                    double newEff = junior.getEfficiency() + GameConfiguration.BOSS_MOTIVATION_EFFICIENCY_BOOST;
+                    double newExp = junior.getExperience() + GameConfiguration.BOSS_MOTIVATION_EXPERIENCE_BOOST;
+
+                    junior.setEfficiency(Math.min(1.0, newEff));
+                    junior.setExperience(Math.min(1.0, newExp));
+
                     System.out.println("  -> [EVENT] Szef podszedł! Junior " + junior.getName()
                             + " dostał motywacyjnego boosta!");
                 } else {
@@ -43,21 +52,27 @@ public class WaitingForTaskState implements WorkerState {
         }
 
         // 3. UNIKALNA LOGIKA SENIORA: Czy są błędy do naprawy?
-        if (worker instanceof Senior && sim.getTotalFails() >= 1) {
+        if (worker instanceof Senior && sim.getTotalFails() > 0) {
             System.out.println("  -> " + worker.getName() + " (Senior) zauważył błędy Juniorów i idzie je naprawiać!");
+            // PRZYPOMNIENIE: Konstruktor zostaje w pełni zachowany tak jak w Twoim kodzie!
             worker.changeState(new RepairingState(sim));
             return;
         }
 
-        // 4. Sprawdzenie zmęczenia
-        if (worker.getEfficiency() < 0.45) {
+        if (worker.getEfficiency() < GameConfiguration.EFFICIENCY_REST_THRESHOLD) {
+            // Jeśli miał przypisane zadanie, anulujemy je/oddajemy,
+            // żeby nie poszedł z nim pić kawy i nie zablokował systemu.
+            if (worker.hasTask()) {
+                worker.setHasTask(false);
+            }
+
             worker.changeState(new MovingToRestState());
             return;
         }
 
-        // 5. Rozpoczęcie zadania
         if (worker.hasTask()) {
             worker.changeState(new WorkingState());
+            return;
         }
     }
 }
