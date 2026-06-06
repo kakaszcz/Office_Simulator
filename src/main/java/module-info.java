@@ -9,4 +9,5 @@ module SymulacjaBiura {
 
     opens game.core to javafx.graphics;
     opens game.view to javafx.graphics;
+    exports game.agents;
 }

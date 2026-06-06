@@ -62,7 +62,10 @@ public class PathFinder {
                     if (neighborCell.isWall() && !neighborCell.equals(targetCell)) continue;
 
                     if (neighborCell.getAgent() != null && !neighborCell.equals(targetCell)) {
-                        continue;
+                        // Jeśli na kafelku obok siedzi ktoś przy biurku ("desk"), traktujemy to jako stałą ścianę
+                        if ("desk".equals(neighborCell.getType())) {
+                            continue;
+                        }
                     }
 
                     Node neighbor = new Node(nextX, nextY);

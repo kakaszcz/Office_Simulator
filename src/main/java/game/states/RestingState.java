@@ -1,12 +1,16 @@
 package game.states;
 
+import game.agents.Junior;
+import game.agents.Worker;
+import game.core.GameConfiguration;
 import game.core.Simulation;
 import game.model.*;
 
 public class RestingState implements WorkerState {
 
     private final String restPlaceType;
-    private int restTurnsRemaining = 3; // Odpoczynek trwa np. 3 tury
+    private int restTurnsRemaining;
+    private boolean statsUpdated = false;
 
     public RestingState(String restPlaceType) {
         this.restPlaceType = restPlaceType;
@@ -14,23 +18,42 @@ public class RestingState implements WorkerState {
 
     @Override
     public void enter(Worker worker) {
+        this.restTurnsRemaining = GameConfiguration.REST_DURATION_TURNS;
+
         System.out.println("[STAN] " + worker.getName() + " rozpoczął odpoczynek w strefie: " + restPlaceType);
+
+        if (GameConfiguration.TILE_TYPE_OUTSIDE.equals(restPlaceType)) {
+            worker.recordCigarette();
+        } else {
+            worker.recordCoffee();
+        }
     }
 
     @Override
     public void act(Worker worker, GameBoard board, Simulation sim) {
-        // przyłapanie na dworze przez szefa
-        if (worker instanceof Junior && restPlaceType.equals("outside") && worker.isBossNeighbor(board)) {
+
+        if (!statsUpdated) {
+            if (GameConfiguration.TILE_TYPE_OUTSIDE.equals(restPlaceType)) {
+                sim.incrementCigarettes();
+            } else {
+                sim.incrementCoffee();
+            }
+            statsUpdated = true;
+        }
+
+        if (worker instanceof Junior && GameConfiguration.TILE_TYPE_OUTSIDE.equals(restPlaceType) && worker.isBossNeighbor(sim)) {
             worker.markFired(); // Flagujemy pracownika do wywalenia z firmy!
             System.out.println("!!! SKANDAL! Szef przyłapał pracownika " + worker.getName() + " na obijaniu się na dworze!");
         }
 
-        if (restPlaceType.equals("outside")) {
-            // Na dworze regeneracja jest błyskawiczna (np. od razu 100%)
+        if (GameConfiguration.TILE_TYPE_OUTSIDE.equals(restPlaceType)) {
+            // Na dworze regeneracja jest błyskawiczna (pobieramy MAX_EFFICIENCY)
             worker.setEfficiency(1.0);
         } else {
-            // W kuchni (coffeeTable) rośnie powoli, co turę
-            worker.setEfficiency(Math.min(1.0, worker.getEfficiency() + 0.20));
+            // W kuchni rośnie powoli, co turę (pobieramy COFFEE_REGEN_RATE i limitujemy przez MAX_EFFICIENCY)
+            double currentEff = worker.getEfficiency();
+            double regeneratedEff = currentEff + GameConfiguration.COFFEE_REGEN_RATE;
+            worker.setEfficiency(Math.min(1.0, regeneratedEff));
         }
 
         restTurnsRemaining--;

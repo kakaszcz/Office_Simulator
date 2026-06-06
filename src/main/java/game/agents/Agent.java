@@ -1,6 +1,9 @@
-package game.model;
+package game.agents;
 
 import game.core.Simulation;
+import game.core.GameConfiguration;
+import game.model.Cell;
+import game.model.GameBoard;
 
 abstract public class Agent {
     private int x;
@@ -11,7 +14,7 @@ abstract public class Agent {
 
     private String direction = "DOWN"; // "UP", "DOWN", "LEFT", "RIGHT"
     private int animationFrame = 0;    // Indeks klatki (np. 0, 1, 2, 3)
-    private int frameTickCounter = 0;  // Spowalniacz animacji nóg
+    private double frameTickCounter = 0;  // Płynne dodawanie ułamków prędkości (np. przy 0.25x)
 
     private static int nextId = 1;
     private int id;
@@ -33,9 +36,8 @@ abstract public class Agent {
     // Metoda do obsługi tur (logika)
     public abstract void act(GameBoard board, Simulation sim);
 
-    public void updateVisual() {
-        // STAŁA PRĘDKOŚĆ
-        double speed = 0.04;
+    public void updateVisual(double gameSpeed) {
+        double speed = GameConfiguration.AGENT_BASE_VISUAL_SPEED * gameSpeed;
 
         double diffX = this.x - this.visualX;
         double diffY = this.y - this.visualY;
@@ -62,9 +64,8 @@ abstract public class Agent {
                 this.direction = (diffY > 0) ? "DOWN" : "UP";
             }
 
-            // Animacja nóg
-            frameTickCounter++;
-            if (frameTickCounter >= 8) {
+            frameTickCounter += gameSpeed;
+            if (frameTickCounter >= GameConfiguration.AGENT_ANIMATION_FRAME_DELAY) {
                 animationFrame = (animationFrame + 1) % 4;
                 frameTickCounter = 0;
             }
@@ -80,6 +81,42 @@ abstract public class Agent {
     // Warunek dla pętli w MainApp
     public boolean isCurrentlyWalking() {
         return Math.abs(this.x - this.visualX) > 0.01 || Math.abs(this.y - this.visualY) > 0.01;
+    }
+
+    protected void moveRandomly(GameBoard board, boolean allowDesks) {
+        int[][] directions = {
+                {0, 1}, {0, -1}, {1, 0}, {-1, 0},
+                {1, 1}, {1, -1}, {-1, 1}, {-1, -1}
+        };
+
+        java.util.List<Integer> indices = new java.util.ArrayList<>();
+        for (int i = 0; i < directions.length; i++) indices.add(i);
+        java.util.Collections.shuffle(indices);
+
+        for (int index : indices) {
+            int nextX = getX() + directions[index][0];
+            int nextY = getY() + directions[index][1];
+
+            if (board.isInBounds(nextX, nextY)) {
+                Cell cell = board.getCell(nextX, nextY);
+
+                // Sprawdzamy, czy kafelek fizycznie istnieje, nie jest ścianą i nikt na nim nie stoi
+                if (cell != null && !cell.isWall() && cell.getAgent() == null) {
+
+                    // Jeśli to NIE JEST Szef (allowDesks == false), zabraniamy mu wchodzić na biurka
+                    if (!allowDesks && "desk".equals(cell.getType())) {
+                        continue; // Skipujemy ten kafelek, szukamy innego kierunku
+                    }
+
+                    // Skoro wszystko jest bezpieczne, wykonujemy JEDEN ruch na planszy
+                    if (board.moveAgent(getX(), getY(), nextX, nextY)) {
+                        setX(nextX); // Aktualizujemy wewnętrzny stan agenta
+                        setY(nextY);
+                        return; // Ruch udany, przerywamy pętlę i kończymy turę
+                    }
+                }
+            }
+        }
     }
 
     public int getX() { return x; }

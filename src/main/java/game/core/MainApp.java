@@ -1,187 +1,182 @@
 package game.core;
 
-import game.model.Agent;
+import game.agents.Agent;
 import game.view.GameView;
+import game.view.MainLayout;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.geometry.Insets;
-import javafx.scene.Group;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.Spinner;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.transform.Scale;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
-
 public class MainApp extends Application {
+
+    private Stage primaryStage; // Główne okno aplikacji
+
     private Simulation simulation;
     private GameView gameView;
+    private MainLayout mainLayout;
+    private GameController gameController;
+
+    private AnimationTimer timer;
+    private StackPane rootContainer;
 
     @Override
     public void start(Stage primaryStage) {
-        // 1. Inicjalizacja świata gry
-        simulation = new Simulation(5, 3, 1000);
+        this.primaryStage = primaryStage;
+        this.primaryStage.setTitle(GameConfiguration.APP_WINDOW_TITLE);
+        this.primaryStage.setMaximized(true);
+
+        // Zamiast odpalać grę, najpierw pokazujemy menu startowe
+        showSetupScreen();
+    }
+
+     //EKRAN STARTOWY (MENU KONFIGURACYJNE)
+    private void showSetupScreen() {
+        VBox setupRoot = new VBox(20);
+        setupRoot.setAlignment(Pos.CENTER);
+        setupRoot.setStyle("-fx-background-color: #2c3e50; -fx-padding: 50px;");
+
+        Label titleLabel = new Label("SYMULACJA BIURA IT");
+        titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 36px; -fx-font-weight: bold;");
+
+        Label subtitleLabel = new Label("Konfiguracja początkowa");
+        subtitleLabel.setStyle("-fx-text-fill: #bdc3c7; -fx-font-size: 18px;");
+
+        // POLA DO USTAWIENIA PARAMETRÓW
+
+        // 1. Liczba Juniorów
+        HBox juniorsBox = new HBox(15);
+        juniorsBox.setAlignment(Pos.CENTER);
+        Label juniorsLabel = new Label("Liczba Juniorów na start:");
+        juniorsLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+        Spinner<Integer> juniorsSpinner = new Spinner<>(0, GameConfiguration.MAX_JUNIORS, GameConfiguration.STARTING_JUNIORS_COUNT);
+        juniorsBox.getChildren().addAll(juniorsLabel, juniorsSpinner);
+
+        // 2. Liczba Seniorów
+        HBox seniorsBox = new HBox(15);
+        seniorsBox.setAlignment(Pos.CENTER);
+        Label seniorsLabel = new Label("Liczba Seniorów na start:");
+        seniorsLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+        Spinner<Integer> seniorsSpinner = new Spinner<>(0, GameConfiguration.MAX_SENIORS, GameConfiguration.STARTING_SENIORS_COUNT);
+        seniorsBox.getChildren().addAll(seniorsLabel, seniorsSpinner);
+
+        // 3. Budżet początkowy
+        HBox budgetBox = new HBox(15);
+        budgetBox.setAlignment(Pos.CENTER);
+        Label budgetLabel = new Label("Początkowy budżet ($):");
+        budgetLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+        Spinner<Integer> budgetSpinner = new Spinner<>(100, 10000, (int) GameConfiguration.STARTING_BUDGET, 100);
+        budgetSpinner.setEditable(true);
+        budgetBox.getChildren().addAll(budgetLabel, budgetSpinner);
+
+        //  PRZYCISK START
+        Button startButton = new Button("ROZPOCZNIJ SYMULACJĘ");
+        startButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10 30 10 30;");
+
+        startButton.setOnAction(e -> {
+            int startJuniors = juniorsSpinner.getValue();
+            int startSeniors = seniorsSpinner.getValue();
+            int startBudget = budgetSpinner.getValue();
+
+            startGame(startJuniors, startSeniors, startBudget);
+        });
+
+        // Efekt najechania na przycisk
+        startButton.setOnMouseEntered(e -> startButton.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10 30 10 30;"));
+        startButton.setOnMouseExited(e -> startButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10 30 10 30;"));
+
+        setupRoot.getChildren().addAll(titleLabel, subtitleLabel, new Label(""), juniorsBox, seniorsBox, budgetBox, new Label(""), startButton);
+
+        Scene setupScene = new Scene(setupRoot, 800, 600);
+        primaryStage.setScene(setupScene);
+        primaryStage.show();
+    }
+
+    //WŁAŚCIWA GRA (Odpalana po kliknięciu START)
+
+    private void startGame(int startJuniors, int startSeniors, int startBudget) {
+        // Przekazujemy wartości z menu do symulacji
+        simulation = new Simulation(startJuniors, startSeniors, startBudget);
+        simulation.setMainApp(this);
+
         gameView = new GameView(simulation.getGameBoard());
 
-        // 2. Lewa strona - plansza gry
-        StackPane gameRoot = new StackPane();
-        Group group = new Group(gameView.getCanvas());
-        gameRoot.getChildren().add(group);
+        // Utworzenie całego układu interfejsu
+        mainLayout = new MainLayout(simulation, gameView);
 
-        // Skalowanie planszy żeby zmieściła się w oknie
-        Scale scale = new Scale(0.5, 0.5);
-        scale.setPivotX(0);
-        scale.setPivotY(0);
-        gameView.getCanvas().getTransforms().add(scale);
+        // TWORZENIE KONTROLERA CZASU I PASKA SZYBKOŚCI
+        gameController = new GameController(simulation, mainLayout.getHRDashboard());
+        HBox speedPanel = gameController.createSpeedControlPanel();
 
-        //Prawa str - Panele logi
-        VBox logsPanel = new VBox();
-        logsPanel.setSpacing(10);
-        logsPanel.setPadding(new Insets(15));
-        logsPanel.setPrefWidth(450);
+        // Integracja paska z widokiem w jeden pionowy kontener
+        VBox appRoot = new VBox();
+        appRoot.getChildren().addAll(speedPanel, mainLayout.getScene().getRoot());
 
-        // okienka tekstowe logi
+        // GŁÓWNY KONTENER WARSTWOWY
+        rootContainer = new StackPane();
+        rootContainer.getChildren().add(appRoot);
 
+        // Przełączamy scenę na grę i ZABEZPIECZAMY ROZMIAR OKNA
+        Scene gameScene = new Scene(rootContainer, primaryStage.getWidth(), primaryStage.getHeight());
+        primaryStage.setScene(gameScene);
 
-        //okienko na system i finanse
-        Label lblSys = new Label("SYSTEM I FINANSE:");
-        TextArea sysArea = new TextArea();
-        sysArea.setEditable(false);
-        sysArea.setPrefHeight(200);
-
-        //okienko na akcje agentow
-        Label lblWork = new Label("AKCJE PRACOWNIKÓW:");
-        TextArea workerArea = new TextArea();
-        workerArea.setEditable(false);
-        workerArea.setPrefHeight(200);
-
-        // czerwone okienko z bledami
-        Label lblAlert = new Label("PROBLEMY I BŁĘDY:");
-        lblAlert.setTextFill(Color.RED);
-        TextArea alertArea = new TextArea();
-        alertArea.setEditable(false);
-        alertArea.setPrefHeight(200);
-        alertArea.setStyle("-fx-text-fill: red;");
-
-        //wszystko do prawego panelu
-        logsPanel.getChildren().addAll(lblSys, sysArea, lblWork, workerArea, lblAlert, alertArea);
-
-
-        // 4. Przechwytywanie wypisywania z konsoli do interfejsu (żeby nie pisać System.out w wielu miejscach)
-        OutputStream out = new OutputStream() {
-            private ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-
-            @Override
-            public void write(int b) {
-                if (b == '\r') return; // Pomijamy znak powrotu z Windowsa
-
-                if (b == '\n') {
-                    // Mamy całą linijkę, zmieniamy na String z polskimi znakami
-                    String line = new String(buffer.toByteArray(), StandardCharsets.UTF_8);
-                    buffer.reset(); // Czysczenie bufor na następną linijkę
-
-                    // JavaFX wymaga, żeby zmiany w grafice robić przez Platform.runLater
-                    Platform.runLater(() -> {
-                        if (line.isEmpty() || line.trim().isEmpty()) {
-                            return; // Nie wypisujemy pustych linijek
-                        }
-
-                        // do segregacji tekstu do odpowiednich okienek
-                        if (line.contains("TURA") || line.contains("$$$") || line.contains("HR") || line.contains("Rozdzielanie")) {
-                            sysArea.appendText(line + "\n");
-                        }
-                        else if (line.contains("!!!") || line.contains("płacze") || line.contains("FATAL") || line.contains("PORAŻKA") || line.contains("zawalił") || line.contains("błędów") || line.contains("BANKRUCTWO")) {
-                            alertArea.appendText(line + "\n");
-                        }
-                        else {
-                            workerArea.appendText(line + "\n");
-                        }
-                    });
-                } else {
-                    buffer.write(b);
-                }
-            }
-        };
-
-        // nowy strumień jako domyślny zamiast zwykłej konsoli
-        try {
-            System.setOut(new PrintStream(out, true, "UTF-8"));
-        } catch (Exception e) {
-            System.out.println("Błąd z polskimi znakami");
-        }
-
-        //  Złożenie okna w całość (Lewa + Prawa)
-        // --- NOWE: ZAKŁADKI (TABS) ---
-        javafx.scene.control.TabPane rightPanel = new javafx.scene.control.TabPane();
-
-        javafx.scene.control.Tab logTab = new javafx.scene.control.Tab("Dziennik Zdarzeń");
-        logTab.setClosable(false);
-        logTab.setContent(logsPanel); // Wrzucamy tu nasze 3 okienka z logami
-
-        javafx.scene.control.Tab statsTab = new javafx.scene.control.Tab("Analityka (Wykresy)");
-        statsTab.setClosable(false);
-        game.view.StatisticsDashboard dashboard = new game.view.StatisticsDashboard();
-        statsTab.setContent(dashboard.getLayout()); // Wrzucamy tu wykresy
-
-        rightPanel.getTabs().addAll(logTab, statsTab);
-
-        // 5. Złożenie okna w całość (Gra + Zakładki po prawej)
-        HBox mainLayout = new HBox();
-        mainLayout.getChildren().addAll(gameRoot, rightPanel); // <--- Zmiana z logsPanel na rightPanel!
-
-        Scene scene = new Scene(mainLayout);
-        primaryStage.setTitle("Symulacja Biura IT");
-        primaryStage.setScene(scene);
-        primaryStage.show();
+        primaryStage.setMaximized(false);
+        primaryStage.setMaximized(true);
 
         // Pierwsze narysowanie mapy
         gameView.render(simulation);
 
-        // 6. Pętla gry
-        AnimationTimer timer = new AnimationTimer() {
-            private long lastUpdate = 0;
-
-
+        timer = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                if (now - lastUpdate >= 1_000_000_000) {
-                    simulation.step();
-
-                    // --- TO JEST TEN BRAKUJĄCY FRAGMENT OD WYKRESÓW ---
-                    Platform.runLater(() -> {
-                        dashboard.updateCharts(
-                                simulation.getStepCount(),
-                                simulation.getBudget(),
-                                simulation.getTotalFails(),
-                                simulation.getAverageEfficiency(),
-                                simulation.getCoffeesDrunk()
-                        );
-                    });
-                    // --------------------------------------------------
-
-                    lastUpdate = now;
+                if (!simulation.isRunning()) {
+                    return;
                 }
+
+                double currentSpeed = gameController.getSpeed();
 
                 for (Agent agent : simulation.getAgents()) {
-                    agent.updateVisual();
+                    agent.updateVisual(currentSpeed);
                 }
-
                 gameView.render(simulation);
+                mainLayout.update(simulation);
             }
         };
 
         timer.start();
+        gameController.startSimulation();
+    }
 
-        timer.start();
+    public void showGameOverScreen(String message) {
+        if (timer != null) {
+            timer.stop();
+        }
+
+        StackPane gameOverOverlay = new StackPane();
+        gameOverOverlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.85);"); // Odrobinę ciemniejsze tło (85%)
+        gameOverOverlay.setAlignment(Pos.CENTER);
+
+        Label gameOverLabel = new Label(message + "\n\n[ KLIKNIJ, ABY ZAMKNĄĆ GRĘ ]");
+        gameOverLabel.setStyle("-fx-text-fill: #ff3333; -fx-font-size: 42px; -fx-font-weight: bold;");
+
+        gameOverLabel.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+
+        gameOverOverlay.getChildren().add(gameOverLabel);
+
+        gameOverOverlay.setOnMouseClicked(e -> System.exit(0));
+
+        if (rootContainer != null) {
+            rootContainer.getChildren().add(gameOverOverlay);
+            gameOverOverlay.toFront();
+        }
     }
 
     public static void main(String[] args) {

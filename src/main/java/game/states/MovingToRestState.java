@@ -1,8 +1,8 @@
-// In game/states/MovingToRestState.java
 package game.states;
 
+import game.core.GameConfiguration;
 import game.core.Simulation;
-import game.model.Worker;
+import game.agents.Worker;
 import game.model.Cell;
 import game.model.GameBoard;
 
@@ -10,18 +10,18 @@ import java.util.Random;
 
 public class MovingToRestState implements WorkerState {
 
-    private final Random random = new Random();
-    private String destinationType; // "coffee" lub "outside"
+
+    private static final Random RANDOM = new Random();
+    private String destinationType;
     private Cell targetCell;
 
     @Override
     public void enter(Worker worker) {
-        // Losowanie 50% na 50%
-        if (random.nextBoolean()) {
-            this.destinationType = "coffee";
+        if (RANDOM.nextBoolean()) {
+            this.destinationType = GameConfiguration.TILE_TYPE_COFFEE;
             System.out.println("[STAN] " + worker.getName() + " poczuł zmęczenie. Postanawia iść do kuchni na kawę.");
         } else {
-            this.destinationType = "outside";
+            this.destinationType = GameConfiguration.TILE_TYPE_OUTSIDE;
             System.out.println("[STAN] " + worker.getName() + " poczuł zmęczenie. Postanawia wyjść na dwór zaczerpnąć powietrza.");
         }
     }
@@ -40,8 +40,8 @@ public class MovingToRestState implements WorkerState {
 
         boolean reachedDestination = false;
 
-        // Pętla wykona się maksymalnie 2 razy, aby zachować prędkość 2 kafelków na turę.
-        for (int i = 0; i < 2; i++) {
+        int steps = GameConfiguration.WORKER_MOVE_STEPS_PER_TURN;
+        for (int i = 0; i < steps; i++) {
             // Wykonaj krok z użyciem inteligentnego pathfinding
             worker.navigateTo(targetCell, board);
 
@@ -52,9 +52,9 @@ public class MovingToRestState implements WorkerState {
             }
         }
 
-        //dodane zeby jak dojdzie do kawy to dodawac do statystyk
+        // Dodane zeby jak dojdzie do kawy to dodawac do statystyk
         if (reachedDestination) {
-            if (destinationType.equals("coffee")) {
+            if (GameConfiguration.TILE_TYPE_COFFEE.equals(destinationType)) {
                 sim.recordCoffeeDrunk();
             }
             // Dotarł na miejsce! Przechodzi w stan właściwego odpoczynku
