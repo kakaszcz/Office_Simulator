@@ -1,12 +1,12 @@
 package game.view;
 
-import game.model.Worker;
+import game.agents.Worker;
 import game.model.Cell;
 import game.model.GameBoard;
-import game.model.Agent;
-import game.model.Boss;
-import game.model.Senior;
-import game.model.Junior;
+import game.agents.Agent;
+import game.agents.Boss;
+import game.agents.Senior;
+import game.agents.Junior;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
@@ -84,7 +84,7 @@ public class GameView {
         deskImage = safeLoad("/images/worker_deskObj.png");
         bossDeskImage = safeLoad("/images/boss_deskObj.png");
         coffeeImage = safeLoad("/images/coffeeObj.png");
-        wallObjImage = safeLoad("/images/wallObj.png"); // Teraz nic jej nie zablokuje!
+        wallObjImage = safeLoad("/images/wallObj.png");
         this.wallRightObjImage = safeLoad("/images/wallRightObj.png");
         this.wallBackObjImage = safeLoad("/images/wallBackObj.png");
         this.wallCornerObjImage = safeLoad("/images/wallCornerObj.png");
@@ -94,7 +94,7 @@ public class GameView {
         this.wallLeftObjImage = safeLoad("/images/wallLeftObj.png");
     }
 
-    // Magiczna metoda pomocnicza, która sprawdzi w konsoli KAŻDY plik z osobna
+    // sprawdzamy w konsoli KAŻDY plik z osobna
     private Image safeLoad(String path) {
         try {
             java.io.InputStream stream = getClass().getResourceAsStream(path);
@@ -258,19 +258,31 @@ public class GameView {
             if (agent instanceof Worker) {
                 Worker worker = (Worker) agent;
 
-                if (worker.hasTask()) {
-                    int pozostaleTury = worker.getTurnsLeft();
-                    String pasek = "";
-                    for (int i = 0; i < pozostaleTury; i++) {
-                        pasek += "-";
-                    }
-                    gc.setFill(Color.BLUE);
-                    gc.setFont(Font.font("Arial", FontWeight.EXTRA_BOLD, 24));
-                    gc.fillText(pasek, px + (TILE_SIZE / 2), py + 10);
+                if (worker.hasTask() && worker.getTotalTaskTime() > 0 && "WorkingState".equals(worker.getCurrentStateName())) {
+                    // Obliczamy procent pozostałego czasu
+                    double procent = (double) worker.getTurnsLeft() / worker.getTotalTaskTime();
+
+                    double szerokoscPaska = 80;
+                    double wysokoscPaska = 10;
+                    double startX = px + (TILE_SIZE - szerokoscPaska) / 2;
+                    double startY = py - 8;
+
+                    // 1. Tło paska
+                    gc.setFill(Color.web("#424242"));
+                    gc.fillRect(startX, startY, szerokoscPaska, wysokoscPaska);
+
+                    // 2. Wypełnienie paska
+                    gc.setFill(Color.web("#22C55E"));
+                    gc.fillRect(startX, startY, szerokoscPaska * procent, wysokoscPaska);
+
+                    // 3. Ramka paska dla lepszej widoczności
+                    gc.setStroke(Color.BLACK);
+                    gc.setLineWidth(1.5);
+                    gc.strokeRect(startX, startY, szerokoscPaska, wysokoscPaska);
                 }
             }
-        } // <--- Koniec pętli for (agent)
-    } // <--- Koniec metody render
+        }
+    }
 
     // Pomocnicza metoda do rysowania kwadratów (Bezpiecznie na zewnątrz)
     private void drawPlaceholder(int x, int y, Color color) {

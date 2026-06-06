@@ -1,4 +1,4 @@
-package game.model;
+package game.agents;
 
 import game.core.GameConfiguration;
 import game.core.Simulation;
@@ -11,7 +11,8 @@ public class Junior extends Worker {
     public Junior(int x, int y, double efficiency, double experience) {
         super(x, y, efficiency, experience);
         this.numberOfFails = 0;
-        this.failChance = Math.max(0.1, 1.0 - experience);
+        // Minimalna szansa na błąd pobierana z GameConfiguration
+        this.failChance = Math.max(GameConfiguration.JUNIOR_MIN_FAIL_CHANCE, 1.0 - experience);
     }
 
     public boolean wasBossNeighborInPreviousTurn() { return wasBossNeighborInPreviousTurn; }
@@ -23,16 +24,17 @@ public class Junior extends Worker {
     @Override
     public void handleTaskFailure(Simulation sim) {
         this.incrementFails();
+        // Ta metoda jest poprawnie powiązana z systemem globalnych kar w Simulation
         sim.reportJuniorFail();
     }
 
-    // Definiujemy, kiedy wyniki Juniora kwalifikują go do zwolnienia przez Szefa
+    // Kiedy wyniki Juniora kwalifikują go do zwolnienia przez Szefa
     @Override
     public boolean hasTerribleMetrics() {
         return super.hasTerribleMetrics() || this.numberOfFails >= GameConfiguration.MAX_FAILS_LIMIT;
     }
 
-    public int getNumberOfFails() { return numberOfFails; }
+    public int getTasksFailed() { return this.numberOfFails; }
 
     public void incrementFails() {
         this.numberOfFails++;

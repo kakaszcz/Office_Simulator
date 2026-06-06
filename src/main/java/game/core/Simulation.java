@@ -1,6 +1,9 @@
 package game.core;
 
-import game.model.Worker;
+import game.agents.Agent;
+import game.agents.Boss;
+import game.agents.Junior;
+import game.agents.Worker;
 import game.model.*;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -10,12 +13,23 @@ public class Simulation {
     private GameBoard gameBoard;
     private List<Agent> agents;
     private double budget;
-    private int stepCount;
+
+    // LICZNIKI STATYSTYK
+    private int stepCount;              // Główny i jedyny licznik tur
     private boolean isRunning;
-    private int totalFails = 0;
-    private int coffeesDrunk = 0;
+    private int totalFails = 0;         // Bieżące, naprawialne błędy juniorów na planszy
+
+    private int totalCoffeesDrank = 0;  // Łączna liczba wypitych kaw
+    private int totalTearsShed = 0;     // Łączna liczba wylanych łez
+    private int totalTasksSuccess = 0;  // Historyczna liczba udanych zadań
+    private int totalTasksFailed = 0;   // Historyczna liczba nieudanych zadań
+    private int totalCigarettesSmoked = 0;
 
     private AgentFactory factory;
+    private HRManager hrManager;
+
+    // NOWE POLE: Referencja do aplikacji okienkowej
+    private MainApp mainApp;
 
     public Simulation(int numJuniors, int numSeniors, int initialBudget) {
         this.gameBoard = new GameBoard();
@@ -25,16 +39,15 @@ public class Simulation {
         this.isRunning = true;
         this.factory = new AgentFactory();
 
-        // ZMIANA: Zabezpieczenie przed NullPointerException przy tworzeniu Szefa
-        Boss boss = factory.createBoss(2, 3, initialBudget);
-        Cell bossCell = gameBoard.getCell(2, 3);
+        Boss boss = factory.createBoss(14, 1, initialBudget);
+        Cell bossCell = gameBoard.getCell(14, 1);
 
         if (bossCell != null) {
             agents.add(boss);
             bossCell.setAgent(boss);
-            System.out.println("Stworzono szefa " + boss.getName() + " w gabinecie (2,3).");
+            System.out.println("Stworzono szefa " + boss.getName() + " w gabinecie (14,1).");
         } else {
-            System.out.println("OSTRZEŻENIE: Nie można umieścić Szefa na pozycji (2,3). Kafelek nie istnieje!");
+            System.out.println("OSTRZEŻENIE: Nie można umieścić Szefa na pozycji (14,1). Kafelek nie istnieje!");
         }
 
         int seniorsToCreate = Math.min(numSeniors, GameConfiguration.MAX_SENIORS);
@@ -42,6 +55,24 @@ public class Simulation {
 
         createWorkers(seniorsToCreate, "Senior");
         createWorkers(juniorsToCreate, "Junior");
+
+        this.hrManager = new HRManager();
+
+        for (Agent agent : this.agents) {
+            if (agent instanceof game.agents.Worker) {
+                this.hrManager.registerHire(agent);
+            }
+        }
+    }
+
+    // NOWA METODA: Pozwala powiązać symulację z widokiem MainApp
+    public void setMainApp(MainApp mainApp) {
+        this.mainApp = mainApp;
+    }
+
+    // NOWA METODA: Naprawia błąd kompilacji w MainApp.java!
+    public boolean isRunning() {
+        return this.isRunning;
     }
 
     private void createWorkers(int num, String type) {
@@ -70,10 +101,38 @@ public class Simulation {
     public void step() {
         if (!isRunning) return;
         stepCount++;
-        System.out.println("============= TURA " + stepCount + " | Stan konta: " + this.budget + "$ =============");
 
-        // ROZDZIELANIE ZADAŃ (Co 3 tury)
-        if (stepCount % 3 == 0) {
+        System.out.println(">>> TURA " + stepCount + " | Stan konta: " + String.format("%.2f", this.budget));
+
+        if (stepCount % GameConfiguration.PAYDAY_INTERVAL == 0) {
+            double totalSalaries = 0.0;
+
+            for (Agent agent : this.agents) {
+                if (agent instanceof game.agents.Senior) {
+                    totalSalaries += GameConfiguration.SALARY_SENIOR;
+                } else if (agent instanceof game.agents.Junior) {
+                    totalSalaries += GameConfiguration.SALARY_JUNIOR;
+                }
+            }
+
+            this.budget -= totalSalaries;
+            System.out.println(">>> [Księgowość] Dzień wypłaty! Pobrano z konta łącznie: " + String.format("%.2f", totalSalaries) + "$ na pensje.");
+
+            if (this.budget <= 0) {
+                System.out.println("BANKRUCTWO! Firma nie miała z czego zapłacić pracownikom. Koniec gry.");
+                this.isRunning = false;
+
+                // ODPAŚĆ EKRAN GAME OVER
+                if (mainApp != null) {
+                    javafx.application.Platform.runLater(() -> {
+                        mainApp.showGameOverScreen("B A N K R U C T W O !\n\nFirma nie miała z czego zapłacić pracownikom.");
+                    });
+                }
+                return;
+            }
+        }
+
+        if (stepCount % GameConfiguration.TASK_DISTRIBUTION_INTERVAL == 0) {
             System.out.println(">>> [Manager] Rozdzielanie nowej puli zadań w tej turze!");
             for (Agent agent : this.agents) {
                 if (agent instanceof Worker) {
@@ -94,8 +153,8 @@ public class Simulation {
                 System.out.println("!!! " + agent.getName() + " zostaje trwale wymazany z rejestru firmy.");
 
                 this.removeAgent(agent);
+                this.hrManager.registerFire(agent);
 
-                // Automatyczne zatrudnienie nowego Juniora na to miejsce
                 if (agent instanceof Junior) {
                     System.out.println(">>> [HR] Rozpoczęto rekrutację na miejsce zwolnionego Juniora...");
 
@@ -104,6 +163,7 @@ public class Simulation {
                         Junior newJunior = this.factory.createJunior(freeDesk.getX(), freeDesk.getY());
                         freeDesk.setAgent(newJunior);
                         this.agents.add(newJunior);
+                        this.hrManager.registerHire(newJunior);
 
                         System.out.println(">>> [HR] Zatrudniono nowego Juniora: " + newJunior.getName() + "!");
                     } else {
@@ -112,6 +172,8 @@ public class Simulation {
                 }
             }
         }
+
+        this.hrManager.updateAllRecords();
     }
 
     public void reportJuniorFail() {
@@ -133,32 +195,60 @@ public class Simulation {
         double penalty = GameConfiguration.FATAL_ERROR_PENALTY;
         this.budget -= penalty;
         this.totalFails = 0;
-        System.out.println("FATAL ERROR! Firma płaci karę: " + penalty + "$. Aktualny budżet: " + this.budget);
+        System.out.println("FATAL ERROR! Firma płaci karę: " + penalty + "$. Aktualny budżet: " + String.format("%.2f", this.budget));
 
         if (this.budget <= 0) {
             System.out.println("BANKRUCTWO! Koniec gry.");
             this.isRunning = false;
+
+            // ODPAŚĆ EKRAN GAME OVER
+            if (mainApp != null) {
+                javafx.application.Platform.runLater(() -> {
+                    mainApp.showGameOverScreen("B A N K R U C T W O !\n\nKary za błędy (Fatal Error) wykończyły budżet firmy.");
+                });
+            }
         }
     }
 
     public void earnMoney(double amount) {
         this.budget += amount;
-        System.out.println("$$$ Wpływ na konto: +" + amount + "$. Aktualny budżet: " + this.budget + "$");
+        System.out.println("$$$ Wpływ na konto: +" + String.format("%.2f", amount) + "$. Aktualny budżet: " + String.format("%.2f", this.budget) + "$");
     }
 
-    public int getTotalFails() { return totalFails; }
+    // --- GETTERY I METODY POMOCNICZE DLA PANELU STATYSTYK ---
+
+    public int getStepCount() { return stepCount; }
+    public int getTotalTurns() { return stepCount; }
     public double getBudget() { return this.budget; }
     public List<Agent> getAgents() { return this.agents; }
+    public int getTotalFails() { return totalFails; }
 
-    //liczenie wypitych kaw
-    public void recordCoffeeDrunk() {
-        this.coffeesDrunk++;
-    }
-    public int getCoffeesDrunk() {
-        return this.coffeesDrunk;
+    public void recordCoffeeDrunk() { this.totalCoffeesDrank++; }
+    public void incrementCoffee() { this.totalCoffeesDrank++; }
+    public int getCoffeesDrunk() { return this.totalCoffeesDrank; }
+    public int getTotalCoffeesDrank() { return this.totalCoffeesDrank; }
+
+    public void incrementTears() { this.totalTearsShed++; }
+    public void incrementSuccess() { this.totalTasksSuccess++; }
+    public void incrementFailed() { this.totalTasksFailed++; }
+
+    public int getTotalTearsShed() { return totalTearsShed; }
+    public int getTotalTasksSuccess() { return totalTasksSuccess; }
+    public int getTotalTasksFailed() { return totalTasksFailed; }
+
+    public double getSuccessRate() {
+        int totalTasks = totalTasksSuccess + totalTasksFailed;
+        if (totalTasks == 0) return 100.0;
+        return ((double) totalTasksSuccess / totalTasks) * 100.0;
     }
 
-    //liczenie lacznej sredniej wydajnosci wszystkich pracownikow
+    public String getSimulationTimeFormatted() {
+        int turnsPerDay = 5;
+        int day = (stepCount / turnsPerDay) + 1;
+        int hour = 9 + (stepCount % turnsPerDay);
+        return String.format("Dzień %d, godz. %02d:00", day, hour);
+    }
+
     public double getAverageEfficiency() {
         double total = 0.0;
         int count = 0;
@@ -168,7 +258,11 @@ public class Simulation {
                 count++;
             }
         }
-        return count == 0 ? 0 : total / count;
+        return count == 0 ? 0.0 : (total / count) * 100.0;
+    }
+
+    public double getAverageOfficeEfficiency() {
+        return getAverageEfficiency();
     }
 
     public void removeAgent(Agent agent) {
@@ -186,5 +280,24 @@ public class Simulation {
             System.out.println(agent.getName() + " został zwolniony.");
         }
     }
-    public int getStepCount() { return stepCount; }
+
+    public Boss getBoss() {
+        if (this.agents == null) return null;
+        for (game.agents.Agent agent : this.agents) {
+            if (agent instanceof Boss) {
+                return (Boss) agent;
+            }
+        }
+        return null;
+    }
+
+    public HRManager getHRManager() { return this.hrManager; }
+
+    public void incrementCigarettes() {
+        this.totalCigarettesSmoked++;
+    }
+
+    public int getTotalCigarettesSmoked() {
+        return this.totalCigarettesSmoked;
+    }
 }

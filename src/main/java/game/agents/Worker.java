@@ -1,8 +1,11 @@
-package game.model;
+package game.agents;
 
+import game.model.Cell;
+import game.model.GameBoard;
+import game.model.PathFinder;
 import game.states.*;
 import game.core.Simulation;
-import game.core.GameConfiguration; // NOWY IMPORT
+import game.core.GameConfiguration;
 
 import java.util.List;
 
@@ -18,6 +21,17 @@ public abstract class Worker extends Agent {
 
     private boolean shouldBeFired = false;
     private boolean hasTask = false;
+    private int turnsLeft = 0;
+
+    private int tasksCompleted = 0;
+    private int tasksFailed = 0;
+    private int personalCoffeesDrunk = 0;
+    private int personalCigarettesSmoked = 0;
+    private int timesCried = 0;
+    private int bossTalks = 0;
+    private int bugsRepaired = 0;
+
+    private int totalTaskTime;
 
     public Worker(int x, int y, double efficiency, double experience) {
         super(x, y);
@@ -56,7 +70,11 @@ public abstract class Worker extends Agent {
                 this.setY(nextCell.getY());
                 this.currentPath.remove(0);
             } else {
-                this.currentPath = null;
+                // Droga zablokowana
+                this.currentPath = null; // Zapominamy ścieżkę, by przeliczyć ją na nowo
+
+                // Wykonujemy krok omijający w bok, aby odblokować korytarz i pozwolić drugiemu przejść
+                moveRandomly(board, false);
             }
         }
     }
@@ -83,24 +101,13 @@ public abstract class Worker extends Agent {
         }
     }
 
-    public boolean isBossNeighbor(GameBoard board) {
-        int[][] directions = {
-                {0, 1},  {0, -1}, {1, 0},  {-1, 0},
-                {1, 1},  {1, -1}, {-1, 1}, {-1, -1}
-        };
+    public boolean isBossNeighbor(Simulation sim) {
+        Agent boss = sim.getBoss();
+        if (boss == null) return false;
 
-        for (int[] dir : directions) {
-            int checkX = getX() + dir[0];
-            int checkY = getY() + dir[1];
-
-            if (board.isInBounds(checkX, checkY)) {
-                Cell cell = board.getCell(checkX, checkY);
-                if (cell != null && cell.getAgent() instanceof Boss) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        // Sprawdzenie czy odległość w obu osiach wynosi maksymalnie 1 kafelek (zasięg sąsiedztwa)
+        return Math.abs(this.getX() - boss.getX()) <= 1 &&
+                Math.abs(this.getY() - boss.getY()) <= 1;
     }
 
     // Zwraca true TYLKO wtedy, gdy Szef fizycznie ich zwolnił (postawił pieczątkę)
@@ -115,7 +122,12 @@ public abstract class Worker extends Agent {
     public void setHasTask(boolean hasTask) { this.hasTask = hasTask; }
 
     public int computeTaskTime() {
-        return Math.max(1, (int) Math.round(1 + 4.0 / (1.0 + getPerformance())));
+        double dividend = GameConfiguration.TASK_TIME_DIVIDEND;
+        double denomOffset = GameConfiguration.TASK_TIME_PERFORMANCE_DENOMINATOR_OFFSET;
+        double baseOffset = GameConfiguration.TASK_TIME_BASE_OFFSET;
+
+        int calculatedTime = (int) Math.round(baseOffset + dividend / (denomOffset + getPerformance()));
+        return Math.max(1, calculatedTime);
     }
 
     public String getCurrentStateName() {
@@ -125,7 +137,8 @@ public abstract class Worker extends Agent {
         return this.currentState.getClass().getSimpleName();
     }
 
-    private int turnsLeft = 0;
+    public void setTotalTaskTime(int time) { this.totalTaskTime = time; }
+    public int getTotalTaskTime() { return this.totalTaskTime; }
 
     public int getTurnsLeft() { return turnsLeft; }
 
@@ -134,4 +147,20 @@ public abstract class Worker extends Agent {
     public void decrementTurnsLeft() {
         if (this.turnsLeft > 0) this.turnsLeft--;
     }
+
+    public void recordTaskCompleted() { this.tasksCompleted++; }
+    public void recordTaskFailed() { this.tasksFailed++; }
+    public void recordCoffee() { this.personalCoffeesDrunk++; }
+    public void recordCigarette() { this.personalCigarettesSmoked++; }
+    public void recordCrying() { this.timesCried++; }
+    public void recordBossTalk() { this.bossTalks++; }
+    public void recordBugRepaired() { this.bugsRepaired++; }
+
+    public int getTasksCompleted() { return tasksCompleted; }
+    public int getTasksFailed() { return tasksFailed; }
+    public int getPersonalCoffeesDrunk() { return personalCoffeesDrunk; }
+    public int getCigarettesSmoked() { return personalCigarettesSmoked; }
+    public int getTimesCried() { return timesCried; }
+    public int getBossTalks() { return bossTalks; }
+    public int getBugsRepaired() { return bugsRepaired; }
 }

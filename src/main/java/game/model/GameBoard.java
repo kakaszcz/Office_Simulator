@@ -1,10 +1,16 @@
 package game.model;
 
+import game.agents.Agent;
 import game.core.GameConfiguration;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public class GameBoard {
     private Cell[][] grid;
     private int[][] floorMap;
+    private final Random rand = new Random();
 
     public GameBoard() {
         createEmptyGrid();
@@ -29,28 +35,29 @@ public class GameBoard {
                 {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                 {1, 1, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
         };
-        //1 - grass, 0-floor, 2-boss_office_floor, 3-wallNotWalkable, 4- floorNotWalkable
 
         int[][] objectLayout = {
                 {0, 0, 14, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 14, 10, 13},
-                {0, 0,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  8, 15}, // 8 to biurko bossa
+                {0, 0,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  5,  8, 15},
                 {0, 0,  5,  0,  9,  0,  9,  0,  9,  0,  9,  0,  0,  5,  0, 15},
-                {0, 0,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 11,  6, 12},
-                {0, 0,  5,  0,  9,  0,  9,  0,  9,  0,  9,  0,  0,  0,  0, 15}, // Zwykłe biurka (9)
+                {0, 0,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 11,  0, 12},
+                {0, 0,  5,  0,  9,  0,  9,  0,  9,  0,  9,  0,  0,  0,  0, 15},
                 {0, 0,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 15},
-                {0, 0,  5,  0,  9,  0,  9,  0,  9,  0,  9,  0,  0,  0,  0, 15},
-                {0, 0,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  7,  7, 15},
-                {0, 0,  5,  0,  9,  0,  9,  0,  9,  0,  9,  0,  0,  0,  0, 15},
+                {0, 0,  5,  0,  9,  0,  9,  0,  9,  0,  9,  0,  0,  0,  7, 15},
+                {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  7, 15},
+                {0, 0,  0,  0,  9,  0,  9,  0,  9,  0,  9,  0,  0,  0,  7, 15},
                 {0, 0, 11,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6, 12}
         };
-        //7 - coffeeObj, 9 - worker_deskObj, 6 - wallObj, 0 - floor, 8 - boss_deskObj, 5-wallRightObj
 
         if (floorLayout.length != GameConfiguration.MAP_HEIGHT || floorLayout[0].length != GameConfiguration.MAP_WIDTH ||
                 objectLayout.length != GameConfiguration.MAP_HEIGHT || objectLayout[0].length != GameConfiguration.MAP_WIDTH) {
             throw new IllegalStateException("BŁĄD KRYTYCZNY: Wymiary tablic nie zgadzają się z GameConfiguration!");
         }
 
-        this.floorMap = floorLayout;
+        // REFAKTOR: Bezpieczne głębokie kopiowanie wartości zamiast nadpisywania referencji
+        for (int y = 0; y < GameConfiguration.MAP_HEIGHT; y++) {
+            System.arraycopy(floorLayout[y], 0, this.floorMap[y], 0, GameConfiguration.MAP_WIDTH);
+        }
 
         for (int y = 0; y < GameConfiguration.MAP_HEIGHT; y++) {
             for (int x = 0; x < GameConfiguration.MAP_WIDTH; x++) {
@@ -61,28 +68,26 @@ public class GameBoard {
     }
 
     private String determineCellType(int objectValue, int floorValue) {
-        // 1. Najpierw sprawdzamy obiekty z objectLayout
-        if (objectValue == GameConfiguration.OBJ_DESK) return "desk";
-        if (objectValue == GameConfiguration.OBJ_BOSS_DESK) return "boss_desk";
-        if (objectValue == GameConfiguration.OBJ_COFFEE) return "coffee";
-        if (objectValue == GameConfiguration.OBJ_WALL) return "wall";
-        if (objectValue == GameConfiguration.OBJ_WALL_RIGHT) return "wall_right";
-        if (objectValue == GameConfiguration.OBJ_WALL_SR_CORNER) return "wall_sr_corner";
-        if (objectValue == GameConfiguration.OBJ_WALL_NR_CORNER) return "wall_nr_corner";
-        if (objectValue == GameConfiguration.OBJ_WALL_NL_CORNER) return "wall_nl_corner";
-        if (objectValue == GameConfiguration.OBJ_WALL_LEFT) return "wall_left";
 
-        // --- OTO NOWE MAPOWANIE NAZW ---
-        if (objectValue == GameConfiguration.OBJ_WALL_BACK) return "wall_back";
-        if (objectValue == GameConfiguration.OBJ_WALL_CORNER) return "wall_corner";
+        if (objectValue == GameConfiguration.OBJ_DESK) return GameConfiguration.TILE_TYPE_DESK;
+        if (objectValue == GameConfiguration.OBJ_BOSS_DESK) return GameConfiguration.TILE_TYPE_BOSS_DESK;
+        if (objectValue == GameConfiguration.OBJ_COFFEE) return GameConfiguration.TILE_TYPE_COFFEE;
+        if (objectValue == GameConfiguration.OBJ_WALL) return GameConfiguration.TILE_TYPE_WALL;
+        if (objectValue == GameConfiguration.OBJ_WALL_RIGHT) return GameConfiguration.TILE_TYPE_WALL_RIGHT;
+        if (objectValue == GameConfiguration.OBJ_WALL_SR_CORNER) return GameConfiguration.TILE_TYPE_WALL_SR_CORNER;
+        if (objectValue == GameConfiguration.OBJ_WALL_NR_CORNER) return GameConfiguration.TILE_TYPE_WALL_NR_CORNER;
+        if (objectValue == GameConfiguration.OBJ_WALL_NL_CORNER) return GameConfiguration.TILE_TYPE_WALL_NL_CORNER;
+        if (objectValue == GameConfiguration.OBJ_WALL_LEFT) return GameConfiguration.TILE_TYPE_WALL_LEFT;
+        if (objectValue == GameConfiguration.OBJ_WALL_BACK) return GameConfiguration.TILE_TYPE_WALL_BACK;
+        if (objectValue == GameConfiguration.OBJ_WALL_CORNER) return GameConfiguration.TILE_TYPE_WALL_CORNER;
 
-        // 2. Jeśli w danym miejscu nie ma obiektu, sprawdzamy podłogi z floorLayout
-        if (floorValue == GameConfiguration.FLOOR_OUTDOOR) return "outside";
-        if (floorValue == GameConfiguration.FLOOR_BOSS_OFFICE) return "boss_office";
-        if (floorValue == GameConfiguration.FLOOR_WALL_NOT_WALKABLE) return "wall_not_walkable";
-        if (floorValue == GameConfiguration.FLOOR_NOT_WALKABLE) return "floor_not_walkable";
+        if (floorValue == GameConfiguration.FLOOR_OUTDOOR) return GameConfiguration.TILE_TYPE_OUTSIDE;
+        if (floorValue == GameConfiguration.FLOOR_BOSS_OFFICE) return GameConfiguration.TILE_TYPE_BOSS_OFFICE;
+        if (floorValue == GameConfiguration.FLOOR_WALL_NOT_WALKABLE) return GameConfiguration.TILE_TYPE_WALL_NOT_WALKABLE;
+        if (floorValue == GameConfiguration.FLOOR_NOT_WALKABLE) return GameConfiguration.TILE_TYPE_FLOOR_NOT_WALKABLE;
 
-        return "floor";
+        // Domyślny kafelek
+        return GameConfiguration.TILE_TYPE_FLOOR;
     }
 
     public boolean isInBounds (int x, int y){
@@ -95,28 +100,25 @@ public class GameBoard {
     }
 
     public Cell findFirstEmptyCell(String type) {
-        // 1. Tworzymy listę na wszystkie pasujące i wolne kafelki
-        java.util.List<Cell> emptyCells = new java.util.ArrayList<>();
+        List<Cell> emptyCells = new ArrayList<>();
 
         for (int y = 0; y < GameConfiguration.MAP_HEIGHT; y++) {
             for (int x = 0; x < GameConfiguration.MAP_WIDTH; x++) {
                 if (grid[y][x].getType().equals(type) && grid[y][x].isEmpty()) {
-                    emptyCells.add(grid[y][x]); // Dodajemy do listy
+                    emptyCells.add(grid[y][x]);
                 }
             }
         }
 
-        // 2. Jeśli są jakieś wolne miejsca, LOSUJEMY jedno z nich
         if (!emptyCells.isEmpty()) {
-            java.util.Random rand = new java.util.Random();
             return emptyCells.get(rand.nextInt(emptyCells.size()));
         }
 
-        return null; // Brak wolnych miejsc na całej mapie
+        return null;
     }
 
     public Cell findBossOfficeCell(){
-        return findFirstEmptyCell("boss_office_floor");
+        return findFirstEmptyCell(GameConfiguration.TILE_TYPE_BOSS_OFFICE);
     }
 
     public boolean placeAgent(Agent agent, int x, int y) {
@@ -133,7 +135,7 @@ public class GameBoard {
         Cell newCell = getCell(newX, newY);
 
         if (oldCell != null && newCell != null && !oldCell.isEmpty() && newCell.isEmpty()) {
-            if(!newCell.isWall() || newCell.isDesk()){
+            if (!newCell.isWall() || newCell.isDesk()) {
                 Agent agent = oldCell.getAgent();
                 oldCell.setAgent(null);
                 newCell.setAgent(agent);
