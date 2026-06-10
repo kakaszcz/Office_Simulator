@@ -20,6 +20,16 @@ abstract public class Agent {
     private int id;
     private String name;
 
+    // kolejka - lista krokow do wykonania - pierwszy krok wsadzony do listy to pierwszy wykonany
+    private java.util.Queue<int[]> visualPath = new java.util.LinkedList<>();
+
+    // dodawanie kroku do animacji czyli kazdy krok ze sciezki dodaje do listy zeby animacja szla po tej sciezce po kolei a nie najkrotsza droga(linia prosta)
+    public void addWaypoint(int wx, int wy) {
+        visualPath.add(new int[]{wx, wy});
+    }
+
+
+
     public Agent(int x, int y) {
         this.id = Agent.nextId++;
         this.x = x;
@@ -37,44 +47,56 @@ abstract public class Agent {
     public abstract void act(GameBoard board, Simulation sim);
 
     public void updateVisual(double gameSpeed) {
-        double speed = GameConfiguration.AGENT_BASE_VISUAL_SPEED * gameSpeed;
+        double speed = GameConfiguration.AGENT_BASE_VISUAL_SPEED * gameSpeed; //mnozenie bazowej predkosci przez to co na suwaku
 
-        double diffX = this.x - this.visualX;
-        double diffY = this.y - this.visualY;
+        //  mamy zaplanowaną ścieżkę bierzemy pierwszy punkt jako cel
+        double targetX = this.x;
+        double targetY = this.y;
 
-        // Obliczamy fizyczną odległość do celu
-        double distance = Math.sqrt(diffX * diffX + diffY * diffY);
+//jesli pamiec krokow czyli kolejka visualpath nie jest pusta to tymczasowym celem staje sie pierwszy zapisany w kolejce kafelek
+        if (!visualPath.isEmpty()) {
+            targetX = visualPath.peek()[0]; //peekczyli podglada ale jeszcze nie suswa go z pamieci
+            targetY = visualPath.peek()[1];
+        }
 
-        if (distance > 0.01) {
-            // JESTEŚMY W RUCHU
-            if (distance <= speed) {
-                // Krok jest tak mały, że dotarliśmy do celu
-                this.visualX = this.x;
-                this.visualY = this.y;
-            } else {
-                // Przesuwamy się liniowo w stronę celu
+        double diffX = targetX - this.visualX; //czyli jak daleko mamy do celu
+        double diffY = targetY - this.visualY;
+        double distance = Math.sqrt(diffX * diffX + diffY * diffY); //PITAGORAS zebu obliczyc odleglosc
+
+        if (distance > 0.01) { //jesli dystans jesi wiekszy niz malutko(0.1) tzn ze dalej idziemy
+
+            if (distance <= speed) { //jesli krok (speed) jest mniejszy niz dystans do celu to jestes na miejscu
+                this.visualX = targetX;
+                this.visualY = targetY;
+                if (!visualPath.isEmpty()) visualPath.poll(); // wyrzucamy z pamieci zaliczony punkt
+            } else { //idzie dalej
                 this.visualX += (diffX / distance) * speed;
                 this.visualY += (diffY / distance) * speed;
             }
 
-            // Ustalenie kierunku dla rysowania
+            // sprawdzam czy wiekszy dystans pokonuje w poziomie X czy pionie Y zeby ludzik patrzyl w ta strone
             if (Math.abs(diffX) > Math.abs(diffY)) {
                 this.direction = (diffX > 0) ? "RIGHT" : "LEFT";
             } else {
                 this.direction = (diffY > 0) ? "DOWN" : "UP";
             }
 
-            frameTickCounter += gameSpeed;
-            if (frameTickCounter >= GameConfiguration.AGENT_ANIMATION_FRAME_DELAY) {
-                animationFrame = (animationFrame + 1) % 4;
-                frameTickCounter = 0;
-            }
+            // animacja przebierania nogami
+            //frameTickCounter += gameSpeed;
+            //if (frameTickCounter >= GameConfiguration.AGENT_ANIMATION_FRAME_DELAY) {
+              //  animationFrame = (animationFrame + 1) % 4;
+                //frameTickCounter = 0;
+            //}
         } else {
-            // STOIMY W MIEJSCU
-            this.visualX = this.x;
-            this.visualY = this.y;
-            this.animationFrame = 0;
-            this.frameTickCounter = 0;
+            // JESTEŚMY NA MIEJSCU czyli dystans mniejszy niz 0.01
+            this.visualX = targetX; //wyrownujemy pozycje obrazku ludzika
+            this.visualY = targetY;
+            if (!visualPath.isEmpty()) { //jak jestesmy juz na miejscu a punkt dalej jest w pamieci to usuwamy
+                visualPath.poll();
+            } else { //jak pamiec krokow jest pusta tzn ze dotarl do celu i resetujemy animacje ze ludzik stoi
+                this.animationFrame = 0;
+                this.frameTickCounter = 0;
+            }
         }
     }
 
@@ -129,4 +151,5 @@ abstract public class Agent {
 
     public void setX(int x) { this.x = x; }
     public void setY(int y) { this.y = y; }
+
 }
