@@ -17,13 +17,14 @@ public class Simulation {
     // LICZNIKI STATYSTYK
     private int stepCount;              // Główny i jedyny licznik tur
     private boolean isRunning;
-    private int totalFails = 0;         // Bieżące, naprawialne błędy juniorów na planszy
+    private int totalFails = 0;// Bieżące, naprawialne błędy juniorów na planszy
 
     private int totalCoffeesDrank = 0;  // Łączna liczba wypitych kaw
     private int totalTearsShed = 0;     // Łączna liczba wylanych łez
     private int totalTasksSuccess = 0;  // Historyczna liczba udanych zadań
     private int totalTasksFailed = 0;   // Historyczna liczba nieudanych zadań
     private int totalCigarettesSmoked = 0;
+    private int totalFatalErrors = 0;
 
     private AgentFactory factory;
     private HRManager hrManager;
@@ -192,6 +193,7 @@ public class Simulation {
     }
 
     private void triggerFatalError() {
+        this.totalFatalErrors++;
         double penalty = GameConfiguration.FATAL_ERROR_PENALTY;
         this.budget -= penalty;
         this.totalFails = 0;
@@ -235,6 +237,7 @@ public class Simulation {
     public int getTotalTearsShed() { return totalTearsShed; }
     public int getTotalTasksSuccess() { return totalTasksSuccess; }
     public int getTotalTasksFailed() { return totalTasksFailed; }
+    public int getTotalFatalErrors() { return totalFatalErrors; }
 
     public double getSuccessRate() {
         int totalTasks = totalTasksSuccess + totalTasksFailed;

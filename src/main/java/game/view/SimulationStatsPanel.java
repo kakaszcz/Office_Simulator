@@ -15,6 +15,7 @@ public class SimulationStatsPanel extends VBox {
     private final Label coffeeLabel = new Label();
     private final Label cigarettesLabel = new Label();
     private final Label tearsLabel = new Label();
+    private final Label fatalErrorLabel = new Label();
 
     public SimulationStatsPanel() {
         this.setSpacing(12);
@@ -33,6 +34,7 @@ public class SimulationStatsPanel extends VBox {
 
         timeLabel.setStyle(dataStyle + "-fx-font-weight: bold; -fx-text-fill: #63B3ED;");
         budgetLabel.setStyle(dataStyle + "-fx-font-weight: bold; -fx-text-fill: #48BB78;");
+        fatalErrorLabel.setStyle(dataStyle + "-fx-text-fill: #FC8181;");
         efficiencyLabel.setStyle(dataStyle);
         tasksLabel.setStyle(dataStyle);
         successRateLabel.setStyle(dataStyle);
@@ -49,6 +51,7 @@ public class SimulationStatsPanel extends VBox {
                 title,
                 timeLabel,
                 budgetLabel,
+                fatalErrorLabel,
                 efficiencyLabel,
                 separator,
                 tasksLabel,
@@ -62,6 +65,7 @@ public class SimulationStatsPanel extends VBox {
     public void update(Simulation sim) {
         timeLabel.setText("📅 Czas: " + sim.getSimulationTimeFormatted() + " (Tura: " + sim.getStepCount() + ")");
         budgetLabel.setText(String.format("💰 Budżet firmy: %.2f USD", sim.getBudget()));
+        fatalErrorLabel.setText("💀 Fatal Errors: " + sim.getTotalFatalErrors() + " razy");
         efficiencyLabel.setText(String.format("⚡ Średnia wydajność: %.1f%%", sim.getAverageOfficeEfficiency()));
         tasksLabel.setText("✅ Sukcesy: " + sim.getTotalTasksSuccess() + "  |  ❌ Porażki: " + sim.getTotalTasksFailed());
         successRateLabel.setText(String.format("📈 Skuteczność zadań: %.1f%%", sim.getSuccessRate()));
