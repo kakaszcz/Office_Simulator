@@ -38,7 +38,16 @@ public class MainApp extends Application {
         showSetupScreen();
     }
 
-     //EKRAN STARTOWY (MENU KONFIGURACYJNE)
+    // NOWE ZMIENNE: Kolejka ścieżki wizualnej
+    private java.util.Queue<int[]> visualPath = new java.util.LinkedList<>();
+
+    // NOWA METODA: Dodawanie kroku do animacji
+    public void addWaypoint(int wx, int wy) {
+        visualPath.add(new int[]{wx, wy});
+    }
+
+
+    //EKRAN STARTOWY (MENU KONFIGURACYJNE)
     private void showSetupScreen() {
         VBox setupRoot = new VBox(20);
         setupRoot.setAlignment(Pos.CENTER);
@@ -133,6 +142,8 @@ public class MainApp extends Application {
 
         // Pierwsze narysowanie mapy
         gameView.render(simulation);
+
+
 
         timer = new AnimationTimer() {
             @Override
