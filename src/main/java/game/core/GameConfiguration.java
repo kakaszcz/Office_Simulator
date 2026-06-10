@@ -16,7 +16,7 @@ public class GameConfiguration {
     // --- EKONOMIA I FINANSE ---
     // ==========================================
     public static final double STARTING_BUDGET = 1000.0;
-    public static final double FATAL_ERROR_PENALTY = 200.0;
+    public static final double FATAL_ERROR_PENALTY = 300.0;
 
     /** Podstawa zarobku za pomyślnie ukończone zadanie */
     public static final double TASK_BASE_REWARD = 40.0;

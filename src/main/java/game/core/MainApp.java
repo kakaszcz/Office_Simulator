@@ -161,7 +161,7 @@ public class MainApp extends Application {
         }
 
         StackPane gameOverOverlay = new StackPane();
-        gameOverOverlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.85);"); // Odrobinę ciemniejsze tło (85%)
+        gameOverOverlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.85);");
         gameOverOverlay.setAlignment(Pos.CENTER);
 
         Label gameOverLabel = new Label(message + "\n\n[ KLIKNIJ, ABY ZAMKNĄĆ GRĘ ]");

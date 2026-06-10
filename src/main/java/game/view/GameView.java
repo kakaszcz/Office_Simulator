@@ -72,7 +72,7 @@ public class GameView {
         juniorCoffeeImg = safeLoad("/images/junior_coffee.png");
         seniorCoffeeImg = safeLoad("/images/senior_coffee.png");
         bossCoffeeImg = safeLoad("/images/boss_coffee.png");
-        juniorCryingImg = safeLoad("/images/junior_crying.png");
+        juniorCryingImg = safeLoad("/images/juniorCrying.png");
 
         // Podłogi
         floorImage = safeLoad("/images/floor.png");

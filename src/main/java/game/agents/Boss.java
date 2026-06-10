@@ -128,7 +128,6 @@ public class Boss extends Agent {
                         if (worker.shouldBeFired()) {
                             System.out.println("!!! SZEF " + this.getName() + " PRZYŁAPAŁ PRACOWNIKA " + worker.getName() + " NA GORĄCYM UCZYNKU !!!");
                         } else {
-                            // REFAKTOR WIZUALNY: Czytelniejszy log w procentach
                             System.out.println("!!! SZEF " + this.getName() + " ZWALNIA PRACOWNIKA " + worker.getName() + " ZA ZŁE WYNIKI (Wydajność: "
                                     + String.format("%.2f", worker.getPerformance() * 100) + "%) !!!");
                             worker.markFired();
