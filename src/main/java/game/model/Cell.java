@@ -44,11 +44,6 @@ public class Cell {
         return y;
     }
 
-    /**
-     * Sprawdza, czy kafelek jest ścianą (blokuje ruch agentów).
-     * REFAKTOR: Zamiast wielkiego ciągu '||', sprawdzamy czy typ kafelka zaczyna się od "wall".
-     * Gwarantuje to automatyczną blokadę dla każdego nowego podtypu ściany dodanego w edytorze mapy.
-     */
     public boolean isWall() {
         if (type == null) return false;
         return type.toLowerCase().startsWith("wall");
