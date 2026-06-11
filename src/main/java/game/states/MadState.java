@@ -3,7 +3,6 @@ package game.states;
 import game.agents.Worker;
 import game.model.GameBoard;
 import game.core.Simulation;
-import game.core.GameConfiguration;
 
 public class MadState implements WorkerState {
 
@@ -22,12 +21,8 @@ public class MadState implements WorkerState {
         System.out.println("  -> " + worker.getName() + " nadal się wścieka. Zostało tur: " + madTurns);
 
         if (madTurns <= 0) {
-            // Po ochłonięciu idzie zapalić albo wróci do czekania
-            if (worker.getEfficiency() < GameConfiguration.EFFICIENCY_REST_THRESHOLD) {
-                worker.changeState(new SmokingState());
-            } else {
-                worker.changeState(new WaitingForTaskState());
-            }
+            // Po ochłonięciu zawsze wychodzi na dwór lub do kuchni
+            worker.changeState(new MovingToRestState());
         }
     }
 }

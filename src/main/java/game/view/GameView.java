@@ -257,11 +257,6 @@ public class GameView {
                 czyPijeKawe = "CoffeeState".equals(stan);
             }
 
-            System.out.println("[DEBUG] " + agent.getName() +
-                    " | typ: " + agent.getClass().getSimpleName() +
-                    " | stan: " + (agent instanceof Worker ? ((Worker)agent).getCurrentStateName() : "BOSS") +
-                    " | kawaFlag: " + czyPijeKawe);
-
         // --- WYBÓR OBRAZKA ---
             Image imgToDraw = null; // ← null zamiast juniorImg
 

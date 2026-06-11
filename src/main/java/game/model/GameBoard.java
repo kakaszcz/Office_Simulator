@@ -43,7 +43,7 @@ public class GameBoard {
                 {0, 0,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 11,  0, 12},
                 {0, 0,  5,  0,  9,  0,  9,  0,  9,  0,  9,  0,  0,  0,  0, 15},
                 {0, 0,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 15},
-                {0, 0,  5,  0,  9,  0,  9,  0,  9,  0,  9,  0,  0,  0,  7, 15},
+                {0, 0,  0,  0,  9,  0,  9,  0,  9,  0,  9,  0,  0,  0,  7, 15},
                 {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  7, 15},
                 {0, 0,  0,  0,  9,  0,  9,  0,  9,  0,  9,  0,  0,  0,  7, 15},
                 {0, 0, 11,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6, 12}
@@ -135,7 +135,7 @@ public class GameBoard {
         Cell newCell = getCell(newX, newY);
 
         if (oldCell != null && newCell != null && !oldCell.isEmpty() && newCell.isEmpty()) {
-            if (!newCell.isWall() || newCell.isDesk()) {
+            if (newCell.isWalkable()) {  // ← zamiast (!isWall() || isDesk())
                 Agent agent = oldCell.getAgent();
                 oldCell.setAgent(null);
                 newCell.setAgent(agent);

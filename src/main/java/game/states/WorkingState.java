@@ -39,40 +39,32 @@ public class WorkingState implements WorkerState {
     }
 
     private void evaluateTaskResult(Worker worker, Simulation sim) {
-        // Zdejmujemy flagę zadania
         worker.setHasTask(false);
 
-        // REFAKTOR: Użycie współdzielonej instancji RANDOM zamiast tworzenia nowej
         if (RANDOM.nextDouble() < worker.getFailChance()) {
-            //  PORAŻKA
+            // PORAŻKA
             sim.incrementFailed();
             sim.incrementTears();
             worker.handleTaskFailure(sim);
 
-            // Jeśli to Junior popełnił błąd, raportujemy to do systemu kar Simulation
             if (worker instanceof Junior) {
                 sim.reportJuniorFail();
             }
 
             System.out.println("  -> Zadanie zakończone PORAŻKĄ. " + worker.getName() + " zaczyna płakać!");
-            // SUKCES - zamiast od razu WaitingForTaskState:
-            worker.changeState(new SuccessState());
+            worker.changeState(new CryingState()); // ← PORAŻKA = płakanie
         } else {
-            //  SUKCES
+            // SUKCES
             sim.incrementSuccess();
             worker.recordTaskCompleted();
 
-            // Wyliczanie zarobku na podstawie stałych z GameConfiguration
             double zarobek = GameConfiguration.TASK_BASE_REWARD + (worker.getExperience() * GameConfiguration.TASK_EXPERIENCE_MULTIPLIER);
             sim.earnMoney(zarobek);
             System.out.println("  -> Zadanie zakończone SUKCESEM przez " + worker.getName() + ".");
 
-            // Sprawdzamy zmęczenie przy użyciu progu z konfiguracji
-            if (worker.getEfficiency() < GameConfiguration.EFFICIENCY_REST_THRESHOLD) {
-                worker.changeState(new MovingToRestState());
-            } else {
-                worker.changeState(new WaitingForTaskState());
-            }
+            worker.changeState(new SuccessState()); // ← SUKCES = świętowanie
+
+            // Zmęczenie sprawdzamy po SuccessState - możesz to przenieść do SuccessState.act()
         }
     }
 }

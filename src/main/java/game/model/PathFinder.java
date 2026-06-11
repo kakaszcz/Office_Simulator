@@ -29,7 +29,6 @@ public class PathFinder {
         Node targetNode = new Node(targetCell.getX(), targetCell.getY());
 
         PriorityQueue<Node> openList = new PriorityQueue<>();
-
         Map<String, Node> openListMap = new HashMap<>();
         Map<String, Node> closedList = new HashMap<>();
 
@@ -59,23 +58,21 @@ public class PathFinder {
 
                     Cell neighborCell = board.getCell(nextX, nextY);
 
-                    if (neighborCell.isWall() && !neighborCell.equals(targetCell)) continue;
+                    // POPRAWKA: używamy isWalkable() zamiast samego isWall()
+                    // Komórka docelowa zawsze jest dozwolona (np. ekspres do kawy, trawa)
+                    boolean isTarget = neighborCell.equals(targetCell);
+                    if (!isTarget && !neighborCell.isWalkable()) continue;
 
-                    if (neighborCell.getAgent() != null && !neighborCell.equals(targetCell)) {
-                        // Jeśli na kafelku obok siedzi ktoś przy biurku ("desk"), traktujemy to jako stałą ścianę
-                        if ("desk".equals(neighborCell.getType())) {
-                            continue;
-                        }
-                    }
+                    // Jeśli na kafelku stoi agent i to nie jest cel, omijamy
+                    if (neighborCell.getAgent() != null && !isTarget) continue;
 
-                    Node neighbor = new Node(nextX, nextY);
                     String neighborKey = nextX + "," + nextY;
                     if (closedList.containsKey(neighborKey)) continue;
 
+                    Node neighbor = new Node(nextX, nextY);
                     double moveCost = (dx != 0 && dy != 0) ? 1.414 : 1.0;
                     double tentativeGCost = currentNode.gCost + moveCost;
 
-                    // ZMIANA: Błyskawiczne pobieranie z mapy zamiast powolnej pętli po kolejce
                     Node openNode = openListMap.get(neighborKey);
 
                     if (openNode == null) {
@@ -87,7 +84,6 @@ public class PathFinder {
                         openList.add(neighbor);
                         openListMap.put(neighborKey, neighbor);
                     } else if (tentativeGCost < openNode.gCost) {
-
                         openList.remove(openNode);
 
                         openNode.parent = currentNode;
