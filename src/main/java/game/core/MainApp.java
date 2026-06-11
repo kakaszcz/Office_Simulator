@@ -52,7 +52,6 @@ public class MainApp extends Application {
         VBox setupRoot = new VBox(20);
         setupRoot.setAlignment(Pos.CENTER);
         setupRoot.setStyle("-fx-background-color: #2c3e50; -fx-padding: 50px;");
-
         Label titleLabel = new Label("SYMULACJA BIURA IT");
         titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 36px; -fx-font-weight: bold;");
 

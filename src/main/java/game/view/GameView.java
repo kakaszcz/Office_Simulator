@@ -41,6 +41,8 @@ public class GameView {
     private Image wallNRCornerImage;
     private Image wallNLCornerImage;
     private Image wallLeftObjImage;
+    private Image juniorWorkingImg;
+    private Image seniorWorkingImg;
 
     //Agenci
     private Image juniorImg;
@@ -50,7 +52,12 @@ public class GameView {
     private Image juniorCoffeeImg;
     private Image seniorCoffeeImg;
     private Image bossCoffeeImg;
-
+    private Image juniorSmokingImg;   // Nowość: junior_smoking.png
+    private Image juniorTalkingImg;   // Nowość: junior_talking.png
+    private Image juniorSuccessImg;   // Nowość: juniorSuccess.png
+    private Image seniorSmokingImg;   // Nowość: senior_smoking.png
+    private Image seniorTalkingImg;   // Nowość: senior_talking.png
+    private Image seniorMadImg;       // Nowość: seniorMad.png
     private Image juniorCryingImg; // Zmienna na płaczącego Juniora
 
     public GameView(GameBoard board) {
@@ -66,13 +73,26 @@ public class GameView {
 
     private void loadImages() {
         // Postacie
+        // Postacie i ich podstawowe zachowania
         juniorImg = safeLoad("/images/junior.png");
         seniorImg = safeLoad("/images/senior.png");
         bossImg = safeLoad("/images/boss.png");
         juniorCoffeeImg = safeLoad("/images/junior_coffee.png");
         seniorCoffeeImg = safeLoad("/images/senior_coffee.png");
         bossCoffeeImg = safeLoad("/images/boss_coffee.png");
+
+        // Ładowanie stanów emocjonalnych Juniora
         juniorCryingImg = safeLoad("/images/juniorCrying.png");
+        this.juniorSmokingImg = safeLoad("/images/junior_smoking.png");
+        this.juniorTalkingImg = safeLoad("/images/junior_talking.png");
+        this.juniorSuccessImg = safeLoad("/images/juniorSuccess.png");
+
+        this.seniorSmokingImg = safeLoad("/images/senior_smoking.png");
+        this.seniorTalkingImg = safeLoad("/images/senior_talking.png");
+        this.seniorMadImg = safeLoad("/images/seniorMad.png");
+        // Ładowanie pracy przy biurku
+        this.juniorWorkingImg = safeLoad("/images/junior_working.png");
+        this.seniorWorkingImg = safeLoad("/images/senior_working.png");
 
         // Podłogi
         floorImage = safeLoad("/images/floor.png");
@@ -229,13 +249,51 @@ public class GameView {
             if (agent instanceof Boss) {
                 imgToDraw = (czyPijeKawe && bossCoffeeImg != null) ? bossCoffeeImg : bossImg;
             } else if (agent instanceof Senior) {
-                imgToDraw = (czyPijeKawe && seniorCoffeeImg != null) ? seniorCoffeeImg : seniorImg;
+                Senior senior = (Senior) agent;
+                String stanSeniora = senior.getCurrentStateName();
+
+                // Sprawdzamy stany emocjonalne i pracownicze Seniora
+                if ("MadState".equals(stanSeniora) && seniorMadImg != null) {
+                    imgToDraw = seniorMadImg;
+                }
+                else if ("SmokingState".equals(stanSeniora) && seniorSmokingImg != null) {
+                    imgToDraw = seniorSmokingImg;
+                }
+                else if (("TalkingState".equals(stanSeniora) || "ConversationState".equals(stanSeniora)) && seniorTalkingImg != null) {
+                    imgToDraw = seniorTalkingImg;
+                }
+                else if ("WorkingState".equals(stanSeniora) && seniorWorkingImg != null) {
+                    imgToDraw = seniorWorkingImg;
+                }
+                else {
+                    imgToDraw = (czyPijeKawe && seniorCoffeeImg != null) ? seniorCoffeeImg : seniorImg;
+                }
             } else if (agent instanceof Junior) {
                 Junior junior = (Junior) agent;
-                // Sprawdzamy czy Junior jest w stanie płaczu
-                if ("CryingState".equals(junior.getCurrentStateName()) && juniorCryingImg != null) {
+                String stanJuniora = junior.getCurrentStateName();
+
+                // 1. Stan płaczu / załamania
+                if ("CryingState".equals(stanJuniora) && juniorCryingImg != null) {
                     imgToDraw = juniorCryingImg;
-                } else {
+                }
+                // 2. NOWOŚĆ: Stan palenia papierosa (Przerwa)
+                else if ("SmokingState".equals(stanJuniora) && juniorSmokingImg != null) {
+                    imgToDraw = juniorSmokingImg;
+                }
+                // 3. NOWOŚĆ: Stan rozmowy / pogaduszek
+                else if (("TalkingState".equals(stanJuniora) || "ConversationState".equals(stanJuniora)) && juniorTalkingImg != null) {
+                    imgToDraw = juniorTalkingImg;
+                }
+                // 4. NOWOŚĆ: Stan sukcesu (zakończenie zadania)
+                else if ("SuccessState".equals(stanJuniora) && juniorSuccessImg != null) {
+                    imgToDraw = juniorSuccessImg;
+                }
+                // 5. Stan standardowej pracy przy biurku
+                else if ("WorkingState".equals(stanJuniora) && juniorWorkingImg != null) {
+                    imgToDraw = juniorWorkingImg;
+                }
+                // 6. Domyślnie: picie kawy lub zwykłe chodzenie po biurze
+                else {
                     imgToDraw = (czyPijeKawe && juniorCoffeeImg != null) ? juniorCoffeeImg : juniorImg;
                 }
             }

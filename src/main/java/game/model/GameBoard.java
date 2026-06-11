@@ -12,10 +12,10 @@ public class GameBoard {
     private int[][] floorMap;
     private final Random rand = new Random();
 
-    public GameBoard() {
+    public GameBoard(){
         createEmptyGrid();
         initalizeBoard();
-    }
+}
 
     private void createEmptyGrid() {
         this.grid = new Cell[GameConfiguration.MAP_HEIGHT][GameConfiguration.MAP_WIDTH];
