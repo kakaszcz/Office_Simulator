@@ -55,7 +55,8 @@ public class WorkingState implements WorkerState {
             }
 
             System.out.println("  -> Zadanie zakończone PORAŻKĄ. " + worker.getName() + " zaczyna płakać!");
-            worker.changeState(new CryingState());
+            // SUKCES - zamiast od razu WaitingForTaskState:
+            worker.changeState(new SuccessState());
         } else {
             //  SUKCES
             sim.incrementSuccess();

@@ -59,9 +59,9 @@ public class GameView {
     private Image seniorTalkingImg;   // Nowość: senior_talking.png
     private Image seniorMadImg;       // Nowość: seniorMad.png// Zmień sekcję pól klasowych dla obiektów i postaci, dopisując te linie:
     private Image fatalErrorDeskImg;  // Nowość: fatalErrorDesk.png
-    private Image seniorSuccessImg;   // Nowość: senior-success.png
-    private Image seniorWorkingImgAlt;// Nowość: senior-working.png
-    private Image seniorMadImgAlt;    // Nowość: senior-mad.png
+    private Image seniorSuccessImg;   // Nowość: senior_success.png
+    private Image seniorWorkingImgAlt;// Nowość: junior_working.png
+    private Image seniorMadImgAlt;    // Nowość: senior_mad.png
     private Image bossMadImg;         // Nowość: bossMad.png
     private Image bossTalkingImg;     // Nowość: boss_talking.png
     private Image bossZalamanyImg;    // Nowość: boss_zalamany.png
@@ -99,11 +99,10 @@ public class GameView {
         this.seniorMadImg = safeLoad("/images/seniorMad.png");
         // Ładowanie pracy przy biurku
         this.juniorWorkingImg = safeLoad("/images/junior_working.png");
-        this.seniorWorkingImg = safeLoad("/images/senior_working.png");
         this.fatalErrorDeskImg = safeLoad("/images/fatalErrorDesk.png");
-        this.seniorSuccessImg = safeLoad("/images/senior-success.png");
-        this.seniorWorkingImgAlt = safeLoad("/images/senior-working.png");
-        this.seniorMadImgAlt = safeLoad("/images/senior-mad.png");
+        this.seniorSuccessImg = safeLoad("/images/senior_success.png");
+        this.seniorWorkingImgAlt = safeLoad("/images/junior_working.png");
+        this.seniorMadImgAlt = safeLoad("/images/senior_mad.png");
         this.bossMadImg = safeLoad("/images/bossMad.png");
         this.bossTalkingImg = safeLoad("/images/boss_talking.png");
         this.bossZalamanyImg = safeLoad("/images/boss_zalamany.png");

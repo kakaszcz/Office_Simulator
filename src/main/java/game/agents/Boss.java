@@ -137,7 +137,7 @@ public class Boss extends Agent {
                         // Szef odzywa się tylko do Seniorów i tylko, jeśli już nie gadają
                         if (worker instanceof game.agents.Senior && !state.equalsIgnoreCase("TalkingState")) {
                             System.out.println("Szef " + this.getName() + " ucina sobie przyjacielską pogawędkę z " + worker.getName() + ".");
-                            worker.changeState(new game.states.TalkingState());
+                            worker.changeState(new game.states.MadState());
                         }
                     }
                 }
