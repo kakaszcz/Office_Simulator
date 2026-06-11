@@ -57,7 +57,14 @@ public class GameView {
     private Image juniorSuccessImg;   // Nowość: juniorSuccess.png
     private Image seniorSmokingImg;   // Nowość: senior_smoking.png
     private Image seniorTalkingImg;   // Nowość: senior_talking.png
-    private Image seniorMadImg;       // Nowość: seniorMad.png
+    private Image seniorMadImg;       // Nowość: seniorMad.png// Zmień sekcję pól klasowych dla obiektów i postaci, dopisując te linie:
+    private Image fatalErrorDeskImg;  // Nowość: fatalErrorDesk.png
+    private Image seniorSuccessImg;   // Nowość: senior-success.png
+    private Image seniorWorkingImgAlt;// Nowość: senior-working.png
+    private Image seniorMadImgAlt;    // Nowość: senior-mad.png
+    private Image bossMadImg;         // Nowość: bossMad.png
+    private Image bossTalkingImg;     // Nowość: boss_talking.png
+    private Image bossZalamanyImg;    // Nowość: boss_zalamany.png
     private Image juniorCryingImg; // Zmienna na płaczącego Juniora
 
     public GameView(GameBoard board) {
@@ -93,6 +100,13 @@ public class GameView {
         // Ładowanie pracy przy biurku
         this.juniorWorkingImg = safeLoad("/images/junior_working.png");
         this.seniorWorkingImg = safeLoad("/images/senior_working.png");
+        this.fatalErrorDeskImg = safeLoad("/images/fatalErrorDesk.png");
+        this.seniorSuccessImg = safeLoad("/images/senior-success.png");
+        this.seniorWorkingImgAlt = safeLoad("/images/senior-working.png");
+        this.seniorMadImgAlt = safeLoad("/images/senior-mad.png");
+        this.bossMadImg = safeLoad("/images/bossMad.png");
+        this.bossTalkingImg = safeLoad("/images/boss_talking.png");
+        this.bossZalamanyImg = safeLoad("/images/boss_zalamany.png");
 
         // Podłogi
         floorImage = safeLoad("/images/floor.png");
@@ -237,74 +251,78 @@ public class GameView {
             double px = agent.getVisualX() * TILE_SIZE;
             double py = agent.getVisualY() * TILE_SIZE;
 
+        // POPRAWIONY - sprawdza stan zamiast kafelka
             boolean czyPijeKawe = false;
-            Cell currentCell = board.getCell(agent.getX(), agent.getY());
-            if (currentCell != null && "coffee".equalsIgnoreCase(currentCell.getType())) {
-                czyPijeKawe = true;
+            if (agent instanceof Worker) {
+                String stan = ((Worker) agent).getCurrentStateName();
+                czyPijeKawe = "CoffeeState".equals(stan);
             }
 
-            // --- B. WYBÓR OBRAZKA DO NARYSOWANIA ---
-            Image imgToDraw = juniorImg;
+            System.out.println("[DEBUG] " + agent.getName() +
+                    " | typ: " + agent.getClass().getSimpleName() +
+                    " | stan: " + (agent instanceof Worker ? ((Worker)agent).getCurrentStateName() : "BOSS") +
+                    " | kawaFlag: " + czyPijeKawe);
+
+        // --- WYBÓR OBRAZKA ---
+            Image imgToDraw = null; // ← null zamiast juniorImg
 
             if (agent instanceof Boss) {
-                imgToDraw = (czyPijeKawe && bossCoffeeImg != null) ? bossCoffeeImg : bossImg;
+                Boss boss = (Boss) agent;
+                if (czyPijeKawe && bossCoffeeImg != null) {
+                    imgToDraw = bossCoffeeImg;
+                } else if (sim.getBudget() < 1000.0 && bossMadImg != null) {
+                    imgToDraw = bossMadImg;
+                } else {
+                    imgToDraw = bossImg;
+                }
             } else if (agent instanceof Senior) {
                 Senior senior = (Senior) agent;
                 String stanSeniora = senior.getCurrentStateName();
 
-                // Sprawdzamy stany emocjonalne i pracownicze Seniora
-                if ("MadState".equals(stanSeniora) && seniorMadImg != null) {
-                    imgToDraw = seniorMadImg;
-                }
-                else if ("SmokingState".equals(stanSeniora) && seniorSmokingImg != null) {
+                if ("MadState".equals(stanSeniora)) {
+                    imgToDraw = (seniorMadImgAlt != null) ? seniorMadImgAlt : seniorMadImg;
+                } else if ("SmokingState".equals(stanSeniora) && seniorSmokingImg != null) {
                     imgToDraw = seniorSmokingImg;
-                }
-                else if (("TalkingState".equals(stanSeniora) || "ConversationState".equals(stanSeniora)) && seniorTalkingImg != null) {
+                } else if (("TalkingState".equals(stanSeniora) || "ConversationState".equals(stanSeniora)) && seniorTalkingImg != null) {
                     imgToDraw = seniorTalkingImg;
-                }
-                else if ("WorkingState".equals(stanSeniora) && seniorWorkingImg != null) {
-                    imgToDraw = seniorWorkingImg;
-                }
-                else {
+                } else if ("WorkingState".equals(stanSeniora)) {
+                    imgToDraw = (seniorWorkingImgAlt != null) ? seniorWorkingImgAlt : seniorWorkingImg;
+                } else if ("SuccessState".equals(stanSeniora) && seniorSuccessImg != null) {
+                    imgToDraw = seniorSuccessImg;
+                } else {
                     imgToDraw = (czyPijeKawe && seniorCoffeeImg != null) ? seniorCoffeeImg : seniorImg;
                 }
             } else if (agent instanceof Junior) {
                 Junior junior = (Junior) agent;
                 String stanJuniora = junior.getCurrentStateName();
 
-                // 1. Stan płaczu / załamania
                 if ("CryingState".equals(stanJuniora) && juniorCryingImg != null) {
                     imgToDraw = juniorCryingImg;
-                }
-                // 2. NOWOŚĆ: Stan palenia papierosa (Przerwa)
-                else if ("SmokingState".equals(stanJuniora) && juniorSmokingImg != null) {
+                } else if ("SmokingState".equals(stanJuniora) && juniorSmokingImg != null) {
                     imgToDraw = juniorSmokingImg;
-                }
-                // 3. NOWOŚĆ: Stan rozmowy / pogaduszek
-                else if (("TalkingState".equals(stanJuniora) || "ConversationState".equals(stanJuniora)) && juniorTalkingImg != null) {
+                } else if (("TalkingState".equals(stanJuniora) || "ConversationState".equals(stanJuniora)) && juniorTalkingImg != null) {
                     imgToDraw = juniorTalkingImg;
-                }
-                // 4. NOWOŚĆ: Stan sukcesu (zakończenie zadania)
-                else if ("SuccessState".equals(stanJuniora) && juniorSuccessImg != null) {
+                } else if ("SuccessState".equals(stanJuniora) && juniorSuccessImg != null) {
                     imgToDraw = juniorSuccessImg;
-                }
-                // 5. Stan standardowej pracy przy biurku
-                else if ("WorkingState".equals(stanJuniora) && juniorWorkingImg != null) {
+                } else if ("WorkingState".equals(stanJuniora) && juniorWorkingImg != null) {
                     imgToDraw = juniorWorkingImg;
-                }
-                // 6. Domyślnie: picie kawy lub zwykłe chodzenie po biurze
-                else {
+                } else {
                     imgToDraw = (czyPijeKawe && juniorCoffeeImg != null) ? juniorCoffeeImg : juniorImg;
                 }
             }
 
-            // --- C. RYSOWANIE POSTACI (Już prawidłowo wyciągnięte z Juniora!) ---
+            // --- RYSOWANIE ---
             if (imgToDraw != null) {
                 gc.drawImage(imgToDraw, px, py, TILE_SIZE, TILE_SIZE);
             } else {
                 gc.setFill(agent instanceof Boss ? Color.RED : Color.BLUE);
                 gc.fillOval(px + 32, py + 32, 64, 64);
             }
+
+
+
+
+
 
             // --- D. RYSOWANIE IMIENIA NAD POSTACIĄ ---
             gc.setFill(Color.BLACK);
