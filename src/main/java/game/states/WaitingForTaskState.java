@@ -7,6 +7,8 @@ import game.core.GameConfiguration;
 import game.model.GameBoard;
 import game.core.Simulation;
 
+import java.util.Random;
+
 public class WaitingForTaskState implements WorkerState {
 
     private int idleTicks = 0;
@@ -27,22 +29,38 @@ public class WaitingForTaskState implements WorkerState {
 
         boolean isBossPresentNow = worker.isBossNeighbor(sim);
 
-        // 1. Obsługa Juniora (TYLKO boost motywacyjny, zero darmowego expa!)
+        // 1. Obsługa Juniora (TYLKO boost motywacyjny, zero rozmowy z szefem)
         if (worker instanceof Junior) {
             Junior junior = (Junior) worker;
 
             if (isBossPresentNow) {
                 if (!junior.wasBossNeighborInPreviousTurn()) {
-                    double newEff = junior.getEfficiency() + GameConfiguration.BOSS_MOTIVATION_EFFICIENCY_BOOST;
+                    double oldEff = junior.getEfficiency();
+                    double boost = GameConfiguration.BOSS_MOTIVATION_EFFICIENCY_BOOST;
+                    double newEff = Math.min(1.0, oldEff + boost);
 
-                    junior.setEfficiency(Math.min(1.0, newEff));
+                    junior.setEfficiency(newEff);
+                    junior.recordBossBoost();
 
-                    System.out.println("  -> [EVENT] Szef podszedł! Junior " + junior.getName()
-                            + " dostał motywacyjnego boosta do wydajności!");
+                    if (newEff > oldEff) {
+                        System.out.println("  -> [BOOST] Junior " + junior.getName()
+                                + " otrzymał boost od Szefa: +"
+                                + String.format("%.0f", (newEff - oldEff) * 100)
+                                + " pkt wydajności (Eff: "
+                                + String.format("%.2f", oldEff)
+                                + " -> "
+                                + String.format("%.2f", newEff)
+                                + ").");
+                    } else {
+                        System.out.println("  -> [BOOST] Junior " + junior.getName()
+                                + " otrzymał boost od Szefa, ale wydajność jest już maksymalna.");
+                    }
                 } else {
-                    System.out.println("  -> Junior " + junior.getName() + " pracuje w skupieniu pod czujnym okiem Szefa.");
+                    System.out.println("  -> Junior " + junior.getName()
+                            + " utrzymuje boost od Szefa i pracuje w skupieniu.");
                 }
             }
+
             junior.setWasBossNeighborInPreviousTurn(isBossPresentNow);
         }
 
