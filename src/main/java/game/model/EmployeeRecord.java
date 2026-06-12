@@ -22,6 +22,7 @@ public class EmployeeRecord {
     public int timesCried;
     public int bossTalks;
     public int bugsRepaired;
+    public int bossBoosts;
 
     public EmployeeRecord(Agent agent) {
         this.name = agent.getName();
@@ -35,6 +36,7 @@ public class EmployeeRecord {
         this.timesCried = 0;
         this.bossTalks = 0;
         this.bugsRepaired = 0;
+        this.bossBoosts = 0;
     }
 
     // Wywoływane co turę dla żyjących agentów w Simulation
@@ -53,6 +55,7 @@ public class EmployeeRecord {
 
             this.timesCried = w.getTimesCried();
             this.bossTalks = w.getBossTalks();
+            this.bossBoosts = w.getBossBoosts();
             this.bugsRepaired = w.getBugsRepaired();
         }
     }

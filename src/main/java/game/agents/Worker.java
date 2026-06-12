@@ -29,9 +29,13 @@ public abstract class Worker extends Agent {
     private int personalCigarettesSmoked = 0;
     private int timesCried = 0;
     private int bossTalks = 0;
+    private int bossBoosts;
     private int bugsRepaired = 0;
 
     private int totalTaskTime;
+
+
+
 
     public Worker(int x, int y, double efficiency, double experience) {
         super(x, y);
@@ -162,6 +166,8 @@ public abstract class Worker extends Agent {
     public void recordCigarette() { this.personalCigarettesSmoked++; }
     public void recordCrying() { this.timesCried++; }
     public void recordBossTalk() { this.bossTalks++; }
+    public void recordBossBoost() { this.bossBoosts++; }
+    public int getBossBoosts() { return bossBoosts; }
     public void recordBugRepaired() { this.bugsRepaired++; }
 
     public int getTasksCompleted() { return tasksCompleted; }
@@ -171,4 +177,5 @@ public abstract class Worker extends Agent {
     public int getTimesCried() { return timesCried; }
     public int getBossTalks() { return bossTalks; }
     public int getBugsRepaired() { return bugsRepaired; }
+
 }

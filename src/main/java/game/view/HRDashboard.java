@@ -124,14 +124,41 @@ public class HRDashboard {
         Label addictionsLbl = new Label("Kawa: ☕ " + record.coffeesDrunk + " | Fajki: 🚬 " + record.cigarettesSmoked);
         addictionsLbl.setStyle("-fx-text-fill: #555555;");
 
-        Label extraLbl = new Label("Łzy: 😭 " + record.timesCried + " | Rozmowy z szefem: 👔 " + record.bossTalks);
-        extraLbl.setStyle("-fx-text-fill: #555555;");
+        Label tearsLbl = new Label("Łzy: 😭 " + record.timesCried);
+        tearsLbl.setStyle("-fx-text-fill: #555555;");
 
-        if (record.bugsRepaired > 0) {
-            extraLbl.setText(extraLbl.getText() + " | Fixy: 🛠️ " + record.bugsRepaired);
+        String bossInteractionText;
+
+        if ("Junior".equalsIgnoreCase(record.role)) {
+            bossInteractionText = "Boosty od szefa: ⚡ " + record.bossBoosts;
+        } else if ("Senior".equalsIgnoreCase(record.role)) {
+            bossInteractionText = "Rozmowy z szefem: 👔 " + record.bossTalks;
+        } else {
+            bossInteractionText = "Interakcje z szefem: 0";
         }
 
-        card.getChildren().addAll(nameLbl, stateLbl, expLbl, effLbl, tasksLbl, turnsLbl, addictionsLbl, extraLbl);
+        Label bossInteractionLbl = new Label(bossInteractionText);
+        bossInteractionLbl.setStyle("-fx-text-fill: #555555;");
+        bossInteractionLbl.setWrapText(true);
+
+        card.getChildren().addAll(
+                nameLbl,
+                stateLbl,
+                expLbl,
+                effLbl,
+                tasksLbl,
+                turnsLbl,
+                addictionsLbl,
+                tearsLbl,
+                bossInteractionLbl
+        );
+
+        if (record.bugsRepaired > 0) {
+            Label fixesLbl = new Label("Fixy: 🛠️ " + record.bugsRepaired);
+            fixesLbl.setStyle("-fx-text-fill: #555555;");
+            card.getChildren().add(fixesLbl);
+        }
+
         return card;
     }
 
