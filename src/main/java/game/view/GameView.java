@@ -98,10 +98,10 @@ public class GameView {
         this.seniorTalkingImg = safeLoad("/images/senior_talking.png");
         this.seniorMadImg = safeLoad("/images/seniorMad.png");
         // Ładowanie pracy przy biurku
-        this.juniorWorkingImg = safeLoad("/images/junior_working.png");
+        this.juniorWorkingImg = safeLoad("/images/juniorWorkingImg.png");
         this.fatalErrorDeskImg = safeLoad("/images/fatalErrorDesk.png");
         this.seniorSuccessImg = safeLoad("/images/senior_success.png");
-        this.seniorWorkingImgAlt = safeLoad("/images/junior_working.png");
+        this.seniorWorkingImgAlt = safeLoad("/images/seniorWorkingImg.png");
         this.seniorMadImgAlt = safeLoad("/images/senior_mad.png");
         this.bossMadImg = safeLoad("/images/bossMad.png");
         this.bossTalkingImg = safeLoad("/images/boss_talking.png");
