@@ -15,7 +15,7 @@ public class GameBoard {
     public GameBoard(){
         createEmptyGrid();
         initalizeBoard();
-}
+    }
 
     private void createEmptyGrid() {
         this.grid = new Cell[GameConfiguration.MAP_HEIGHT][GameConfiguration.MAP_WIDTH];
@@ -54,7 +54,6 @@ public class GameBoard {
             throw new IllegalStateException("BŁĄD KRYTYCZNY: Wymiary tablic nie zgadzają się z GameConfiguration!");
         }
 
-        // REFAKTOR: Bezpieczne głębokie kopiowanie wartości zamiast nadpisywania referencji
         for (int y = 0; y < GameConfiguration.MAP_HEIGHT; y++) {
             System.arraycopy(floorLayout[y], 0, this.floorMap[y], 0, GameConfiguration.MAP_WIDTH);
         }
@@ -68,7 +67,6 @@ public class GameBoard {
     }
 
     private String determineCellType(int objectValue, int floorValue) {
-
         if (objectValue == GameConfiguration.OBJ_DESK) return GameConfiguration.TILE_TYPE_DESK;
         if (objectValue == GameConfiguration.OBJ_BOSS_DESK) return GameConfiguration.TILE_TYPE_BOSS_DESK;
         if (objectValue == GameConfiguration.OBJ_COFFEE) return GameConfiguration.TILE_TYPE_COFFEE;
@@ -86,7 +84,6 @@ public class GameBoard {
         if (floorValue == GameConfiguration.FLOOR_WALL_NOT_WALKABLE) return GameConfiguration.TILE_TYPE_WALL_NOT_WALKABLE;
         if (floorValue == GameConfiguration.FLOOR_NOT_WALKABLE) return GameConfiguration.TILE_TYPE_FLOOR_NOT_WALKABLE;
 
-        // Domyślny kafelek
         return GameConfiguration.TILE_TYPE_FLOOR;
     }
 
@@ -104,14 +101,18 @@ public class GameBoard {
 
         for (int y = 0; y < GameConfiguration.MAP_HEIGHT; y++) {
             for (int x = 0; x < GameConfiguration.MAP_WIDTH; x++) {
-                if (grid[y][x].getType().equals(type) && grid[y][x].isEmpty()) {
+                // REFAKTOR: Zwracamy wyłącznie te kafelki, które nie mają agenta ORAZ nie są zarezerwowane
+                if (grid[y][x].getType().equals(type) && grid[y][x].isEmpty() && !grid[y][x].isReserved()) {
                     emptyCells.add(grid[y][x]);
                 }
             }
         }
 
         if (!emptyCells.isEmpty()) {
-            return emptyCells.get(rand.nextInt(emptyCells.size()));
+            Cell chosenCell = emptyCells.get(rand.nextInt(emptyCells.size()));
+            // REFAKTOR: Automatycznie rezerwujemy wybrany kafelek dla pracownika, żeby nikt mu go nie zajął!
+            chosenCell.setReserved(true);
+            return chosenCell;
         }
 
         return null;
@@ -125,6 +126,7 @@ public class GameBoard {
         Cell cell = getCell(x, y);
         if (cell != null && cell.isEmpty() && !cell.isWall()) {
             cell.setAgent(agent);
+            cell.setReserved(false); // Oczyszczenie flagi prewencyjnie
             return true;
         }
         return false;
@@ -138,6 +140,9 @@ public class GameBoard {
             if (!newCell.isWall() || newCell.isDesk()) {
                 Agent agent = oldCell.getAgent();
                 oldCell.setAgent(null);
+                // REFAKTOR: Agent fizycznie opuszcza kafelek, zwalniamy też rezerwację!
+                oldCell.setReserved(false);
+
                 newCell.setAgent(agent);
                 return true;
             }

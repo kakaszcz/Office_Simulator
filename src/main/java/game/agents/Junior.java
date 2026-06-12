@@ -5,39 +5,58 @@ import game.core.Simulation;
 
 public class Junior extends Worker {
     private int numberOfFails;
-    private double failChance;
+    private int lifetimeFails; // NOWOŚĆ: Licznik błędów, którego ŻADEN reset w Simulation nie wymaże
     private boolean wasBossNeighborInPreviousTurn = false;
 
     public Junior(int x, int y, double efficiency, double experience) {
         super(x, y, efficiency, experience);
         this.numberOfFails = 0;
-        // Minimalna szansa na błąd pobierana z GameConfiguration
-        this.failChance = Math.max(GameConfiguration.JUNIOR_MIN_FAIL_CHANCE, 1.0 - experience);
+        this.lifetimeFails = 0;
     }
 
     public boolean wasBossNeighborInPreviousTurn() { return wasBossNeighborInPreviousTurn; }
     public void setWasBossNeighborInPreviousTurn(boolean value) { this.wasBossNeighborInPreviousTurn = value; }
 
     @Override
-    public double getFailChance() { return this.failChance; }
+    public double getFailChance() {
+        // Bazowa szansa wynikająca z braku doświadczenia
+        double baseFailChance = 1.0 - this.getExperience();
+
+        // MODYFIKATOR ZMĘCZENIA: Im mniejsza efektywność (bliżej 0), tym większa szansa na błąd.
+        // Jeśli efficiency spadnie np. do 0.4, (1.0 - 0.4) doda aż 0.6 do szansy na błąd!
+        double fatiguePenalty = 1.0 - this.getEfficiency();
+
+        double totalFailChance = baseFailChance + (fatiguePenalty * 0.5); // 0.5 to siła wpływu zmęczenia
+
+        // Zwracamy wyliczoną szansę, ale nie mniejszą niż absolutne minimum z konfiguracji
+        return Math.max(GameConfiguration.JUNIOR_MIN_FAIL_CHANCE, totalFailChance);
+    }
 
     @Override
     public void handleTaskFailure(Simulation sim) {
         this.incrementFails();
-        // Ta metoda jest poprawnie powiązana z systemem globalnych kar w Simulation
         sim.reportJuniorFail();
     }
 
-    // Kiedy wyniki Juniora kwalifikują go do zwolnienia przez Szefa
     @Override
     public boolean hasTerribleMetrics() {
-        return super.hasTerribleMetrics() || this.numberOfFails >= GameConfiguration.MAX_FAILS_LIMIT;
+        // HR patrzy na całkowitą historię porażek (lifetimeFails),
+        // więc pracownik nie oszuka systemu po globalnym czyszczeniu błędów w biurze
+        return super.hasTerribleMetrics() || this.lifetimeFails >= 5;
     }
 
     public int getTasksFailed() { return this.numberOfFails; }
 
+    // Jeśli w Simulation.java masz metodę czyszczącą błędy (np. junior.resetCurrentFails()),
+    // to wyzeruje ona numberOfFails, ale lifetimeFails zostanie nienaruszone!
+    public void resetCurrentFails() {
+        this.numberOfFails = 0;
+    }
+
     public void incrementFails() {
         this.numberOfFails++;
-        System.out.println(this.getName() + " zawalił zadanie! Liczba jego błędów: " + this.numberOfFails);
+        this.lifetimeFails++; // Zawsze rośnie, odkłada się w "kartotece" pracownika
+        System.out.println(this.getName() + " zawalił zadanie! Indywidualne (obecne): "
+                + this.numberOfFails + ", Łącznie w karierze: " + this.lifetimeFails);
     }
 }

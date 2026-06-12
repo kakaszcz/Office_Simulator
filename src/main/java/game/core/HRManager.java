@@ -24,6 +24,10 @@ public class HRManager {
     public void registerFire(Agent agent) {
         EmployeeRecord record = activeRecords.remove(agent);
         if (record != null) {
+            // FIX: Wymuszamy ostatnią, przedśmiertną aktualizację statystyk teczki.
+            // Dzięki temu powód zwolnienia (np. ostatni błąd czy spadek wydajności) zapisze się w historii!
+            record.updateStats(agent);
+
             record.isActive = false;
             firedRecords.add(record);
         }
@@ -40,7 +44,8 @@ public class HRManager {
     }
 
     public List<EmployeeRecord> getFiredRecords() {
-        return firedRecords;
+        // Zwracamy kopię listy, aby zabezpieczyć historię przed niepożądaną modyfikacją z zewnątrz
+        return new ArrayList<>(firedRecords);
     }
 
     public int getTotalHired() { return totalHired; }

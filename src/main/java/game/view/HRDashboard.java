@@ -14,12 +14,13 @@ public class HRDashboard {
     private final VBox layout;
     private final Label topStatsLabel;
 
-    // Kontener główny wewnątrz ScrollPane, który trzyma nagłówki i siatki kart
     private final VBox scrollContent;
-
-    // Osobne kontenery na kafelki dla Juniorów i Seniorów
     private final FlowPane juniorCardsContainer;
     private final FlowPane seniorCardsContainer;
+
+    // REFAKTOR: Licznik optymalizacji odświeżania panelu HR
+    private int updateTickCounter = 0;
+    private static final int HR_UPDATE_INTERVAL = 10; // Aktualizacja kart pracowników co 10 tur
 
     public HRDashboard() {
         layout = new VBox(10);
@@ -28,7 +29,6 @@ public class HRDashboard {
         topStatsLabel = new Label("STATYSTYKI PRACOWNIKÓW");
         topStatsLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 16px;");
 
-        // Inicjalizacja kontenerów na karty
         juniorCardsContainer = new FlowPane();
         juniorCardsContainer.setHgap(15);
         juniorCardsContainer.setVgap(15);
@@ -37,14 +37,12 @@ public class HRDashboard {
         seniorCardsContainer.setHgap(15);
         seniorCardsContainer.setVgap(15);
 
-        // Przygotowujemy nagłówki dla sekcji
         Label juniorHeader = new Label("👶 JUNIORZY");
         juniorHeader.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #4a90e2; -fx-padding: 5 0 5 0;");
 
-        Label seniorHeader = new Label("\uD83D\uDC68 SENIORZY");
+        Label seniorHeader = new Label("👨‍💻 SENIORZY"); // Poprawiony czytelny emoji seniora
         seniorHeader.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #e67e22; -fx-padding: 15 0 5 0;");
 
-        // Główny pionowy kontener, który ułoży sekcje jedna pod drugą
         scrollContent = new VBox(10);
         scrollContent.setPadding(new Insets(5));
         scrollContent.getChildren().addAll(
@@ -61,11 +59,18 @@ public class HRDashboard {
     }
 
     public void update(HRManager hr) {
+        // REFAKTOR: Pozwalamy na aktualizację tylko raz na 10 kroków symulacji.
+        // Zapobiega to gigantycznemu obciążeniu Garbage Collectora i usuwa mikroprzycięcia gry.
+        updateTickCounter++;
+        if (updateTickCounter % HR_UPDATE_INTERVAL != 0) {
+            return;
+        }
+
         // Czyszczenie starych kafelków z obu kontenerów
         juniorCardsContainer.getChildren().clear();
         seniorCardsContainer.getChildren().clear();
 
-        // 1. Najpierw rozdzielamy AKTYWNYCH pracowników
+        // 1. Rozdzielamy AKTYWNYCH pracowników
         for (EmployeeRecord record : hr.getActiveRecords()) {
             VBox card = createCard(record);
             if ("Junior".equalsIgnoreCase(record.role)) {
@@ -75,7 +80,7 @@ public class HRDashboard {
             }
         }
 
-        // 2. Potem do tych samych kontenerów dorzucamy ZWOLNIONYCH (będą na końcu listy w swojej grupie)
+        // 2. Dorzucamy ZWOLNIONYCH na koniec listy w swojej grupie
         for (EmployeeRecord record : hr.getFiredRecords()) {
             VBox card = createCard(record);
             if ("Junior".equalsIgnoreCase(record.role)) {
@@ -99,7 +104,7 @@ public class HRDashboard {
         }
 
         Label nameLbl = new Label(record.name + " (" + record.role + ")");
-        nameLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #333333;"); // <--- dodane -fx-text-fill
+        nameLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #333333;");
 
         Label stateLbl = new Label(record.isActive ? "🟢 W biurze" : "🔴 Zwolniony");
         stateLbl.setStyle("-fx-text-fill: #555555;");

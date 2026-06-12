@@ -15,31 +15,33 @@ public class GameConfiguration {
     // ==========================================
     // --- EKONOMIA I FINANSE ---
     // ==========================================
-    public static final double STARTING_BUDGET = 1000.0;
+    public static final double STARTING_BUDGET = 2000.0;
+
+    // Kara za fatal error
     public static final double FATAL_ERROR_PENALTY = 300.0;
 
-    /** Podstawa zarobku za pomyślnie ukończone zadanie */
-    public static final double TASK_BASE_REWARD = 40.0;
-    /** Mnożnik zarobku oparty na doświadczeniu pracownika */
-    public static final double TASK_EXPERIENCE_MULTIPLIER = 15.0;
+    /** REBALANS: Podstawa zarobku za zadanie (dajemy 30, żeby firma miała zysk) */
+    public static final double TASK_BASE_REWARD = 50.0;
+    /** Mnożnik doświadczenia (zostaje 10) */
+    public static final double TASK_EXPERIENCE_MULTIPLIER = 10.0;
 
-    /** Pensja pobierana co wypłatę przez Seniora */
-    public static final double SALARY_SENIOR = 15.0;
-    /** Pensja pobierana co wypłatę przez Juniora */
+    /** OPTYMALIZACJA PENSJI: Obniżamy koszty stałe, żeby firma nie krwawiła tak szybko */
+    public static final double SALARY_SENIOR = 20.0;
     public static final double SALARY_JUNIOR = 5.0;
 
     // ==========================================
     // --- ZMĘCZENIE I WYDAJNOŚĆ ---
     // ==========================================
+    /** MAŁA KOREKTA: Zmniejszamy nagły koszt startu pracy (z 0.05 na 0.02) */
+    public static final double WORK_ENTER_EFFICIENCY_DECREASE = 0.02;
+    /** MAŁA KOREKTA: Pracownik męczy się wolniej (z 0.04 na 0.025) */
+    public static final double WORK_STEP_EFFICIENCY_DECREASE = 0.025;
     /** Maksymalna możliwa wydajność pracownika */
     public static final double MAX_EFFICIENCY = 1.0;
     /** Próg wydajności, poniżej którego pracownik musi iść odpocząć */
     public static final double EFFICIENCY_REST_THRESHOLD = 0.35;
     /** Próg wydajności dla HR do zwolnienia pracownika (np. na koniec dnia) */
     public static final double MIN_PERFORMANCE_THRESHOLD = 0.30;
-
-    public static final double WORK_ENTER_EFFICIENCY_DECREASE = 0.02;
-    public static final double WORK_STEP_EFFICIENCY_DECREASE = 0.02;
 
     /** Szybkość odnawiania wydajności przy piciu kawy (co turę) */
     public static final double COFFEE_REGEN_RATE = 0.20;
@@ -53,16 +55,26 @@ public class GameConfiguration {
     // ==========================================
     /** Wzrost wydajności Juniora, gdy podejdzie Szef */
     public static final double BOSS_MOTIVATION_EFFICIENCY_BOOST = 0.10;
-    /** Wzrost doświadczenia Juniora, gdy Szef patrzy mu na ręce */
-    public static final double BOSS_MOTIVATION_EXPERIENCE_BOOST = 0.20;
+    /** (Możesz to zmniejszyć do 0.05, jeśli gdziekolwiek indziej używasz tego do dodawania expa w trakcie pracy) */
+    public static final double BOSS_MOTIVATION_EXPERIENCE_BOOST = 0.05;
     /** Koszt wydajności Seniora za rozmowę (zawracanie głowy) z Szefem */
     public static final double BOSS_TALK_EFFICIENCY_DROP = 0.10;
 
     // ==========================================
+    // --- BALANS PRACOWNIKÓW ---
+    // ==========================================
+    /** NOWOŚĆ: Bazowy mnożnik doświadczenia po pomyślnym ukończeniu zadania */
+    public static final double JUNIOR_EXPERIENCE_GAIN_PER_TASK = 0.015;
+
+    /** Minimalna szansa na błąd dla Juniora (nawet przy maksymalnym doświadczeniu) */
+    public static final double JUNIOR_MIN_FAIL_CHANCE = 0.1;
+    /** Dodatkowy stały bonus do wydajności (Performance) dla Seniora */
+    public static final double SENIOR_EXPERIENCE_BONUS = 0.15;
+    // ==========================================
     // --- USTAWIENIA CZASOWE (TURY) ---
     // ==========================================
-    /** Co ile tur księgowość pobiera z konta firmy wypłaty dla pracowników */
-    public static final int PAYDAY_INTERVAL = 10;
+    /** Czas między wypłatami */
+    public static final int PAYDAY_INTERVAL = 30;
     /** Co ile tur Manager rozdziela nowe zadania */
     public static final int TASK_DISTRIBUTION_INTERVAL = 3;
 
@@ -128,14 +140,6 @@ public class GameConfiguration {
     public static final double BOSS_CHANCE_TO_MOVE_NORMAL = 0.40;
     /** Szansa na wykonanie ruchu przez Szefa, gdy budżet firmy spada (tryb paniki) */
     public static final double BOSS_CHANCE_TO_MOVE_PANIC = 0.90;
-
-    // ==========================================
-    // --- BALANS PRACOWNIKÓW ---
-    // ==========================================
-    /** Minimalna szansa na błąd dla Juniora (nawet przy maksymalnym doświadczeniu) */
-    public static final double JUNIOR_MIN_FAIL_CHANCE = 0.1;
-    /** Dodatkowy stały bonus do wydajności (Performance) dla Seniora */
-    public static final double SENIOR_EXPERIENCE_BONUS = 0.15;
 
     // ==========================================
     // --- ALGORYTMY CZASU PRACY ---

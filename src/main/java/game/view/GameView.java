@@ -250,26 +250,21 @@ public class GameView {
             double px = agent.getVisualX() * TILE_SIZE;
             double py = agent.getVisualY() * TILE_SIZE;
 
-        // POPRAWIONY - sprawdza stan zamiast kafelka
             boolean czyPijeKawe = false;
             if (agent instanceof Worker) {
-                String stan = ((Worker) agent).getCurrentStateName();
-                czyPijeKawe = "CoffeeState".equals(stan);
+                Worker w = (Worker) agent;
+                String stan = w.getCurrentStateName();
+                String typKafelka = board.getCell(w.getX(), w.getY()).getType();
+
+                czyPijeKawe = "RestingState".equals(stan) && "coffee".equals(typKafelka);
             }
 
-            System.out.println("[DEBUG] " + agent.getName() +
-                    " | typ: " + agent.getClass().getSimpleName() +
-                    " | stan: " + (agent instanceof Worker ? ((Worker)agent).getCurrentStateName() : "BOSS") +
-                    " | kawaFlag: " + czyPijeKawe);
-
-        // --- WYBÓR OBRAZKA ---
-            Image imgToDraw = null; // ← null zamiast juniorImg
+            // --- WYBÓR OBRAZKA (BEZ SPAMU System.out.println) ---
+            Image imgToDraw = null;
 
             if (agent instanceof Boss) {
                 Boss boss = (Boss) agent;
-                if (czyPijeKawe && bossCoffeeImg != null) {
-                    imgToDraw = bossCoffeeImg;
-                } else if (sim.getBudget() < 1000.0 && bossMadImg != null) {
+                if (sim.getBudget() < 1000.0 && bossMadImg != null) {
                     imgToDraw = bossMadImg;
                 } else {
                     imgToDraw = bossImg;
@@ -317,11 +312,6 @@ public class GameView {
                 gc.setFill(agent instanceof Boss ? Color.RED : Color.BLUE);
                 gc.fillOval(px + 32, py + 32, 64, 64);
             }
-
-
-
-
-
 
             // --- D. RYSOWANIE IMIENIA NAD POSTACIĄ ---
             gc.setFill(Color.BLACK);

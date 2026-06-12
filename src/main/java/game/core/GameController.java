@@ -17,6 +17,7 @@ public class GameController {
     private final Simulation simulation;
     private final HRDashboard hrDashboard;
     private Timeline gameLoop;
+    private Button playPauseBtn; // Pole klasy do synchronizacji stanu przycisku
 
     public GameController(Simulation simulation, HRDashboard hrDashboard) {
         this.simulation = simulation;
@@ -28,6 +29,17 @@ public class GameController {
 
     private void initGameLoop() {
         KeyFrame keyFrame = new KeyFrame(Duration.millis(GameConfiguration.GAME_LOOP_BASE_TICK_MS), event -> {
+            // FIX: Zatrzymujemy pętlę Timeline po wykryciu bankructwa/końca gry, by nie obciążać procesora w tle
+            if (!simulation.isRunning()) {
+                System.out.println(">>> [GameLoop] Wykryto zatrzymanie symulacji. Zatrzymuję pętlę główną kontrolera.");
+                gameLoop.stop();
+                if (playPauseBtn != null) {
+                    playPauseBtn.setText("▶ Start");
+                    playPauseBtn.setDisable(true); // Blokujemy przycisk na ekranie Game Over
+                }
+                return;
+            }
+
             simulation.step();
             hrDashboard.update(simulation.getHRManager());
         });
@@ -42,16 +54,19 @@ public class GameController {
         panel.setPadding(new Insets(10, 15, 10, 15));
         panel.setStyle("-fx-background-color: #f5f5f5; -fx-border-color: #cccccc; -fx-border-width: 0 0 1 0;");
 
-        Button playPauseBtn = new Button("⏸ Pauza");
+        // Skoro symulacja rusza z automatu, domyślnym tekstem zostaje "Pauza"
+        playPauseBtn = new Button("⏸ Pauza");
 
         playPauseBtn.setOnAction(e -> {
             // Sprawdzamy stan pętli gry i przełączamy go dynamicznie
             if (gameLoop.getStatus() == Animation.Status.RUNNING) {
                 gameLoop.pause();
-                playPauseBtn.setText("▶ Start"); // Jeśli zatrzymaliśmy, przycisk pozwala wystartować
+                playPauseBtn.setText("▶ Start");
             } else {
-                gameLoop.play();
-                playPauseBtn.setText("⏸ Pauza"); // Jeśli wystartowaliśmy, przycisk pozwala zapauzować
+                if (simulation.isRunning()) {
+                    gameLoop.play();
+                    playPauseBtn.setText("⏸ Pauza");
+                }
             }
         });
 
@@ -91,6 +106,9 @@ public class GameController {
     public void startSimulation() {
         if (gameLoop != null) {
             gameLoop.play();
+            if (playPauseBtn != null) {
+                playPauseBtn.setText("⏸ Pauza"); // Synchronizacja UI w razie odpalenia z zewnątrz
+            }
         }
     }
 }
