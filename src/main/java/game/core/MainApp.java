@@ -38,16 +38,15 @@ public class MainApp extends Application {
         showSetupScreen();
     }
 
-    // NOWE ZMIENNE: Kolejka ścieżki wizualnej
+    // Kolejka ścieżki wizualnej
     private java.util.Queue<int[]> visualPath = new java.util.LinkedList<>();
 
-    // NOWA METODA: Dodawanie kroku do animacji
+    // Dodawanie kroku do animacji
     public void addWaypoint(int wx, int wy) {
         visualPath.add(new int[]{wx, wy});
     }
 
-
-    //EKRAN STARTOWY (MENU KONFIGURACYJNE)
+    // EKRAN STARTOWY (MENU KONFIGURACYJNE)
     private void showSetupScreen() {
         VBox setupRoot = new VBox(20);
         setupRoot.setAlignment(Pos.CENTER);
@@ -57,8 +56,6 @@ public class MainApp extends Application {
 
         Label subtitleLabel = new Label("Konfiguracja początkowa");
         subtitleLabel.setStyle("-fx-text-fill: #bdc3c7; -fx-font-size: 18px;");
-
-        // POLA DO USTAWIENIA PARAMETRÓW
 
         // 1. Liczba Juniorów
         HBox juniorsBox = new HBox(15);
@@ -85,7 +82,7 @@ public class MainApp extends Application {
         budgetSpinner.setEditable(true);
         budgetBox.getChildren().addAll(budgetLabel, budgetSpinner);
 
-        //  PRZYCISK START
+        // PRZYCISK START
         Button startButton = new Button("ROZPOCZNIJ SYMULACJĘ");
         startButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10 30 10 30;");
 
@@ -97,52 +94,50 @@ public class MainApp extends Application {
             startGame(startJuniors, startSeniors, startBudget);
         });
 
-        // Efekt najechania na przycisk
         startButton.setOnMouseEntered(e -> startButton.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10 30 10 30;"));
         startButton.setOnMouseExited(e -> startButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10 30 10 30;"));
 
         setupRoot.getChildren().addAll(titleLabel, subtitleLabel, new Label(""), juniorsBox, seniorsBox, budgetBox, new Label(""), startButton);
 
-        Scene setupScene = new Scene(setupRoot, 800, 600);
-        primaryStage.setScene(setupScene);
+        // --- POPRAWKA BEZPIECZNEGO ODŚWIEŻANIA SCENY STARTOWEJ ---
+        if (primaryStage.getScene() == null) {
+            Scene setupScene = new Scene(setupRoot, 800, 600);
+            primaryStage.setScene(setupScene);
+        } else {
+            primaryStage.getScene().setRoot(setupRoot);
+        }
         primaryStage.show();
     }
 
-    //WŁAŚCIWA GRA (Odpalana po kliknięciu START)
-
+    // WŁAŚCIWA GRA (Odpalana po kliknięciu START)
     private void startGame(int startJuniors, int startSeniors, int startBudget) {
-        // Przekazujemy wartości z menu do symulacji
         simulation = new Simulation(startJuniors, startSeniors, startBudget);
         simulation.setMainApp(this);
 
         gameView = new GameView(simulation.getGameBoard());
-
-        // Utworzenie całego układu interfejsu
         mainLayout = new MainLayout(simulation, gameView);
 
-        // TWORZENIE KONTROLERA CZASU I PASKA SZYBKOŚCI
         gameController = new GameController(simulation, mainLayout.getHRDashboard());
         HBox speedPanel = gameController.createSpeedControlPanel();
 
-        // Integracja paska z widokiem w jeden pionowy kontener
         VBox appRoot = new VBox();
         appRoot.getChildren().addAll(speedPanel, mainLayout.getScene().getRoot());
 
-        // GŁÓWNY KONTENER WARSTWOWY
         rootContainer = new StackPane();
         rootContainer.getChildren().add(appRoot);
 
-        // Przełączamy scenę na grę i ZABEZPIECZAMY ROZMIAR OKNA
-        Scene gameScene = new Scene(rootContainer, primaryStage.getWidth(), primaryStage.getHeight());
-        primaryStage.setScene(gameScene);
+        // --- POPRAWKA PRZEPIĘCIA WIDOKU PLANSZY BEZ ZMIANY ROZMIARU OKNA ---
+        if (primaryStage.getScene() != null) {
+            primaryStage.getScene().setRoot(rootContainer);
+        } else {
+            Scene gameScene = new Scene(rootContainer);
+            primaryStage.setScene(gameScene);
+        }
 
-        primaryStage.setMaximized(false);
+        // Stabilne wymuszenie pełnego ekranu
         primaryStage.setMaximized(true);
 
-        // Pierwsze narysowanie mapy
         gameView.render(simulation);
-
-
 
         timer = new AnimationTimer() {
             @Override
@@ -165,28 +160,92 @@ public class MainApp extends Application {
         gameController.startSimulation();
     }
 
+    // Ekran końca gry z raportem i przeglądaniem
     public void showGameOverScreen(String message) {
         if (timer != null) {
-            timer.stop();
+            timer.stop(); // Zatrzymujemy silnik wizualny
         }
 
+        // Ciemna nakładka blokująca planszę
         StackPane gameOverOverlay = new StackPane();
-        gameOverOverlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.85);");
+        gameOverOverlay.setStyle("-fx-background-color: rgba(21, 32, 43, 0.85);");
         gameOverOverlay.setAlignment(Pos.CENTER);
 
-        Label gameOverLabel = new Label(message + "\n\n[ KLIKNIJ, ABY ZAMKNĄĆ GRĘ ]");
-        gameOverLabel.setStyle("-fx-text-fill: #ff3333; -fx-font-size: 42px; -fx-font-weight: bold;");
+        // Główna karta raportu
+        VBox reportCard = new VBox(25);
+        reportCard.setAlignment(Pos.CENTER);
+        reportCard.setStyle("-fx-background-color: #2c3e50; -fx-padding: 40px; -fx-border-color: #e74c3c; -fx-border-width: 3px; -fx-border-radius: 10px; -fx-background-radius: 10px;");
+        reportCard.setMaxWidth(650);
+        reportCard.setMaxHeight(600);
 
-        gameOverLabel.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+        Label titleLabel = new Label("SYMULACJA ZAKOŃCZONA");
+        titleLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 32px; -fx-font-weight: bold;");
 
-        gameOverOverlay.getChildren().add(gameOverLabel);
+        Label reasonLabel = new Label(message);
+        reasonLabel.setStyle("-fx-text-fill: #ecf0f1; -fx-font-size: 16px; -fx-font-style: italic;");
+        reasonLabel.setWrapText(true);
+        reasonLabel.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
 
-        gameOverOverlay.setOnMouseClicked(e -> System.exit(0));
+        // Kontener na twarde dane statystyczne z klasy Simulation
+        VBox statsSection = new VBox(12);
+        statsSection.setStyle("-fx-background-color: #34495e; -fx-padding: 20px; -fx-background-radius: 6px;");
+        statsSection.setAlignment(Pos.CENTER);
+
+        String labelStyle = "-fx-text-fill: #95a5a6; -fx-font-size: 16px;";
+        String valueStyle = "-fx-text-fill: #ffffff; -fx-font-size: 16px; -fx-font-weight: bold;";
+
+        statsSection.getChildren().addAll(
+                createStatRow("Czas przetrwania:", simulation.getSimulationTimeFormatted() + " (" + simulation.getStepCount() + " tur)", labelStyle, valueStyle),
+                createStatRow("Końcowy stan konta:", String.format("%.2f $", simulation.getBudget()), labelStyle, "-fx-text-fill: #e74c3c; -fx-font-size: 16px; -fx-font-weight: bold;"),
+                createStatRow("Ukończone zadania (Sukcesy):", String.valueOf(simulation.getTotalTasksSuccess()), labelStyle, "-fx-text-fill: #2ecc71; -fx-font-size: 16px; -fx-font-weight: bold;"),
+                createStatRow("Wypuszczone błędy (Porażki):", String.valueOf(simulation.getTotalTasksFailed()), labelStyle, "-fx-text-fill: #e74c3c; -fx-font-size: 16px; -fx-font-weight: bold;"),
+                createStatRow("Ogólna skuteczność biura:", String.format("%.1f %%", simulation.getSuccessRate()), labelStyle, "-fx-text-fill: #f1c40f; -fx-font-size: 16px; -fx-font-weight: bold;"),
+                createStatRow("Awarie krytyczne (Fatal Errors):", String.valueOf(simulation.getTotalFatalErrors()), labelStyle, valueStyle)
+        );
+
+        // Przyciski sterujące raportem
+        HBox buttonPanel = new HBox(20);
+        buttonPanel.setAlignment(Pos.CENTER);
+
+        Button browseButton = new Button("PRZEGLĄDAJ STATYSTYKI I BIURO");
+        browseButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 20 10 20; -fx-cursor: hand;");
+        browseButton.setOnAction(e -> {
+            if (rootContainer != null) {
+                rootContainer.getChildren().remove(gameOverOverlay); // Usuwa tylko zasłonę raportu
+            }
+        });
+
+        Button restartButton = new Button("NOWA SYMULACJA");
+        restartButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 20 10 20; -fx-cursor: hand;");
+        restartButton.setOnAction(e -> {
+            if (rootContainer != null) {
+                rootContainer.getChildren().remove(gameOverOverlay);
+            }
+            showSetupScreen(); // Czysty powrót do konfiguracji startowej
+        });
+
+        buttonPanel.getChildren().addAll(browseButton, restartButton);
+        reportCard.getChildren().addAll(titleLabel, reasonLabel, statsSection, buttonPanel);
+        gameOverOverlay.getChildren().add(reportCard);
 
         if (rootContainer != null) {
             rootContainer.getChildren().add(gameOverOverlay);
             gameOverOverlay.toFront();
         }
+    }
+
+    // Pomocnik do generowania czystych wierszy danych
+    private HBox createStatRow(String textLabel, String textValue, String styleLabel, String styleValue) {
+        Label label = new Label(textLabel);
+        label.setStyle(styleLabel);
+        label.setPrefWidth(280);
+
+        Label value = new Label(textValue);
+        value.setStyle(styleValue);
+
+        HBox row = new HBox(10, label, value);
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
     }
 
     public static void main(String[] args) {

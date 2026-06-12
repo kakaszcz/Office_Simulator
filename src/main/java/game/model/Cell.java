@@ -1,7 +1,7 @@
 package game.model;
 
 import game.agents.Agent;
-import game.core.GameConfiguration; // Import naszej konfiguracji
+import game.core.GameConfiguration;
 
 public class Cell {
     private int x;
@@ -9,11 +9,15 @@ public class Cell {
     private String type;
     private Agent agent;
 
+    // REFAKTOR: Flaga miękkiej rezerwacji zapobiegająca podkradaniu kafelków
+    private boolean reserved;
+
     public Cell(int x, int y, String type) {
         this.x = x;
         this.y = y;
         this.type = type;
         this.agent = null;
+        this.reserved = false;
     }
 
     public boolean isEmpty() {
@@ -44,22 +48,25 @@ public class Cell {
         return y;
     }
 
+    // REFAKTOR: Gettery i settery dla systemu rezerwacji
+    public boolean isReserved() {
+        return reserved;
+    }
+
+    public void setReserved(boolean reserved) {
+        this.reserved = reserved;
+    }
+
     public boolean isWall() {
         if (type == null) return false;
         return type.toLowerCase().startsWith("wall");
     }
 
-    /**
-     * Uniwersalne sprawdzenie dla obu rodzajów biurek na podstawie konfiguracji.
-     */
     public boolean isDesk() {
         return GameConfiguration.TILE_TYPE_DESK.equals(type)
                 || GameConfiguration.TILE_TYPE_BOSS_DESK.equals(type);
     }
 
-    /**
-     * Sprawdza, czy kafelek jest ekspresem do kawy na podstawie konfiguracji.
-     */
     public boolean isCoffee() {
         return GameConfiguration.TILE_TYPE_COFFEE.equals(type);
     }

@@ -14,21 +14,18 @@ abstract public class Agent {
 
     private String direction = "DOWN"; // "UP", "DOWN", "LEFT", "RIGHT"
     private int animationFrame = 0;    // Indeks klatki (np. 0, 1, 2, 3)
-    private double frameTickCounter = 0;  // Płynne dodawanie ułamków prędkości (np. przy 0.25x)
+    private double frameTickCounter = 0;  // Płynne dodawanie ułamków prędkości
 
     private static int nextId = 1;
     private int id;
     private String name;
 
-    // kolejka - lista krokow do wykonania - pierwszy krok wsadzony do listy to pierwszy wykonany
+    // Kolejka kroków do wykonania przez animację wizualną
     private java.util.Queue<int[]> visualPath = new java.util.LinkedList<>();
 
-    // dodawanie kroku do animacji czyli kazdy krok ze sciezki dodaje do listy zeby animacja szla po tej sciezce po kolei a nie najkrotsza droga(linia prosta)
     public void addWaypoint(int wx, int wy) {
         visualPath.add(new int[]{wx, wy});
     }
-
-
 
     public Agent(int x, int y) {
         this.id = Agent.nextId++;
@@ -47,62 +44,65 @@ abstract public class Agent {
     public abstract void act(GameBoard board, Simulation sim);
 
     public void updateVisual(double gameSpeed) {
-        double speed = GameConfiguration.AGENT_BASE_VISUAL_SPEED * gameSpeed; //mnozenie bazowej predkosci przez to co na suwaku
+        // Mnożenie bazowej prędkości przez wartość z suwaka prędkości gry
+        double speed = GameConfiguration.AGENT_BASE_VISUAL_SPEED * gameSpeed;
 
-        //  mamy zaplanowaną ścieżkę bierzemy pierwszy punkt jako cel
+        // Domyślnie celem jest aktualna pozycja logiczna
         double targetX = this.x;
         double targetY = this.y;
 
-//jesli pamiec krokow czyli kolejka visualpath nie jest pusta to tymczasowym celem staje sie pierwszy zapisany w kolejce kafelek
+        // Jeśli w pamięci animacji są kroki pośrednie, bierzemy pierwszy z nich
         if (!visualPath.isEmpty()) {
-            targetX = visualPath.peek()[0]; //peekczyli podglada ale jeszcze nie suswa go z pamieci
+            targetX = visualPath.peek()[0];
             targetY = visualPath.peek()[1];
         }
 
-        double diffX = targetX - this.visualX; //czyli jak daleko mamy do celu
+        double diffX = targetX - this.visualX;
         double diffY = targetY - this.visualY;
-        double distance = Math.sqrt(diffX * diffX + diffY * diffY); //PITAGORAS zebu obliczyc odleglosc
+        double distance = Math.sqrt(diffX * diffX + diffY * diffY); // Pitagoras
 
-        if (distance > 0.01) { //jesli dystans jesi wiekszy niz malutko(0.1) tzn ze dalej idziemy
-
-            if (distance <= speed) { //jesli krok (speed) jest mniejszy niz dystans do celu to jestes na miejscu
+        if (distance > 0.01) {
+            if (distance <= speed) {
+                // Jesteśmy na punkcie pośrednim
                 this.visualX = targetX;
                 this.visualY = targetY;
-                if (!visualPath.isEmpty()) visualPath.poll(); // wyrzucamy z pamieci zaliczony punkt
-            } else { //idzie dalej
+                if (!visualPath.isEmpty()) visualPath.poll(); // Usuwamy zaliczony punkt z kolejki
+            } else {
+                // Idziemy w kierunku celu
                 this.visualX += (diffX / distance) * speed;
                 this.visualY += (diffY / distance) * speed;
             }
 
-            // sprawdzam czy wiekszy dystans pokonuje w poziomie X czy pionie Y zeby ludzik patrzyl w ta strone
+            // Ustalanie kierunku patrzenia postaci (dominujący kierunek ruchu)
             if (Math.abs(diffX) > Math.abs(diffY)) {
                 this.direction = (diffX > 0) ? "RIGHT" : "LEFT";
             } else {
                 this.direction = (diffY > 0) ? "DOWN" : "UP";
             }
 
-            // animacja przebierania nogami
-            //frameTickCounter += gameSpeed;
-            //if (frameTickCounter >= GameConfiguration.AGENT_ANIMATION_FRAME_DELAY) {
-              //  animationFrame = (animationFrame + 1) % 4;
-                //frameTickCounter = 0;
-            //}
+            // ODKOMENTOWANE I ZOPTYMALIZOWANE: Animacja przebierania nogami podczas ruchu
+            this.frameTickCounter += gameSpeed;
+            if (this.frameTickCounter >= GameConfiguration.AGENT_ANIMATION_FRAME_DELAY) {
+                this.animationFrame = (this.animationFrame + 1) % 4; // Cykl klatek 0,1,2,3
+                this.frameTickCounter = 0;
+            }
         } else {
-            // JESTEŚMY NA MIEJSCU czyli dystans mniejszy niz 0.01
-            this.visualX = targetX; //wyrownujemy pozycje obrazku ludzika
+            // Dotarliśmy do ostatecznego celu tury
+            this.visualX = targetX;
             this.visualY = targetY;
-            if (!visualPath.isEmpty()) { //jak jestesmy juz na miejscu a punkt dalej jest w pamieci to usuwamy
+            if (!visualPath.isEmpty()) {
                 visualPath.poll();
-            } else { //jak pamiec krokow jest pusta tzn ze dotarl do celu i resetujemy animacje ze ludzik stoi
+            } else {
+                // Ludzik stoi w miejscu - resetujemy klatkę do domyślnej
                 this.animationFrame = 0;
                 this.frameTickCounter = 0;
             }
         }
     }
 
-    // Warunek dla pętli w MainApp
+    // Warunek sprawdzający w pętli renderowania, czy agent jeszcze się przemieszcza wizualnie
     public boolean isCurrentlyWalking() {
-        return Math.abs(this.x - this.visualX) > 0.01 || Math.abs(this.y - this.visualY) > 0.01;
+        return Math.abs(this.x - this.visualX) > 0.01 || Math.abs(this.y - this.visualY) > 0.01 || !visualPath.isEmpty();
     }
 
     protected void moveRandomly(GameBoard board, boolean allowDesks) {
@@ -122,19 +122,16 @@ abstract public class Agent {
             if (board.isInBounds(nextX, nextY)) {
                 Cell cell = board.getCell(nextX, nextY);
 
-                // Sprawdzamy, czy kafelek fizycznie istnieje, nie jest ścianą i nikt na nim nie stoi
                 if (cell != null && !cell.isWall() && cell.getAgent() == null) {
-
-                    // Jeśli to NIE JEST Szef (allowDesks == false), zabraniamy mu wchodzić na biurka
                     if (!allowDesks && "desk".equals(cell.getType())) {
-                        continue; // Skipujemy ten kafelek, szukamy innego kierunku
+                        continue;
                     }
 
-                    // Skoro wszystko jest bezpieczne, wykonujemy JEDEN ruch na planszy
                     if (board.moveAgent(getX(), getY(), nextX, nextY)) {
-                        setX(nextX); // Aktualizujemy wewnętrzny stan agenta
+                        // REFAKTOR: setX i setY automatycznie dodadzą punkt do pamięci animacji
+                        setX(nextX);
                         setY(nextY);
-                        return; // Ruch udany, przerywamy pętlę i kończymy turę
+                        return;
                     }
                 }
             }
@@ -149,7 +146,14 @@ abstract public class Agent {
     public String getDirection() { return direction; }
     public int getAnimationFrame() { return animationFrame; }
 
-    public void setX(int x) { this.x = x; }
-    public void setY(int y) { this.y = y; }
+    // REFAKTOR: Settery automatycznie rejestrują ścieżkę wizualną, zabezpieczając płynność animacji kafelkowej
+    public void setX(int x) {
+        this.x = x;
+        addWaypoint(this.x, this.y);
+    }
 
+    public void setY(int y) {
+        this.y = y;
+        addWaypoint(this.x, this.y);
+    }
 }

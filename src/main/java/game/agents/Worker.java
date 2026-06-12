@@ -37,11 +37,20 @@ public abstract class Worker extends Agent {
         super(x, y);
         this.efficiency = efficiency;
         this.experience = experience;
+
+        // FIX: Każdy pracownik rodzi się od razu w stanie oczekiwania na zadanie,
+        // co zapobiega powstawaniu "zawieszonych" agentów bez przypisanego stanu (Idle-zombie)
+        this.changeState(new game.states.WaitingForTaskState());
     }
 
     public void changeState(WorkerState newState) {
         this.currentState = newState;
         if (this.currentState != null) {
+            // Przy każdej zmianie stanu czyścimy zapisaną ścieżkę kafelków,
+            // żeby nowy stan mógł niezależnie wyznaczyć swój cel podróży
+            this.currentPath = null;
+            this.currentTargetCell = null;
+
             this.currentState.enter(this);
         }
     }
@@ -70,8 +79,8 @@ public abstract class Worker extends Agent {
                 this.setY(nextCell.getY());
                 this.currentPath.remove(0);
             } else {
-                // Droga zablokowana
-                this.currentPath = null; // Zapominamy ścieżkę, by przeliczyć ją na nowo
+                // Droga zablokowana przez innego agenta w wąskim przejściu
+                this.currentPath = null; // Zapominamy ścieżkę, by przeliczyć ją na nowo w kolejnej turze
 
                 // Wykonujemy krok omijający w bok, aby odblokować korytarz i pozwolić drugiemu przejść
                 moveRandomly(board, false);
@@ -84,7 +93,7 @@ public abstract class Worker extends Agent {
     }
 
     public void handleTaskFailure(Simulation sim) {
-        // Domyślnie nic się nie dzieje
+        // Domyślnie nic się nie dzieje (nadpisywane przez Juniora)
     }
 
     public double getPerformance() {
@@ -110,7 +119,6 @@ public abstract class Worker extends Agent {
                 Math.abs(this.getY() - boss.getY()) <= 1;
     }
 
-    // Zwraca true TYLKO wtedy, gdy Szef fizycznie ich zwolnił (postawił pieczątkę)
     public boolean shouldBeFired() { return shouldBeFired; }
     public void markFired() { this.shouldBeFired = true; }
 
