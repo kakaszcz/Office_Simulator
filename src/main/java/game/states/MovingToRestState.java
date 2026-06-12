@@ -5,8 +5,6 @@ import game.core.Simulation;
 import game.agents.Worker;
 import game.model.Cell;
 import game.model.GameBoard;
-import game.model.PathFinder;
-import java.util.List;
 import java.util.Random;
 
 public class MovingToRestState implements WorkerState {
@@ -14,110 +12,55 @@ public class MovingToRestState implements WorkerState {
     private static final Random RANDOM = new Random();
     private String destinationType;
     private Cell targetCell;
-    private List<Cell> path;
-    private final PathFinder pathFinder = new PathFinder();
-    private int blockedTurnsCount = 0;
-    private int pathfindingCooldown = 0;
+    private int searchCooldown = 0;
 
     @Override
     public void enter(Worker worker) {
+        // Zawsze ustawiamy, dokąd idzie (Kawa czy Fajka)
         if (RANDOM.nextBoolean()) {
             this.destinationType = GameConfiguration.TILE_TYPE_COFFEE;
         } else {
             this.destinationType = GameConfiguration.TILE_TYPE_OUTSIDE;
         }
+        System.out.println("[STAN] " + worker.getName() + " poczuł zmęczenie. Zmierza do: " + destinationType);
     }
 
     @Override
     public void act(Worker worker, GameBoard board, Simulation sim) {
-        if (pathfindingCooldown > 0) {
-            pathfindingCooldown--;
+
+        // Zabezpieczenie przed ciągłym obciążaniem PathFindera, jeśli kuchnia/dwór są pełne
+        if (searchCooldown > 0) {
+            searchCooldown--;
             return;
         }
 
-        if (targetCell != null && (!targetCell.isEmpty() && targetCell.getAgent() != worker)) {
-            targetCell.setReserved(false);
-            targetCell = null;
-            path = null;
-        }
-
-        if (targetCell == null) {
+        // 1. Sprawdzamy, czy musimy poszukać nowego wolnego miejsca
+        if (targetCell == null || (!targetCell.isEmpty() && targetCell.getAgent() != worker)) {
             targetCell = board.findFirstEmptyCell(destinationType);
-            path = null;
-        }
 
-        if (targetCell == null) {
-            pathfindingCooldown = 4;
-            return;
-        }
-
-        if (path == null) {
-            Cell currentCell = board.getCell(worker.getX(), worker.getY());
-            path = pathFinder.findPath(currentCell, targetCell, board);
-
-            if (path == null || path.isEmpty()) {
-                if (targetCell != null) targetCell.setReserved(false);
-                targetCell = null;
-                pathfindingCooldown = 6;
+            if (targetCell == null) {
+                // Brak wolnych miejsc w kuchni/na zewnątrz! Czekamy 3 tury w miejscu.
+                searchCooldown = 3;
                 return;
             }
         }
 
-        boolean reachedDestination = false;
+        // 2. Poruszamy się używając wbudowanej, sprawdzonej metody pracownika
         int steps = GameConfiguration.WORKER_MOVE_STEPS_PER_TURN;
-
         for (int i = 0; i < steps; i++) {
-            if (path != null && !path.isEmpty()) {
-                Cell nextStep = path.remove(0);
-                int oldX = worker.getX();
-                int oldY = worker.getY();
 
-                if (board.moveAgent(oldX, oldY, nextStep.getX(), nextStep.getY())) {
-                    worker.setX(nextStep.getX());
-                    worker.setY(nextStep.getY());
-                    blockedTurnsCount = 0;
-                } else {
-                    path.add(0, nextStep);
-                    blockedTurnsCount++;
-
-                    // Większa cierpliwość w drodze na przerwę
-                    if (blockedTurnsCount > 5) {
-                        path = null; // Szukamy objazdu do tej samej strefy odpoczynku
-                        blockedTurnsCount = 0;
-                        pathfindingCooldown = 2;
-                        tryDodgeStep(worker, board, nextStep);
-                    }
-                    break;
-                }
-
-                if (worker.getX() == targetCell.getX() && worker.getY() == targetCell.getY()) {
-                    reachedDestination = true;
-                    break;
-                }
-            } else {
-                if (worker.getX() == targetCell.getX() && worker.getY() == targetCell.getY()) {
-                    reachedDestination = true;
-                }
-                break;
+            // Jeśli dotarliśmy do celu, przerywamy ruch i zmieniamy stan na Odpoczynek
+            if (worker.getX() == targetCell.getX() && worker.getY() == targetCell.getY()) {
+                worker.changeState(new RestingState(destinationType));
+                return;
             }
-        }
 
-        if (reachedDestination) {
-            if (targetCell != null) targetCell.setReserved(false);
-            worker.changeState(new RestingState(destinationType));
-        }
-    }
+            // Krok w stronę wybranego miejsca
+            worker.navigateTo(targetCell, board);
 
-    private void tryDodgeStep(Worker worker, GameBoard board, Cell blockedCell) {
-        int oldX = worker.getX();
-        int oldY = worker.getY();
-        int[][] directions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
-        for (int[] dir : directions) {
-            int dX = oldX + dir[0];
-            int dY = oldY + dir[1];
-            if ((dX != blockedCell.getX() || dY != blockedCell.getY()) && board.moveAgent(oldX, oldY, dX, dY)) {
-                worker.setX(dX);
-                worker.setY(dY);
+            // Sprawdzamy warunek dojścia jeszcze raz po wykonaniu kroku
+            if (worker.getX() == targetCell.getX() && worker.getY() == targetCell.getY()) {
+                worker.changeState(new RestingState(destinationType));
                 return;
             }
         }
