@@ -41,11 +41,6 @@ public class RestingState implements WorkerState {
             statsUpdated = true;
         }
 
-        if (worker instanceof Junior && GameConfiguration.TILE_TYPE_OUTSIDE.equals(restPlaceType) && worker.isBossNeighbor(sim)) {
-            worker.markFired(); // Flagujemy pracownika do wywalenia z firmy!
-            System.out.println("!!! SKANDAL! Szef przyłapał pracownika " + worker.getName() + " na obijaniu się na dworze!");
-        }
-
         if (GameConfiguration.TILE_TYPE_OUTSIDE.equals(restPlaceType)) {
             // Na dworze regeneracja jest błyskawiczna (pobieramy MAX_EFFICIENCY)
             worker.setEfficiency(1.0);

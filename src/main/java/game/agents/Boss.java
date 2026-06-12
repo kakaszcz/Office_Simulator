@@ -26,12 +26,24 @@ public class Boss extends Agent {
 
     @Override
     public void act(GameBoard board, Simulation sim) {
+        // === POPRAWIONY BLOK SZALU (SZEF TERAZ BIEGA WŚCIEKŁY) ===
         if (this.madTurnsRemaining > 0) {
             this.madTurnsRemaining--;
-            System.out.println("  -> Szef " + this.getName() + " rwie włosy z głowy z powodu Fatal Errora! Pozostało tur szału: " + this.madTurnsRemaining);
+            System.out.println(" 😡 [SZAŁ] Szef " + this.getName() + " w amoku szuka winnych Fatal Errora! Pozostało tur: " + this.madTurnsRemaining);
+
+            // W stanie szału szef ZAWSZE obiera za cel Juniorów (bo to oni psują)
+            Cell juniorTarget = findWorker(sim, Junior.class, board);
+            if (juniorTarget != null) {
+                System.out.println("  -> [Amok] Szef namierzył Juniora i biegnie w jego stronę!");
+                moveToTarget(juniorTarget, board);
+            } else {
+                moveRandomly(board, true);
+            }
+
+            // Po ruchu sprawdza, czy kogoś dopadł i może zwolnić
             interactWithEmployees(board, sim);
             this.previousBudget = sim.getBudget();
-            return;
+            return; // Wychodzimy, bo pomijamy standardową logikę (kawę, relaks itp.)
         }
 
         this.coffeeTimer++;
@@ -122,12 +134,21 @@ public class Boss extends Agent {
                     Worker worker = (Worker) neighbor;
                     String state = worker.getCurrentStateName();
 
+                    // Jeśli to Junior, odpoczywa (RestingState) i kafelek to 'outside' -> ŁAPIEMY GO!
+                    if (worker instanceof Junior && "RestingState".equalsIgnoreCase(state) && "outside".equalsIgnoreCase(neighborCell.getType())) {
+                        System.out.println("!!! SZEF " + this.getName() + " PRZYŁAPAŁ JUNIORA " + worker.getName() + " NA PALENIU NA ZEWNĄTRZ !!!");
+                        worker.markFired();
+                        continue; // Przechodzimy do kolejnego sąsiada
+                    }
+
+                    // Standardowa blokada: Szef ignoruje inne formy odpoczynku (np. legalną kawę w kuchni)
                     if ("MovingToRestState".equalsIgnoreCase(state) ||
                             "RestingState".equalsIgnoreCase(state) ||
-                            neighborCell.getType().equalsIgnoreCase("coffee")) {
+                            "coffee".equalsIgnoreCase(neighborCell.getType())) {
                         continue;
                     }
 
+                    // Standardowe zwalnianie za złe wyniki
                     if (worker.shouldBeFired() || worker.hasTerribleMetrics()) {
                         if (worker.shouldBeFired()) {
                             System.out.println("!!! SZEF " + this.getName() + " PRZYŁAPAŁ PRACOWNIKA " + worker.getName() + " NA GORĄCYM UCZYNKU !!!");

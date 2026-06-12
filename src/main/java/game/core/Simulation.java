@@ -114,28 +114,37 @@ public class Simulation {
             }
         }
 
-        // 2. DYSTRYBUCJA ZADAŃ + BEZPIECZNIK "PRACY NA TRAWNIKU"
+        // =======================================================================
+        // 2. DYSTRYBUCJA ZADAŃ + BEZPIECZNIK ANTY-KODOWANIA W BIEGU (ZAKTUALIZOWANE)
+        // =======================================================================
         if (stepCount % GameConfiguration.TASK_DISTRIBUTION_INTERVAL == 0) {
             System.out.println(">>> [Manager] Rozdzielanie nowej puli zadań w tej turze!");
             for (Agent agent : this.agents) {
                 if (agent instanceof Worker) {
                     Worker worker = (Worker) agent;
-
-                    // FIX: Zabezpieczenie przed błędami stanów zewnętrznych (np. powrót z MadState na dworze)
                     Cell currentCell = gameBoard.getCell(worker.getX(), worker.getY());
+                    String currentState = worker.getCurrentStateName();
+
+                    // TWARDY BAN: Jeśli pracownik NIE stoi na biurku, nie ma prawa pracować ani czekać na zadanie!
                     if (currentCell != null && !GameConfiguration.TILE_TYPE_DESK.equalsIgnoreCase(currentCell.getType())) {
-                        String currentState = worker.getCurrentStateName();
                         if ("WorkingState".equalsIgnoreCase(currentState) || "WaitingForTaskState".equalsIgnoreCase(currentState)) {
-                            System.out.println(">>> [Korekta HR] " + worker.getName() + " próbuje pracować w strefie '" + currentCell.getType() + "'! Nakaz powrotu do biurka.");
+                            System.out.println(">>> [Korekta HR] " + worker.getName() + " złapany w strefie '" + currentCell.getType() + "'! Wymuszony marsz do biurka.");
+                            worker.setHasTask(false); // Resetujemy zadanie, jeśli wisiało w locie
                             worker.changeState(new game.states.MovingToDeskState());
-                            continue; // Uniemożliwiamy kodowanie na trawniku/przy kawie
+                            continue; // Przejdź do następnego agenta, tego ignorujemy w tej turze
                         }
                     }
 
-                    if (!worker.hasTask() && "WaitingForTaskState".equalsIgnoreCase(worker.getCurrentStateName())) {
-                        worker.assignTask();
-                        worker.changeState(new game.states.WorkingState());
-                        System.out.println("   -> [Sukces] " + worker.getName() + " dostał zadanie i idzie kodować!");
+                    // Bezpieczny przydział: Tylko dla tych, którzy fizycznie siedzą na biurku i grzecznie czekają
+                    if (!worker.hasTask() && "WaitingForTaskState".equalsIgnoreCase(currentState)) {
+                        if (currentCell != null && GameConfiguration.TILE_TYPE_DESK.equalsIgnoreCase(currentCell.getType())) {
+                            worker.assignTask();
+                            worker.changeState(new game.states.WorkingState());
+                            System.out.println("   -> [Sukces] " + worker.getName() + " siedzi przy biurku, dostał zadanie i zaczyna kodować!");
+                        } else {
+                            // Jeśli jakimś cudem ominął poprzedni filtr, a nie jest przy biurku - zawracamy go
+                            worker.changeState(new game.states.MovingToDeskState());
+                        }
                     }
                 }
             }

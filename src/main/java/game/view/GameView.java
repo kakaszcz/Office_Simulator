@@ -250,16 +250,20 @@ public class GameView {
             double px = agent.getVisualX() * TILE_SIZE;
             double py = agent.getVisualY() * TILE_SIZE;
 
-            boolean czyPijeKawe = false;
-            if (agent instanceof Worker) {
-                Worker w = (Worker) agent;
-                String stan = w.getCurrentStateName();
-                String typKafelka = board.getCell(w.getX(), w.getY()).getType();
+            // --- CHECK REGENERATION STATUS (COFFEE / CIGARETTE) ---
+            boolean isDrinkingCoffee = false;
+            boolean isSmokingCigarette = false;
 
-                czyPijeKawe = "RestingState".equals(stan) && "coffee".equals(typKafelka);
+            if (agent instanceof Worker) {
+                Worker worker = (Worker) agent;
+                String state = worker.getCurrentStateName();
+                String tileType = board.getCell(worker.getX(), worker.getY()).getType();
+
+                isDrinkingCoffee = "RestingState".equals(state) && "coffee".equalsIgnoreCase(tileType);
+                isSmokingCigarette = "RestingState".equals(state) && "outside".equalsIgnoreCase(tileType);
             }
 
-            // --- WYBÓR OBRAZKA (BEZ SPAMU System.out.println) ---
+            // --- IMAGE SELECTION ---
             Image imgToDraw = null;
 
             if (agent instanceof Boss) {
@@ -271,37 +275,37 @@ public class GameView {
                 }
             } else if (agent instanceof Senior) {
                 Senior senior = (Senior) agent;
-                String stanSeniora = senior.getCurrentStateName();
+                String seniorState = senior.getCurrentStateName();
 
-                if ("MadState".equals(stanSeniora)) {
+                if ("MadState".equals(seniorState)) {
                     imgToDraw = (seniorMadImgAlt != null) ? seniorMadImgAlt : seniorMadImg;
-                } else if ("SmokingState".equals(stanSeniora) && seniorSmokingImg != null) {
+                } else if (isSmokingCigarette && seniorSmokingImg != null) {
                     imgToDraw = seniorSmokingImg;
-                } else if (("TalkingState".equals(stanSeniora) || "ConversationState".equals(stanSeniora)) && seniorTalkingImg != null) {
+                } else if (("TalkingState".equals(seniorState) || "ConversationState".equals(seniorState)) && seniorTalkingImg != null) {
                     imgToDraw = seniorTalkingImg;
-                } else if ("WorkingState".equals(stanSeniora)) {
+                } else if ("WorkingState".equals(seniorState)) {
                     imgToDraw = (seniorWorkingImgAlt != null) ? seniorWorkingImgAlt : seniorWorkingImg;
-                } else if ("SuccessState".equals(stanSeniora) && seniorSuccessImg != null) {
+                } else if ("SuccessState".equals(seniorState) && seniorSuccessImg != null) {
                     imgToDraw = seniorSuccessImg;
                 } else {
-                    imgToDraw = (czyPijeKawe && seniorCoffeeImg != null) ? seniorCoffeeImg : seniorImg;
+                    imgToDraw = (isDrinkingCoffee && seniorCoffeeImg != null) ? seniorCoffeeImg : seniorImg;
                 }
             } else if (agent instanceof Junior) {
                 Junior junior = (Junior) agent;
-                String stanJuniora = junior.getCurrentStateName();
+                String juniorState = junior.getCurrentStateName();
 
-                if ("CryingState".equals(stanJuniora) && juniorCryingImg != null) {
+                if ("CryingState".equals(juniorState) && juniorCryingImg != null) {
                     imgToDraw = juniorCryingImg;
-                } else if ("SmokingState".equals(stanJuniora) && juniorSmokingImg != null) {
+                } else if (isSmokingCigarette && juniorSmokingImg != null) {
                     imgToDraw = juniorSmokingImg;
-                } else if (("TalkingState".equals(stanJuniora) || "ConversationState".equals(stanJuniora)) && juniorTalkingImg != null) {
+                } else if (("TalkingState".equals(juniorState) || "ConversationState".equals(juniorState)) && juniorTalkingImg != null) {
                     imgToDraw = juniorTalkingImg;
-                } else if ("SuccessState".equals(stanJuniora) && juniorSuccessImg != null) {
+                } else if ("SuccessState".equals(juniorState) && juniorSuccessImg != null) {
                     imgToDraw = juniorSuccessImg;
-                } else if ("WorkingState".equals(stanJuniora) && juniorWorkingImg != null) {
+                } else if ("WorkingState".equals(juniorState) && juniorWorkingImg != null) {
                     imgToDraw = juniorWorkingImg;
                 } else {
-                    imgToDraw = (czyPijeKawe && juniorCoffeeImg != null) ? juniorCoffeeImg : juniorImg;
+                    imgToDraw = (isDrinkingCoffee && juniorCoffeeImg != null) ? juniorCoffeeImg : juniorImg;
                 }
             }
 
