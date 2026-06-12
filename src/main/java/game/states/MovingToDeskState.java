@@ -5,22 +5,17 @@ import game.core.Simulation;
 import game.agents.Worker;
 import game.model.Cell;
 import game.model.GameBoard;
-import game.model.PathFinder;
-import java.util.List;
-import java.util.Random;
 
 public class MovingToDeskState implements WorkerState {
 
     private Cell targetDesk;
-    private List<Cell> path;
-    private final PathFinder pathFinder = new PathFinder();
-    private int blockedTurnsCount = 0;
-    private int pathfindingCooldown = 0;
-    private static final Random RANDOM = new Random();
+    private int searchCooldown = 0;
+    private int blockedTurnsCount = 0; // Licznik frustracji pamiętany między turami
 
     @Override
     public void enter(Worker worker) {
         System.out.println("[STAN] " + worker.getName() + " zmierza do biurka.");
+        this.blockedTurnsCount = 0;
     }
 
     @Override
@@ -28,115 +23,67 @@ public class MovingToDeskState implements WorkerState {
 
         Cell currentCell = board.getCell(worker.getX(), worker.getY());
 
-        // POPRAWIONY BEZPIECZNIK: Sprawdzamy czy stoi na WŁAŚCIWYM biurku (swoim celu)
+        // 1. Sprawdzamy, czy fizycznie stoimy na WŁAŚCIWYM biurku
         if (targetDesk != null && currentCell.getX() == targetDesk.getX() && currentCell.getY() == targetDesk.getY()) {
-            targetDesk.setReserved(false);
-            targetDesk = null;
-            path = null;
-
-            if (worker.hasTask()) {
-                worker.changeState(new WorkingState());
-            } else {
-                worker.changeState(new WaitingForTaskState());
-            }
+            finalizeArrival(worker);
             return;
         }
 
-        if (pathfindingCooldown > 0) {
-            pathfindingCooldown--;
+        // Zabezpieczenie przed obciążaniem silnika, jeśli brakuje biurek
+        if (searchCooldown > 0) {
+            searchCooldown--;
             return;
         }
 
+        // 2. Jeśli ktoś zajął nasze upatrzone biurko, szukamy nowego
         if (targetDesk != null && (!targetDesk.isEmpty() && targetDesk.getAgent() != worker)) {
-            targetDesk.setReserved(false);
             targetDesk = null;
-            path = null;
         }
 
+        // 3. Szukamy nowego biurka, jeśli nie mamy celu
         if (targetDesk == null) {
-            // Szukamy najbliższego/pierwszego wolnego biurka
             targetDesk = board.findFirstEmptyCell(GameConfiguration.TILE_TYPE_DESK);
-            path = null;
-        }
 
-        if (targetDesk == null) {
-            pathfindingCooldown = 4;
-            return;
-        }
-
-        if (path == null) {
-            path = pathFinder.findPath(currentCell, targetDesk, board);
-
-            if (path == null || path.isEmpty()) {
-                if (targetDesk != null) targetDesk.setReserved(false);
-                targetDesk = null;
-                pathfindingCooldown = 6;
+            if (targetDesk == null) {
+                searchCooldown = 3;
                 return;
             }
         }
 
-        boolean reachedDestination = false;
-        int steps = GameConfiguration.WORKER_MOVE_STEPS_PER_TURN;
+        // 4. Wykonujemy ruch (wywołujemy Twoje standardowe navigateTo)
+        int oldX = worker.getX();
+        int oldY = worker.getY();
 
-        for (int i = 0; i < steps; i++) {
-            if (path != null && !path.isEmpty()) {
-                Cell nextStep = path.remove(0);
-                int oldX = worker.getX();
-                int oldY = worker.getY();
+        worker.navigateTo(targetDesk, board);
 
-                if (board.moveAgent(oldX, oldY, nextStep.getX(), nextStep.getY())) {
-                    worker.setX(nextStep.getX());
-                    worker.setY(nextStep.getY());
-                    blockedTurnsCount = 0;
-                } else {
-                    path.add(0, nextStep);
-                    blockedTurnsCount++;
+        // 5. Sprawdzamy, czy się poruszyliśmy w tej turze
+        if (worker.getX() == oldX && worker.getY() == oldY) {
+            // Współrzędne się nie zmieniły = agent stoi w korku!
+            blockedTurnsCount++;
 
-                    if (blockedTurnsCount > 5) {
-                        path = null; // Wymuszamy rekalkulację objazdu
-                        blockedTurnsCount = 0;
-                        pathfindingCooldown = 2;
-                        tryDodgeStep(worker, board, nextStep);
-                    }
-                    break;
-                }
-
-                if (worker.getX() == targetDesk.getX() && worker.getY() == targetDesk.getY()) {
-                    reachedDestination = true;
-                    break;
-                }
-            } else {
-                if (worker.getX() == targetDesk.getX() && worker.getY() == targetDesk.getY()) {
-                    reachedDestination = true;
-                }
-                break;
+            if (blockedTurnsCount > 4) {
+                System.out.println("[INFO] " + worker.getName() + " utknął w drodze do biurka na 5 tur. Resetuje trasę!");
+                targetDesk = null; // Porzuca obecne biurko, poszuka innego
+                blockedTurnsCount = 0;
+                return;
             }
+        } else {
+            // Ruch się udał, zerujemy licznik frustracji
+            blockedTurnsCount = 0;
         }
 
-        if (reachedDestination) {
-            if (targetDesk != null) targetDesk.setReserved(false);
-            System.out.println("  -> " + worker.getName() + " dotarł do biurka.");
-            if (worker.hasTask()) {
-                worker.changeState(new WorkingState());
-            } else {
-                worker.changeState(new WaitingForTaskState());
-            }
+        // 6. Sprawdzamy czy doszedł po wykonaniu kroku
+        if (worker.getX() == targetDesk.getX() && worker.getY() == targetDesk.getY()) {
+            finalizeArrival(worker);
         }
     }
 
-    private void tryDodgeStep(Worker worker, GameBoard board, Cell blockedCell) {
-        int oldX = worker.getX();
-        int oldY = worker.getY();
-        int[][] directions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
-
-        for (int[] dir : directions) {
-            int dX = oldX + dir[0];
-            int dY = oldY + dir[1];
-            if ((dX != blockedCell.getX() || dY != blockedCell.getY()) && board.moveAgent(oldX, oldY, dX, dY)) {
-                worker.setX(dX);
-                worker.setY(dY);
-                return;
-            }
+    private void finalizeArrival(Worker worker) {
+        System.out.println("  -> " + worker.getName() + " dotarł do biurka.");
+        if (worker.hasTask()) {
+            worker.changeState(new WorkingState());
+        } else {
+            worker.changeState(new WaitingForTaskState());
         }
     }
 }
