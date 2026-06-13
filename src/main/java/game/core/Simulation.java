@@ -65,6 +65,10 @@ public class Simulation {
     public void setMainApp(MainApp mainApp) { this.mainApp = mainApp; }
     public boolean isRunning() { return this.isRunning; }
 
+    public void stop() {
+        this.isRunning = false;
+    }
+
     private void createWorkers(int num, String type) {
         for (int i = 0; i < num; i++) {
             Cell freeDesk = gameBoard.findFirstEmptyCell("desk");

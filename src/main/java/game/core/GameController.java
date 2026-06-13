@@ -111,4 +111,14 @@ public class GameController {
             }
         }
     }
+    public void stopSimulationLoop() {
+        if (gameLoop != null) {
+            gameLoop.stop();
+        }
+
+        if (playPauseBtn != null) {
+            playPauseBtn.setText("▶ Start");
+        }
+    }
+
 }
