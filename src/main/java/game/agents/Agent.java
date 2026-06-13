@@ -5,6 +5,7 @@ import game.core.GameConfiguration;
 import game.model.Cell;
 import game.model.GameBoard;
 
+//Spr.
 abstract public class Agent {
     private int x;
     private int y;
@@ -19,6 +20,7 @@ abstract public class Agent {
     private static int nextId = 1;
     private int id;
     private String name;
+
 
     // Kolejka kroków do wykonania przez animację wizualną
     private java.util.Queue<int[]> visualPath = new java.util.LinkedList<>();
@@ -43,6 +45,15 @@ abstract public class Agent {
     // Metoda do obsługi tur (logika)
     public abstract void act(GameBoard board, Simulation sim);
 
+    /**
+     * Metoda ta odpowiada za płynne przemieszczanie obrazka agenta na ekranie (renderowanie ruchu).
+     * Metoda oblicza dystans do kolejnego punktu na mapie przy użyciu Twierdzenia Pitagorasa.
+     * Jeżeli agent jest w ruchu, automatycznie wyznacza kierunek jego patrzenia (UP, DOWN,
+     * LEFT, RIGHT) oraz zarządza pętlą klatek animacji chodu (to jeszcze nie zosatło dodane)
+     * W przypadku dotarcia do celu, resetuje klatki animacji do pozycji stojącej.
+     *
+     * @param gameSpeed Współczynnik prędkości symulacji przekazywany z suwaka w menu głównym.
+     */
     public void updateVisual(double gameSpeed) {
         // Mnożenie bazowej prędkości przez wartość z suwaka prędkości gry
         double speed = GameConfiguration.AGENT_BASE_VISUAL_SPEED * gameSpeed;
@@ -105,6 +116,15 @@ abstract public class Agent {
         return Math.abs(this.x - this.visualX) > 0.01 || Math.abs(this.y - this.visualY) > 0.01 || !visualPath.isEmpty();
     }
 
+    /**
+     * Odpowiada za wykonanie losowego ruchu agenta o jeden kafelek w promieniu 8 sąsiednich pól.
+     * Metoda losowo miesza dostępne kierunki (pionowo, poziomo oraz na ukos), sprawdza granice
+     * planszy, obecność ścian oraz innych postaci. Pozwala również zablokować wchodzenie na biurka
+     * pracownicze w zależności od przekazanej flagi konfiguracji.
+     *
+     * @param board Obiekt planszy (GameBoard), na której odbywa się ruch i sprawdzane są kafelki.
+     * @param allowDesks Flaga określająca, czy agent ma pozwolenie na wchodzenie na kafelki typu biurko ("desk").
+     */
     protected void moveRandomly(GameBoard board, boolean allowDesks) {
         int[][] directions = {
                 {0, 1}, {0, -1}, {1, 0}, {-1, 0},

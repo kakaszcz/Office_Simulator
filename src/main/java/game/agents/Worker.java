@@ -9,6 +9,13 @@ import game.core.GameConfiguration;
 
 import java.util.List;
 
+//spr.
+/**
+ * Abstrakcyjna klasa bazowa reprezentująca pracownika (programistę) w biurze.
+ * Zarządza cyklem życia agenta za pomocą wzorca projektowego Stanu (WorkerState),
+ * realizuje algorytmy nawigacji i unikania zakleszczeń w korytarzach za pomocą PathFindera,
+ * a także zbiera szczegółowe statystyki personalne (zadania, kawy, papierosy, płacz).
+ */
 public abstract class Worker extends Agent {
 
     private double efficiency;
@@ -36,7 +43,16 @@ public abstract class Worker extends Agent {
 
 
 
-
+    /**
+     * Tworzy nowego pracownika i inicjalizuje jego parametry bazowe.
+     * Automatycznie wprowadza agenta w stan oczekiwania na zadanie (WaitingForTaskState),
+     * co eliminuje błędy zawieszania się postaci na starcie symulacji.
+     *
+     * @param x Początkowa logiczna współrzędna X na siatce planszy.
+     * @param y Początkowa logiczna współrzędna Y na siatce planszy.
+     * @param efficiency Współczynnik wydajności bazowej pracownika.
+     * @param experience Współczynnik doświadczenia zawodowego pracownika.
+     */
     public Worker(int x, int y, double efficiency, double experience) {
         super(x, y);
         this.efficiency = efficiency;
@@ -47,6 +63,13 @@ public abstract class Worker extends Agent {
         this.changeState(new game.states.WaitingForTaskState());
     }
 
+    /**
+     * Dokonuje bezpiecznej zmiany aktualnego stanu zachowania pracownika.
+     * Przy każdej zmianie automatycznie czyści poprzednią ścieżkę ruchu i punkt docelowy,
+     * umożliwiając nowemu stanowi niezależne wyznaczenie kolejnej trasy podróży.
+     *
+     * @param newState Nowy obiekt stanu (WorkerState), w który ma wejść pracownik.
+     */
     public void changeState(WorkerState newState) {
         this.currentState = newState;
         if (this.currentState != null) {
@@ -59,6 +82,13 @@ public abstract class Worker extends Agent {
         }
     }
 
+    /**
+     * Wywołuje logikę przypisaną do aktualnego stanu pracownika w danej turze symulacji.
+     * Deleguje wykonanie akcji bezpośrednio do obiektu currentState.
+     *
+     * @param board Obiekt planszy potrzebny do analizy otoczenia przez stan.
+     * @param sim Obiekt silnika symulacji dający dostęp do globalnych parametrów.
+     */
     @Override
     public void act(GameBoard board, Simulation sim) {
         if (currentState != null) {
@@ -66,6 +96,15 @@ public abstract class Worker extends Agent {
         }
     }
 
+    /**
+     * Przemieszcza pracownika krok po kroku w kierunku wyznaczonego kafelka docelowego.
+     * Wykorzystuje algorytm PathFindera do wyznaczenia optymalnej ścieżki. W przypadku
+     * wykrycia blokady (np. inny agent w wąskim przejściu), metoda resetuje ścieżkę i wykonuje
+     * losowy krok omijający, aby odblokować korytarz.
+     *
+     * @param targetCell Docelowy kafelek (Cell), do którego zmierza pracownik.
+     * @param board Obiekt planszy gry (GameBoard) odpowiedzialny za zatwierdzanie ruchu.
+     */
     public void navigateTo(Cell targetCell, GameBoard board) {
         if (targetCell == null) return;
 
@@ -114,6 +153,14 @@ public abstract class Worker extends Agent {
         }
     }
 
+
+    /**
+     * Weryfikuje, czy w bieżącej turze Szef znajduje się w bezpośrednim sąsiedztwie pracownika.
+     * Sprawdzenie obejmuje promień maksymalnie 1 kafelka we wszystkich kierunkach (siatka 3x3).
+     *
+     * @param sim Obiekt symulacji (Simulation), z którego pobierana jest aktualna pozycja Szefa.
+     * @return true, jeśli Szef stoi na sąsiednim kafelku; false w przeciwnym wypadku.
+     */
     public boolean isBossNeighbor(Simulation sim) {
         Agent boss = sim.getBoss();
         if (boss == null) return false;
@@ -133,6 +180,15 @@ public abstract class Worker extends Agent {
     public boolean hasTask() { return hasTask; }
     public void setHasTask(boolean hasTask) { this.hasTask = hasTask; }
 
+
+    /**
+     * Oblicza liczbę tur potrzebnych pracownikowi na ukończenie zadania.
+     * Czas wyliczany jest dynamicznie na podstawie matematycznego wzoru uwzględniającego
+     * ogólną wydajność (performance) oraz parametry z konfiguracji gry. Wynik jest zabezpieczony,
+     * aby czas trwania zadania wynosił co najmniej 1 turę.
+     *
+     * @return Liczba tur (liczba całkowita) potrzebna na sfinalizowanie zadania.
+     */
     public int computeTaskTime() {
         double dividend = GameConfiguration.TASK_TIME_DIVIDEND;
         double denomOffset = GameConfiguration.TASK_TIME_PERFORMANCE_DENOMINATOR_OFFSET;
