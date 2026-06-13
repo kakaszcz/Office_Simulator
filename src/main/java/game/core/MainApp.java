@@ -97,7 +97,19 @@ public class MainApp extends Application {
         startButton.setOnMouseEntered(e -> startButton.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10 30 10 30;"));
         startButton.setOnMouseExited(e -> startButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10 30 10 30;"));
 
-        setupRoot.getChildren().addAll(titleLabel, subtitleLabel, new Label(""), juniorsBox, seniorsBox, budgetBox, new Label(""), startButton);
+        Button exitSimulationButton = createExitSimulationButton(false);
+
+        setupRoot.getChildren().addAll(
+                titleLabel,
+                subtitleLabel,
+                new Label(""),
+                juniorsBox,
+                seniorsBox,
+                budgetBox,
+                new Label(""),
+                startButton,
+                exitSimulationButton
+        );
 
         // --- POPRAWKA BEZPIECZNEGO ODŚWIEŻANIA SCENY STARTOWEJ ---
         if (primaryStage.getScene() == null) {
@@ -119,6 +131,9 @@ public class MainApp extends Application {
 
         gameController = new GameController(simulation, mainLayout.getHRDashboard());
         HBox speedPanel = gameController.createSpeedControlPanel();
+
+        Button exitSimulationButton = createExitSimulationButton(true);
+        speedPanel.getChildren().add(exitSimulationButton);
 
         VBox appRoot = new VBox();
         appRoot.getChildren().addAll(speedPanel, mainLayout.getScene().getRoot());
@@ -158,6 +173,38 @@ public class MainApp extends Application {
 
         timer.start();
         gameController.startSimulation();
+    }
+
+    private Button createExitSimulationButton(boolean returnToSetupScreen) {
+        Button exitSimulationButton = new Button("↩ Wyjdź z symulacji");
+        exitSimulationButton.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 8 18 8 18;");
+
+        exitSimulationButton.setOnAction(e -> {
+            stopCurrentSimulation();
+
+            if (returnToSetupScreen) {
+                showSetupScreen();
+            } else {
+                javafx.application.Platform.exit();
+            }
+        });
+
+        return exitSimulationButton;
+    }
+
+    private void stopCurrentSimulation() {
+        if (simulation != null) {
+            simulation.stop();
+        }
+
+        if (timer != null) {
+            timer.stop();
+            timer = null;
+        }
+
+        if (gameController != null) {
+            gameController.stopSimulationLoop();
+        }
     }
 
     // Ekran końca gry z raportem i przeglądaniem
@@ -207,14 +254,6 @@ public class MainApp extends Application {
         HBox buttonPanel = new HBox(20);
         buttonPanel.setAlignment(Pos.CENTER);
 
-        Button browseButton = new Button("PRZEGLĄDAJ STATYSTYKI I BIURO");
-        browseButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 20 10 20; -fx-cursor: hand;");
-        browseButton.setOnAction(e -> {
-            if (rootContainer != null) {
-                rootContainer.getChildren().remove(gameOverOverlay); // Usuwa tylko zasłonę raportu
-            }
-        });
-
         Button restartButton = new Button("NOWA SYMULACJA");
         restartButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 20 10 20; -fx-cursor: hand;");
         restartButton.setOnAction(e -> {
@@ -224,7 +263,12 @@ public class MainApp extends Application {
             showSetupScreen(); // Czysty powrót do konfiguracji startowej
         });
 
-        buttonPanel.getChildren().addAll(browseButton, restartButton);
+        Button exitSimulationButton = createExitSimulationButton(true);
+
+        buttonPanel.getChildren().addAll(
+                restartButton,
+                exitSimulationButton
+        );
         reportCard.getChildren().addAll(titleLabel, reasonLabel, statsSection, buttonPanel);
         gameOverOverlay.getChildren().add(reportCard);
 
