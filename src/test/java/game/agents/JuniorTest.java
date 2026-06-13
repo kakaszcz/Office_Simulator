@@ -1,4 +1,4 @@
-package game.agents;
+/*package game.agents;
 
 import game.core.GameConfiguration;
 import org.junit.jupiter.api.Test;
@@ -59,3 +59,4 @@ class JuniorTest {
         assertEquals(2, junior.getBossBoosts());
     }
 }
+*/

@@ -57,6 +57,12 @@ public class Cell {
         this.reserved = reserved;
     }
 
+    //Nowe 13.06
+    public boolean isWalkable() {
+        // Komórka jest zdatna do przejścia, jeśli nie jest ścianą
+        return !isWall();
+    }
+
     public boolean isWall() {
         if (type == null) return false;
         return type.toLowerCase().startsWith("wall");
