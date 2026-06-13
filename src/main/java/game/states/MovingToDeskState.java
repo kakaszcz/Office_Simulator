@@ -9,46 +9,80 @@ import game.model.GameBoard;
 public class MovingToDeskState implements WorkerState {
 
     private Cell targetDesk;
+    private int searchCooldown = 0;
+    private int blockedTurnsCount = 0; // Licznik frustracji pamiętany między turami
 
     @Override
     public void enter(Worker worker) {
-        System.out.println("[STAN] " + worker.getName() + " szuka wolnego biurka, aby wrócić do pracy.");
+        System.out.println("[STAN] " + worker.getName() + " zmierza do biurka.");
+        this.blockedTurnsCount = 0;
     }
 
     @Override
     public void act(Worker worker, GameBoard board, Simulation sim) {
-        // Jeśli ktoś zajął nasze biurko w międzyczasie, porzuć je i szukaj od nowa
-        if (targetDesk != null && !targetDesk.isEmpty() && targetDesk.getAgent() != worker) {
-            System.out.println("  -> " + worker.getName() + " zauważył, że biurko zostało podkradzione! Szuka innego...");
-            targetDesk = null;
-        }
 
-        if (targetDesk == null) {
-            targetDesk = board.findFirstEmptyCell(GameConfiguration.TILE_TYPE_DESK);
-        }
+        Cell currentCell = board.getCell(worker.getX(), worker.getY());
 
-        if (targetDesk == null) {
-            System.out.println("  -> " + worker.getName() + " nie może znaleźć wolnego biurka. Czeka.");
+        // 1. Sprawdzamy, czy fizycznie stoimy na WŁAŚCIWYM biurku
+        if (targetDesk != null && currentCell.getX() == targetDesk.getX() && currentCell.getY() == targetDesk.getY()) {
+            finalizeArrival(worker);
             return;
         }
 
-        boolean reachedDestination = false;
+        // Zabezpieczenie przed obciążaniem silnika, jeśli brakuje biurek
+        if (searchCooldown > 0) {
+            searchCooldown--;
+            return;
+        }
 
-        int steps = GameConfiguration.WORKER_MOVE_STEPS_PER_TURN;
-        for (int i = 0; i < steps; i++) {
-            // Wywołujemy nasz PathFinder ukryty w klasie Worker
-            worker.navigateTo(targetDesk, board);
+        // 2. Jeśli ktoś zajął nasze upatrzone biurko, szukamy nowego
+        if (targetDesk != null && (!targetDesk.isEmpty() && targetDesk.getAgent() != worker)) {
+            targetDesk = null;
+        }
 
-            // Sprawdzamy na bieżąco, czy pracownik dotarł już do biurka
-            if (worker.getX() == targetDesk.getX() && worker.getY() == targetDesk.getY()) {
-                reachedDestination = true;
-                break; // Dotarł, przerywamy pętlę ruchu
+        // 3. Szukamy nowego biurka, jeśli nie mamy celu
+        if (targetDesk == null) {
+            targetDesk = board.findFirstEmptyCell(GameConfiguration.TILE_TYPE_DESK);
+
+            if (targetDesk == null) {
+                searchCooldown = 3;
+                return;
             }
         }
 
-        // Jeśli dotarł do celu, siada i czeka na zadania
-        if (reachedDestination) {
-            System.out.println("  -> " + worker.getName() + " usiadł przy swoim biurku.");
+        // 4. Wykonujemy ruch (wywołujemy Twoje standardowe navigateTo)
+        int oldX = worker.getX();
+        int oldY = worker.getY();
+
+        worker.navigateTo(targetDesk, board);
+
+        // 5. Sprawdzamy, czy się poruszyliśmy w tej turze
+        if (worker.getX() == oldX && worker.getY() == oldY) {
+            // Współrzędne się nie zmieniły = agent stoi w korku!
+            blockedTurnsCount++;
+
+            if (blockedTurnsCount > 4) {
+                System.out.println("[INFO] " + worker.getName() + " utknął w drodze do biurka na 5 tur. Resetuje trasę!");
+                targetDesk = null; // Porzuca obecne biurko, poszuka innego
+                blockedTurnsCount = 0;
+                return;
+            }
+        } else {
+            // Ruch się udał, zerujemy licznik frustracji
+            blockedTurnsCount = 0;
+        }
+
+        // 6. Sprawdzamy czy doszedł po wykonaniu kroku
+        if (worker.getX() == targetDesk.getX() && worker.getY() == targetDesk.getY()) {
+            finalizeArrival(worker);
+        }
+    }
+
+    private void finalizeArrival(Worker worker) {
+        System.out.println("  -> " + worker.getName() + " dotarł do biurka.");
+        if (worker.hasTask()) {
+            worker.changeState(new WorkingState());
+        } else {
             worker.changeState(new WaitingForTaskState());
         }
     }

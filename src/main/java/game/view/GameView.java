@@ -98,10 +98,10 @@ public class GameView {
         this.seniorTalkingImg = safeLoad("/images/senior_talking.png");
         this.seniorMadImg = safeLoad("/images/seniorMad.png");
         // Ładowanie pracy przy biurku
-        this.juniorWorkingImg = safeLoad("/images/junior_working.png");
+        this.juniorWorkingImg = safeLoad("/images/juniorWorkingImg.png");
         this.fatalErrorDeskImg = safeLoad("/images/fatalErrorDesk.png");
         this.seniorSuccessImg = safeLoad("/images/senior_success.png");
-        this.seniorWorkingImgAlt = safeLoad("/images/junior_working.png");
+        this.seniorWorkingImgAlt = safeLoad("/images/seniorWorkingImg.png");
         this.seniorMadImgAlt = safeLoad("/images/senior_mad.png");
         this.bossMadImg = safeLoad("/images/bossMad.png");
         this.bossTalkingImg = safeLoad("/images/boss_talking.png");
@@ -250,58 +250,62 @@ public class GameView {
             double px = agent.getVisualX() * TILE_SIZE;
             double py = agent.getVisualY() * TILE_SIZE;
 
-        // POPRAWIONY - sprawdza stan zamiast kafelka
-            boolean czyPijeKawe = false;
+            // --- CHECK REGENERATION STATUS (COFFEE / CIGARETTE) ---
+            boolean isDrinkingCoffee = false;
+            boolean isSmokingCigarette = false;
+
             if (agent instanceof Worker) {
-                String stan = ((Worker) agent).getCurrentStateName();
-                czyPijeKawe = "CoffeeState".equals(stan);
+                Worker worker = (Worker) agent;
+                String state = worker.getCurrentStateName();
+                String tileType = board.getCell(worker.getX(), worker.getY()).getType();
+
+                isDrinkingCoffee = "RestingState".equals(state) && "coffee".equalsIgnoreCase(tileType);
+                isSmokingCigarette = "RestingState".equals(state) && "outside".equalsIgnoreCase(tileType);
             }
 
-        // --- WYBÓR OBRAZKA ---
-            Image imgToDraw = null; // ← null zamiast juniorImg
+            // --- IMAGE SELECTION ---
+            Image imgToDraw = null;
 
             if (agent instanceof Boss) {
                 Boss boss = (Boss) agent;
-                if (czyPijeKawe && bossCoffeeImg != null) {
-                    imgToDraw = bossCoffeeImg;
-                } else if (sim.getBudget() < 1000.0 && bossMadImg != null) {
+                if (sim.getBudget() < 1000.0 && bossMadImg != null) {
                     imgToDraw = bossMadImg;
                 } else {
                     imgToDraw = bossImg;
                 }
             } else if (agent instanceof Senior) {
                 Senior senior = (Senior) agent;
-                String stanSeniora = senior.getCurrentStateName();
+                String seniorState = senior.getCurrentStateName();
 
-                if ("MadState".equals(stanSeniora)) {
+                if ("MadState".equals(seniorState)) {
                     imgToDraw = (seniorMadImgAlt != null) ? seniorMadImgAlt : seniorMadImg;
-                } else if ("SmokingState".equals(stanSeniora) && seniorSmokingImg != null) {
+                } else if (isSmokingCigarette && seniorSmokingImg != null) {
                     imgToDraw = seniorSmokingImg;
-                } else if (("TalkingState".equals(stanSeniora) || "ConversationState".equals(stanSeniora)) && seniorTalkingImg != null) {
+                } else if (("TalkingState".equals(seniorState) || "ConversationState".equals(seniorState)) && seniorTalkingImg != null) {
                     imgToDraw = seniorTalkingImg;
-                } else if ("WorkingState".equals(stanSeniora)) {
+                } else if ("WorkingState".equals(seniorState)) {
                     imgToDraw = (seniorWorkingImgAlt != null) ? seniorWorkingImgAlt : seniorWorkingImg;
-                } else if ("SuccessState".equals(stanSeniora) && seniorSuccessImg != null) {
+                } else if ("SuccessState".equals(seniorState) && seniorSuccessImg != null) {
                     imgToDraw = seniorSuccessImg;
                 } else {
-                    imgToDraw = (czyPijeKawe && seniorCoffeeImg != null) ? seniorCoffeeImg : seniorImg;
+                    imgToDraw = (isDrinkingCoffee && seniorCoffeeImg != null) ? seniorCoffeeImg : seniorImg;
                 }
             } else if (agent instanceof Junior) {
                 Junior junior = (Junior) agent;
-                String stanJuniora = junior.getCurrentStateName();
+                String juniorState = junior.getCurrentStateName();
 
-                if ("CryingState".equals(stanJuniora) && juniorCryingImg != null) {
+                if ("CryingState".equals(juniorState) && juniorCryingImg != null) {
                     imgToDraw = juniorCryingImg;
-                } else if ("SmokingState".equals(stanJuniora) && juniorSmokingImg != null) {
+                } else if (isSmokingCigarette && juniorSmokingImg != null) {
                     imgToDraw = juniorSmokingImg;
-                } else if (("TalkingState".equals(stanJuniora) || "ConversationState".equals(stanJuniora)) && juniorTalkingImg != null) {
+                } else if (("TalkingState".equals(juniorState) || "ConversationState".equals(juniorState)) && juniorTalkingImg != null) {
                     imgToDraw = juniorTalkingImg;
-                } else if ("SuccessState".equals(stanJuniora) && juniorSuccessImg != null) {
+                } else if ("SuccessState".equals(juniorState) && juniorSuccessImg != null) {
                     imgToDraw = juniorSuccessImg;
-                } else if ("WorkingState".equals(stanJuniora) && juniorWorkingImg != null) {
+                } else if ("WorkingState".equals(juniorState) && juniorWorkingImg != null) {
                     imgToDraw = juniorWorkingImg;
                 } else {
-                    imgToDraw = (czyPijeKawe && juniorCoffeeImg != null) ? juniorCoffeeImg : juniorImg;
+                    imgToDraw = (isDrinkingCoffee && juniorCoffeeImg != null) ? juniorCoffeeImg : juniorImg;
                 }
             }
 
@@ -312,11 +316,6 @@ public class GameView {
                 gc.setFill(agent instanceof Boss ? Color.RED : Color.BLUE);
                 gc.fillOval(px + 32, py + 32, 64, 64);
             }
-
-
-
-
-
 
             // --- D. RYSOWANIE IMIENIA NAD POSTACIĄ ---
             gc.setFill(Color.BLACK);

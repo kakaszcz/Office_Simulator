@@ -6,23 +6,22 @@ import game.core.Simulation;
 
 public class MadState implements WorkerState {
 
-    private int madTurns = 4; // Zły przez 4 tury
+    // Liczba tur, przez które odgrywana jest animacja złości
+    private int madTurns = 2;
 
     @Override
     public void enter(Worker worker) {
-        // Złość kosztuje wydajność
-        worker.setEfficiency(Math.max(0.0, worker.getEfficiency() - 0.15));
-        System.out.println("[STAN] " + worker.getName() + " jest wściekły!");
+        System.out.println("[STAN] " + worker.getName() + " odgrywa animację wściekłości!");
     }
 
     @Override
     public void act(Worker worker, GameBoard board, Simulation sim) {
         madTurns--;
-        System.out.println("  -> " + worker.getName() + " nadal się wścieka. Zostało tur: " + madTurns);
+        System.out.println("  -> " + worker.getName() + " wścieka się wizualnie... Zostało tur: " + madTurns);
 
         if (madTurns <= 0) {
-            // Po ochłonięciu zawsze wychodzi na dwór lub do kuchni
-            worker.changeState(new MovingToRestState());
+            System.out.println("  -> " + worker.getName() + " kończy animację złości i wraca do pracy.");
+            worker.changeState(new WaitingForTaskState());
         }
     }
 }

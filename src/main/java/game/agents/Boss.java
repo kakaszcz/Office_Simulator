@@ -9,6 +9,7 @@ public class Boss extends Agent {
     private int controlRange;
     private int coffeeTimer;
     private double previousBudget;
+    private int madTurnsRemaining = 0;
 
     public Boss(String name, int x, int y, double initialBudget) {
         super(x, y);
@@ -18,60 +19,80 @@ public class Boss extends Agent {
         this.previousBudget = initialBudget;
     }
 
+    public void triggerMadAnimation() {
+        this.madTurnsRemaining = 2;
+        System.out.println("[ANIMACJA] Szef " + this.getName() + " czerwienieje ze złości w gabinecie! (Szał na 2 tury)");
+    }
+
     @Override
     public void act(GameBoard board, Simulation sim) {
-        this.coffeeTimer++;
+        // === POPRAWIONY BLOK SZALU (SZEF TERAZ BIEGA WŚCIEKŁY) ===
+        if (this.madTurnsRemaining > 0) {
+            this.madTurnsRemaining--;
+            System.out.println(" 😡 [SZAŁ] Szef " + this.getName() + " w amoku szuka winnych Fatal Errora! Pozostało tur: " + this.madTurnsRemaining);
 
-        // Pobieramy aktualny kafelek, na którym stoi szef
+            // W stanie szału szef ZAWSZE obiera za cel Juniorów (bo to oni psują)
+            Cell juniorTarget = findWorker(sim, Junior.class, board);
+            if (juniorTarget != null) {
+                System.out.println("  -> [Amok] Szef namierzył Juniora i biegnie w jego stronę!");
+                moveToTarget(juniorTarget, board);
+            } else {
+                moveRandomly(board, true);
+            }
+
+            // Po ruchu sprawdza, czy kogoś dopadł i może zwolnić
+            interactWithEmployees(board, sim);
+            this.previousBudget = sim.getBudget();
+            return; // Wychodzimy, bo pomijamy standardową logikę (kawę, relaks itp.)
+        }
+
+        this.coffeeTimer++;
         Cell currentCell = board.getCell(getX(), getY());
 
-        // Czy już stoimy przy ekspresie i pijemy?
+        // FIX: Eliminacja transu kawowego Szefa
         if (currentCell != null && currentCell.getType().equalsIgnoreCase("coffee")) {
             if (this.coffeeTimer >= GameConfiguration.BOSS_COFFEE_INTERVAL) {
                 this.coffeeTimer = 0;
-                sim.recordCoffeeDrunk(); // doliczanie szefa do statystyk
+                sim.recordCoffeeDrunk();
                 System.out.println("Szef " + this.getName() + " wypił kawę na miejscu. Timer zresetowany!");
+                moveRandomly(board, true);
+            } else {
+                // Jeśli wszedł na kawę z przypadku podczas patrolu LUB wypił i nie zdążył zejść, ucieka stąd!
+                moveRandomly(board, true);
             }
-            moveRandomly(board, true); // Schodzi z ekspresu, żeby zrobić miejsce innym
+            return;
         }
-        // Szef ma parcie na kawę, idzie tam bezwarunkowo co turę
-        else if (this.coffeeTimer >= GameConfiguration.BOSS_COFFEE_INTERVAL) {
-            Cell coffeeTarget = chooseTarget(board, sim); // Zwróci wolny ekspres do kawy
+
+        if (this.coffeeTimer >= GameConfiguration.BOSS_COFFEE_INTERVAL) {
+            Cell coffeeTarget = chooseTarget(board, sim);
             if (coffeeTarget != null) {
                 moveToTarget(coffeeTarget, board);
             } else {
-                moveRandomly(board, true); // Jeśli brak wolnych ekspresów, kręci się w korytarzu
+                moveRandomly(board, true);
             }
         }
-        // INTELIGENTNY PATROL (Zależny od budżetu firmy)
         else {
             double chanceToMove = GameConfiguration.BOSS_CHANCE_TO_MOVE_NORMAL;
 
-            // Jeśli budżet spadł -> Szef dostaje szału i patroluje bardzo intensywnie
             if (sim.getBudget() < previousBudget) {
                 chanceToMove = GameConfiguration.BOSS_CHANCE_TO_MOVE_PANIC;
                 System.out.println("Szef " + this.getName() + " zauważył spadek budżetu! Intensywny patrol (" + String.format("%.0f", chanceToMove * 100) + "% szans).");
             }
 
             if (Math.random() < chanceToMove) {
-                // Szef analizuje sytuację finansową i wybiera ofiarę (Juniora lub Seniora)
                 Cell targetWorkerCell = chooseTarget(board, sim);
 
                 if (targetWorkerCell != null) {
-                    // Szef robi jeden świadomy krok w kierunku wybranego pracownika!
                     moveToTarget(targetWorkerCell, board);
                 } else {
-                    moveRandomly(board, true); // Jeśli nie ma pracowników, spaceruje losowo
+                    moveRandomly(board, true);
                 }
             } else {
                 System.out.println("Szef " + this.getName() + " relaksuje się w gabinecie...");
             }
         }
 
-        // SPRAWDZENIE SĄSIADÓW (Zwalnianie)
         interactWithEmployees(board, sim);
-
-        // Zapisanie budżetu na kolejną turę
         this.previousBudget = sim.getBudget();
     }
 
@@ -85,13 +106,11 @@ public class Boss extends Agent {
             setX(nextX);
             setY(nextY);
         } else {
-            // Jeśli skos jest zablokowany, spróbuj pójść tylko w bok lub tylko w dół/górę
             if (nextX != getX() && board.moveAgent(getX(), getY(), nextX, getY())) {
                 setX(nextX);
             } else if (nextY != getY() && board.moveAgent(getX(), getY(), getX(), nextY)) {
                 setY(nextY);
             } else {
-                // Ostateczność: Szef jest zablokowany, więc robi losowy unik
                 moveRandomly(board, true);
             }
         }
@@ -115,29 +134,34 @@ public class Boss extends Agent {
                     Worker worker = (Worker) neighbor;
                     String state = worker.getCurrentStateName();
 
-                    // Immunitet na kawie i w drodze do odpoczynku
-                    if ("CoffeeState".equalsIgnoreCase(state) ||
-                            "MovingToRestState".equalsIgnoreCase(state) ||
+                    // Jeśli to Junior, odpoczywa (RestingState) i kafelek to 'outside' -> ŁAPIEMY GO!
+                    if (worker instanceof Junior && "RestingState".equalsIgnoreCase(state) && "outside".equalsIgnoreCase(neighborCell.getType())) {
+                        System.out.println("!!! SZEF " + this.getName() + " PRZYŁAPAŁ JUNIORA " + worker.getName() + " NA PALENIU NA ZEWNĄTRZ !!!");
+                        worker.markFired();
+                        continue; // Przechodzimy do kolejnego sąsiada
+                    }
+
+                    // Standardowa blokada: Szef ignoruje inne formy odpoczynku (np. legalną kawę w kuchni)
+                    if ("MovingToRestState".equalsIgnoreCase(state) ||
                             "RestingState".equalsIgnoreCase(state) ||
-                            neighborCell.getType().equalsIgnoreCase("coffee")) {
+                            "coffee".equalsIgnoreCase(neighborCell.getType())) {
                         continue;
                     }
 
-                    // konsekwencje podejścia szefa
+                    // Standardowe zwalnianie za złe wyniki
                     if (worker.shouldBeFired() || worker.hasTerribleMetrics()) {
                         if (worker.shouldBeFired()) {
                             System.out.println("!!! SZEF " + this.getName() + " PRZYŁAPAŁ PRACOWNIKA " + worker.getName() + " NA GORĄCYM UCZYNKU !!!");
                         } else {
                             System.out.println("!!! SZEF " + this.getName() + " ZWALNIA PRACOWNIKA " + worker.getName() + " ZA ZŁE WYNIKI (Wydajność: "
-                                    + String.format("%.2f", worker.getPerformance() * 100) + "%) !!!");
+                                    + String.format("%.2f", worker.getEfficiency() * 100) + "%) !!!");
                             worker.markFired();
                         }
                     }
                     else {
-                        // Szef odzywa się tylko do Seniorów i tylko, jeśli już nie gadają
                         if (worker instanceof game.agents.Senior && !state.equalsIgnoreCase("TalkingState")) {
                             System.out.println("Szef " + this.getName() + " ucina sobie przyjacielską pogawędkę z " + worker.getName() + ".");
-                            worker.changeState(new game.states.MadState());
+                            worker.changeState(new game.states.TalkingState());
                         }
                     }
                 }
@@ -162,6 +186,6 @@ public class Boss extends Agent {
                 return board.getCell(agent.getX(), agent.getY());
             }
         }
-        return board.findBossOfficeCell();
+        return null;
     }
 }
