@@ -1,4 +1,4 @@
-package test;
+package game.view;
 
 import java.io.File;
 import java.net.URL;
