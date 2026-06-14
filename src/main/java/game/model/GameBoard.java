@@ -210,10 +210,10 @@ public class GameBoard {
         Cell newCell = getCell(newX, newY);
 
         if (oldCell != null && newCell != null && !oldCell.isEmpty() && newCell.isEmpty()) {
-            if (newCell.isWalkable()) {  // ← zamiast (!isWall() || isDesk())
+            if (newCell.isWalkable()) {
                 Agent agent = oldCell.getAgent();
                 oldCell.setAgent(null);
-                // REFAKTOR: Agent fizycznie opuszcza kafelek, zwalniamy też rezerwację!
+                // Agent fizycznie opuszcza kafelek, zwalniamy też rezerwację!
                 oldCell.setReserved(false);
 
                 newCell.setAgent(agent);

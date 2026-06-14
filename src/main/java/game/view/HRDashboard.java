@@ -9,19 +9,36 @@ import javafx.scene.control.Separator;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 
+/**
+ * Panel analityczny zasobów ludzkich (HRDashboard) realizujący warstwę prezentacji (View).
+ * Odpowiada za wizualizację metryk wydajnościowych, historii zatrudnienia, statystyk behawioralnych
+ * oraz stanów emocjonalnych wszystkich pracowników (zarówno aktywnych, jak i zwolnionych).
+ * Panel implementuje mechanizm dławienia aktualizacji (Update Throttling) w celu optymalizacji
+ * wydajności renderowania interfejsu użytkownika i redukcji narzutu na Garbage Collector.
+ */
 public class HRDashboard {
 
+    /** Główny kontener pionowy przechowujący całą strukturę panelu HR. */
     private final VBox layout;
+    /** Nagłówek statystyk globalnych. */
     private final Label topStatsLabel;
 
+    /** Kontener wewnętrzny umieszczony wewnątrz panelu przewijania. */
     private final VBox scrollContent;
+    /** Elastyczny kontener kafelkowy przeznaczony na wizytówki Juniorów. */
     private final FlowPane juniorCardsContainer;
+    /** Elastyczny kontener kafelkowy przeznaczony na wizytówki Seniorów. */
     private final FlowPane seniorCardsContainer;
 
-    // REFAKTOR: Licznik optymalizacji odświeżania panelu HR
+    /** Licznik kroków symulacji (ticks) sterujący logiką odświeżania interfejsu. */
     private int updateTickCounter = 0;
-    private static final int HR_UPDATE_INTERVAL = 10; // Aktualizacja kart pracowników co 10 tur
+    /** Interwał odświeżania danych kadrowych (UI Throttling Threshold) wyrażony w turach. */
+    private static final int HR_UPDATE_INTERVAL = 10;
 
+    /**
+     * Konstruuje pulpit nawigacyjny HR, inicjalizuje kontenery siatki elastycznej (FlowPane)
+     * dla poszczególnych szczebli zawodowych oraz konfiguruje stylizację CSS komponentów.
+     */
     public HRDashboard() {
         layout = new VBox(10);
         layout.setPadding(new Insets(15));
@@ -40,7 +57,7 @@ public class HRDashboard {
         Label juniorHeader = new Label("👶 JUNIORZY");
         juniorHeader.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #4a90e2; -fx-padding: 5 0 5 0;");
 
-        Label seniorHeader = new Label("👨‍💻 SENIORZY"); // Poprawiony czytelny emoji seniora
+        Label seniorHeader = new Label("👨‍💻 SENIORZY");
         seniorHeader.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #e67e22; -fx-padding: 15 0 5 0;");
 
         scrollContent = new VBox(10);
@@ -58,19 +75,25 @@ public class HRDashboard {
         layout.getChildren().addAll(topStatsLabel, scroll);
     }
 
+    /**
+     * Dokonuje cyklicznej synchronizacji danych interfejsu z menedżerem kadr.
+     * Metoda stosuje algorytm dławienia (Throttling) – przebudowa drzewa węzłów sceny (Scene Graph)
+     * następuje wyłącznie po upłynięciu interwału zdefiniowanego w {@link #HR_UPDATE_INTERVAL}.
+     * Sortuje kafelki priorytetowo: najpierw pracownicy aktywni, następnie pracownicy zwolnieni.
+     *
+     * @param hr Menedżer kadr stanowiący biznesowe źródło danych analitycznych (Model).
+     */
     public void update(HRManager hr) {
-        // REFAKTOR: Pozwalamy na aktualizację tylko raz na 10 kroków symulacji.
-        // Zapobiega to gigantycznemu obciążeniu Garbage Collectora i usuwa mikroprzycięcia gry.
         updateTickCounter++;
         if (updateTickCounter % HR_UPDATE_INTERVAL != 0) {
             return;
         }
 
-        // Czyszczenie starych kafelków z obu kontenerów
+        // Czyszczenie komponentów potomnych w celu uniknięcia nakładania duplikatów
         juniorCardsContainer.getChildren().clear();
         seniorCardsContainer.getChildren().clear();
 
-        // 1. Rozdzielamy AKTYWNYCH pracowników
+        // Agregacja i renderowanie wizytówek pracowników aktywnych zawodowo
         for (EmployeeRecord record : hr.getActiveRecords()) {
             VBox card = createCard(record);
             if ("Junior".equalsIgnoreCase(record.role)) {
@@ -80,7 +103,7 @@ public class HRDashboard {
             }
         }
 
-        // 2. Dorzucamy ZWOLNIONYCH na koniec listy w swojej grupie
+        // Agregacja i renderowanie wizytówek pracowników zwolnionych (Archiwum historyczne)
         for (EmployeeRecord record : hr.getFiredRecords()) {
             VBox card = createCard(record);
             if ("Junior".equalsIgnoreCase(record.role)) {
@@ -91,12 +114,20 @@ public class HRDashboard {
         }
     }
 
+    /**
+     * Tworzy graficzną kartę pracownika (kafelek) wypełnioną szczegółowymi metrykami.
+     * Dynamicznie dopasowuje style CSS (kolorystyka zielona dla personelu aktywnego,
+     * czerwona dla zwolnionego) oraz polimorficznie różnicuje etykiety interakcji z Szefem.
+     *
+     * @param record Rekord informacyjny pracownika wyciągnięty z bazy danych HR.
+     * @return Kontener {@link VBox} stanowiący gotowy element interfejsu graficznego.
+     */
     private VBox createCard(EmployeeRecord record) {
         VBox card = new VBox(5);
         card.setPadding(new Insets(10));
         card.setPrefWidth(220);
 
-        // Kolor tła i obramowania kafelka
+        // Wizualne rozróżnienie stanu zatrudnienia (Context-driven Card Styling)
         if (record.isActive) {
             card.setStyle("-fx-border-color: #2ce62c; -fx-border-radius: 5; -fx-border-width: 2; -fx-background-color: #f0fff0;");
         } else {
@@ -128,7 +159,6 @@ public class HRDashboard {
         tearsLbl.setStyle("-fx-text-fill: #555555;");
 
         String bossInteractionText;
-
         if ("Junior".equalsIgnoreCase(record.role)) {
             bossInteractionText = "Boosty od szefa: ⚡ " + record.bossBoosts;
         } else if ("Senior".equalsIgnoreCase(record.role)) {
@@ -153,6 +183,7 @@ public class HRDashboard {
                 bossInteractionLbl
         );
 
+        // Warunkowe dołączanie sekcji unikalnej dla Seniorów (liczba naprawionych błędów)
         if (record.bugsRepaired > 0) {
             Label fixesLbl = new Label("Fixy: 🛠️ " + record.bugsRepaired);
             fixesLbl.setStyle("-fx-text-fill: #555555;");
@@ -162,6 +193,11 @@ public class HRDashboard {
         return card;
     }
 
+    /**
+     * Zwraca główny kontener układu graficznego panelu kadr.
+     *
+     * @return Węzeł typu {@link VBox} reprezentujący pełny interfejs panelu.
+     */
     public VBox getLayout() {
         return layout;
     }

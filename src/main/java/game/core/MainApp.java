@@ -307,12 +307,20 @@ public class MainApp extends Application {
             showSetupScreen(); // Czysty powrót do konfiguracji startowej
         });
 
-        Button exitSimulationButton = createExitSimulationButton(true);
+        Button viewStatsButton = new Button("PRZEGLĄDAJ STATYSTYKI");
+        viewStatsButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 20 10 20; -fx-cursor: hand;");
+
+        viewStatsButton.setOnAction(e -> {
+            if (rootContainer != null) {
+                rootContainer.getChildren().remove(gameOverOverlay);
+            }
+        });
 
         buttonPanel.getChildren().addAll(
                 restartButton,
-                exitSimulationButton
+                viewStatsButton
         );
+
         reportCard.getChildren().addAll(titleLabel, reasonLabel, statsSection, buttonPanel);
         gameOverOverlay.getChildren().add(reportCard);
 

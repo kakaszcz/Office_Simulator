@@ -24,14 +24,32 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Klasa MainLayout odpowiada za główną kompozycję interfejsu użytkownika aplikacji.
+ * Składa w jedną spójną przestrzeń planszę gry (warstwa wizualna) oraz panel boczny
+ * zawierający dzienniki zdarzeń, wykresy analityczne oraz statystyki kadrowe (HR).
+ * Implementuje również mechanizm przechwytywania standardowego wyjścia konsoli.
+ */
 public class MainLayout {
 
+    /** Główna scena JavaFX przechowująca strukturę całego okna. */
     private final Scene scene;
+    /** Etykieta wyświetlająca aktualny stan budżetu lub informację o bankructwie. */
     private final Label globalBudgetLabel;
+    /** Panel zarządzający wykresami statystycznymi (Analityka). */
     private final StatisticsDashboard dashboard;
+    /** Panel zarządzający informacjami o pracownikach (Kadry). */
     private final HRDashboard hrDashboard;
+    /** Panel wyświetlający podsumowanie globalnych statystyk symulacji. */
     private final SimulationStatsPanel statsPanel;
 
+    /**
+     * Konstruktor głównego układu okna symulacji. Tworzy poszczególne panele,
+     * konfiguruje ich rozmieszczenie oraz inicjalizuje podział okna (SplitPane).
+     *
+     * @param simulation Instancja silnika symulacji dostarczająca dane biznesowe.
+     * @param gameView   Instancja silnika renderującego planszę biura.
+     */
     public MainLayout(Simulation simulation, GameView gameView) {
         // --- GÓRNY PASEK Z BUDŻETEM ---
         globalBudgetLabel = new Label("BUDŻET: " + String.format("%.2f", simulation.getBudget()) + " $");
@@ -47,6 +65,7 @@ public class MainLayout {
         Group group = new Group(gameView.getCanvas());
         gameRoot.getChildren().add(group);
 
+        // Zastosowanie transformacji skalującej dla płótna (Canvas) widoku gry
         Scale scale = new Scale(0.45, 0.45);
         scale.setPivotX(0);
         scale.setPivotY(0);
@@ -76,6 +95,7 @@ public class MainLayout {
 
         logsPanel.getChildren().addAll(lblSys, sysArea, lblWork, workerArea, lblAlert, alertArea);
 
+        // Aktywacja przechwytywania strumienia wyjściowego i mapowania do obszarów tekstowych
         setupConsoleCapture(sysArea, workerArea, alertArea);
 
         // ZAKŁADKI (Inicjalizacja zawartości)
@@ -110,7 +130,6 @@ public class MainLayout {
         statsScrollPane.setStyle("-fx-background-color: transparent;");
         globalStatsTab.setContent(statsScrollPane);
 
-        // --- ZMIANA KOLEJNOŚCI: Wrzucamy globalStatsTab jako pierwszy element listy ---
         rightPanel.getTabs().addAll(globalStatsTab, logTab, statsTab, hrTab);
 
 
@@ -125,6 +144,15 @@ public class MainLayout {
         this.scene = new Scene(rootLayout);
     }
 
+    /**
+     * Przekierowuje standardowy strumień System.out do niestandardowego wyjścia,
+     * parsując tekst linia po linii i dystrybuując go do odpowiednich sekcji TextArea.
+     * Prace na interfejsie są bezpiecznie delegowane do wątku JavaFX (Platform.runLater).
+     *
+     * @param sysArea    Obszar logów systemowych i finansowych.
+     * @param workerArea Obszar logów aktywności pracowników.
+     * @param alertArea  Obszar logów błędów, porażek i alertów krytycznych.
+     */
     private void setupConsoleCapture(TextArea sysArea, TextArea workerArea, TextArea alertArea) {
         OutputStream out = new OutputStream() {
             private ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -138,6 +166,7 @@ public class MainLayout {
                     Platform.runLater(() -> {
                         if (line.isEmpty() || line.trim().isEmpty()) return;
 
+                        // Klasyfikacja linii tekstu na podstawie słów kluczowych
                         if (line.contains("TURA") || line.contains("$$$") || line.contains("HR") || line.contains("Rozdzielanie")) {
                             sysArea.appendText(line + "\n");
                         } else if (line.contains("!!!") || line.contains("płacze") || line.contains("FATAL") || line.contains("PORAŻKA") || line.contains("zawalił") || line.contains("błędów") || line.contains("BANKRUCTWO")) {
@@ -159,13 +188,25 @@ public class MainLayout {
         }
     }
 
+    /**
+     * Zwraca przygotowany obiekt sceny (Scene) zawierający kompletny układ UI.
+     *
+     * @return Główna scena aplikacji.
+     */
     public Scene getScene() {
         return scene;
     }
 
+    /**
+     * Aktualizuje elementy widoku na podstawie bieżącego stanu symulacji.
+     * Odświeża etykietę budżetu, wykresy analityczne oraz podległe panele statystyk i kadr.
+     *
+     * @param simulation Instancja silnika symulacji z aktualnymi danymi tury.
+     */
     public void update(Simulation simulation) {
         double currentBudget = simulation.getBudget();
 
+        // Weryfikacja stanu budżetu i dobór odpowiedniej stylizacji paska statusu
         if (currentBudget <= 0) {
             globalBudgetLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #ff3333; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 4, 0, 1, 1);");
             globalBudgetLabel.setText("BANKRUCTWO: " + String.format("%.2f", currentBudget) + " $");
@@ -174,6 +215,7 @@ public class MainLayout {
             globalBudgetLabel.setText("BUDŻET: " + String.format("%.2f", currentBudget) + " $");
         }
 
+        // Przekazanie nowych serii danych do wykresów liniowych
         dashboard.updateCharts(
                 simulation.getStepCount(),
                 currentBudget,
@@ -182,15 +224,22 @@ public class MainLayout {
                 simulation.getCoffeesDrunk()
         );
 
+        // Odświeżenie danych w module kadr
         if (simulation.getHRManager() != null) {
             hrDashboard.update(simulation.getHRManager());
         }
 
+        // Odświeżenie ogólnego panelu statystyk
         if (statsPanel != null) {
             statsPanel.update(simulation);
         }
     }
 
+    /**
+     * Zwraca instancję zintegrowanego komponentu zarządzania kadrami HRDashboard.
+     *
+     * @return Obiekt pulpitu HR.
+     */
     public game.view.HRDashboard getHRDashboard() {
         return hrDashboard;
     }
