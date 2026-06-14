@@ -58,8 +58,8 @@ public abstract class Worker extends Agent {
         this.efficiency = efficiency;
         this.experience = experience;
 
-        // FIX: Każdy pracownik rodzi się od razu w stanie oczekiwania na zadanie,
-        // co zapobiega powstawaniu "zawieszonych" agentów bez przypisanego stanu (Idle-zombie)
+        // Każdy pracownik rodzi się od razu w stanie oczekiwania na zadanie,
+        // co zapobiega powstawaniu "zawieszonych" agentów bez przypisanego stanu
         this.changeState(new game.states.WaitingForTaskState());
     }
 

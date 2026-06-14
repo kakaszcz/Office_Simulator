@@ -4,7 +4,6 @@ import game.core.Simulation;
 import game.core.GameConfiguration;
 import game.model.*;
 
-//spr.
 public class Boss extends Agent {
 
     private int controlRange;
@@ -47,7 +46,6 @@ public class Boss extends Agent {
      */
     @Override
     public void act(GameBoard board, Simulation sim) {
-        // === POPRAWIONY BLOK SZALU ===
         if (this.madTurnsRemaining > 0) {
             this.madTurnsRemaining--;
             System.out.println(" 😡 [SZAŁ] Szef " + this.getName() + " w amoku szuka winnych Fatal Errora! Pozostało tur: " + this.madTurnsRemaining);
@@ -70,7 +68,6 @@ public class Boss extends Agent {
         this.coffeeTimer++;
         Cell currentCell = board.getCell(getX(), getY());
 
-        // FIX: Eliminacja transu kawowego Szefa
         if (currentCell != null && currentCell.getType().equalsIgnoreCase("coffee")) {
             if (this.coffeeTimer >= GameConfiguration.BOSS_COFFEE_INTERVAL) {
                 this.coffeeTimer = 0;

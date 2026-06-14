@@ -5,7 +5,6 @@ import game.core.GameConfiguration;
 import game.model.Cell;
 import game.model.GameBoard;
 
-//Spr.
 abstract public class Agent {
     private int x;
     private int y;
@@ -166,7 +165,7 @@ abstract public class Agent {
     public String getDirection() { return direction; }
     public int getAnimationFrame() { return animationFrame; }
 
-    // REFAKTOR: Settery automatycznie rejestrują ścieżkę wizualną, zabezpieczając płynność animacji kafelkowej
+    // Settery automatycznie rejestrują ścieżkę wizualną, zabezpieczając płynność animacji kafelkowej
     public void setX(int x) {
         this.x = x;
         addWaypoint(this.x, this.y);

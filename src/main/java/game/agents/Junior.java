@@ -3,8 +3,6 @@ package game.agents;
 import game.core.GameConfiguration;
 import game.core.Simulation;
 
-//spr.
-
 /**
  * Reprezentuje pracownika o poziomie Junior w symulacji.
  * Junior charakteryzuje się wyższą podatnością na błędy wynikającą z niskiego doświadczenia.
@@ -12,7 +10,7 @@ import game.core.Simulation;
  */
 public class Junior extends Worker {
     private int numberOfFails;
-    private int lifetimeFails; // NOWOŚĆ: Licznik błędów, którego ŻADEN reset w Simulation nie wymaże
+    private int lifetimeFails;
     private boolean wasBossNeighborInPreviousTurn = false;
 
     /**
@@ -91,8 +89,6 @@ public class Junior extends Worker {
 
     public int getTasksFailed() { return this.numberOfFails; }
 
-    // Jeśli w Simulation.java masz metodę czyszczącą błędy (np. junior.resetCurrentFails()),
-    // to wyzeruje ona numberOfFails, ale lifetimeFails zostanie nienaruszone!
     public void resetCurrentFails() {
         this.numberOfFails = 0;
     }

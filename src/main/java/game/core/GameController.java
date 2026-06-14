@@ -12,6 +12,11 @@ import javafx.scene.control.Slider;
 import javafx.scene.layout.HBox;
 import javafx.util.Duration;
 
+/**
+ * Kontroler główny zarządzający pętlą czasu (Game Loop) symulacji oraz panelem sterowania.
+ * Odpowiada za cykliczne wywoływanie kroków logiki biznesowej, aktualizację widoków
+ * oraz dynamiczną manipulację prędkością działania aplikacji za pomocą UI.
+ */
 public class GameController {
 
     private final Simulation simulation;
@@ -19,6 +24,12 @@ public class GameController {
     private Timeline gameLoop;
     private Button playPauseBtn; // Pole klasy do synchronizacji stanu przycisku
 
+    /**
+     * Tworzy nowy obiekt kontrolera gier i inicjalizuje pętlę czasu.
+     *
+     * @param simulation Główny obiekt silnika symulacji zawierający logikę biznesową.
+     * @param hrDashboard Panel widoku HR, który ma być odświeżany co każdą turę.
+     */
     public GameController(Simulation simulation, HRDashboard hrDashboard) {
         this.simulation = simulation;
         this.hrDashboard = hrDashboard;
@@ -27,9 +38,14 @@ public class GameController {
         initGameLoop();
     }
 
+    /**
+     * Inicjalizuje pętlę główną gry bazując na interwale czasowym z konfiguracji.
+     * Definiuje zachowanie aplikacji przy każdym ticku oraz mechanizm awaryjnego
+     * zatrzymania w przypadku wykrycia końca gry lub bankructwa firmy.
+     */
     private void initGameLoop() {
         KeyFrame keyFrame = new KeyFrame(Duration.millis(GameConfiguration.GAME_LOOP_BASE_TICK_MS), event -> {
-            // FIX: Zatrzymujemy pętlę Timeline po wykryciu bankructwa/końca gry, by nie obciążać procesora w tle
+            // Zatrzymujemy pętlę Timeline po wykryciu bankructwa/końca gry, by nie obciążać procesora w tle
             if (!simulation.isRunning()) {
                 System.out.println(">>> [GameLoop] Wykryto zatrzymanie symulacji. Zatrzymuję pętlę główną kontrolera.");
                 gameLoop.stop();
@@ -48,13 +64,19 @@ public class GameController {
         gameLoop.setCycleCount(Animation.INDEFINITE); // Pętla działa w nieskończoność
     }
 
+    /**
+     * Tworzy i konfiguruje graficzny panel sterowania prędkością symulacji (HBox).
+     * Panel zawiera przycisk start/pauza oraz suwak umożliwiający płynną,
+     * dynamiczną zmianę szybkości wykonywania kolejnych tur symulacji.
+     *
+     * @return Skonfigurowany kontener HBox z kontrolkami interfejsu użytkownika.
+     */
     public HBox createSpeedControlPanel() {
         HBox panel = new HBox(GameConfiguration.UI_SPEED_PANEL_SPACING);
         panel.setAlignment(Pos.CENTER_LEFT);
         panel.setPadding(new Insets(10, 15, 10, 15));
         panel.setStyle("-fx-background-color: #f5f5f5; -fx-border-color: #cccccc; -fx-border-width: 0 0 1 0;");
 
-        // Skoro symulacja rusza z automatu, domyślnym tekstem zostaje "Pauza"
         playPauseBtn = new Button("⏸ Pauza");
 
         playPauseBtn.setOnAction(e -> {
@@ -96,6 +118,11 @@ public class GameController {
         return panel;
     }
 
+    /**
+     * Pobiera aktualny mnożnik prędkości działania pętli gry.
+     *
+     * @return Aktualna wartość prędkości zdefiniowana na suwaku.
+     */
     public double getSpeed() {
         if (gameLoop != null) {
             return gameLoop.getRate(); // Pobiera aktualną wartość zbindowaną z suwakiem
@@ -103,6 +130,9 @@ public class GameController {
         return GameConfiguration.SPEED_SLIDER_DEFAULT;
     }
 
+    /**
+     * Uruchamia pętlę czasu symulacji i synchronizuje tekst na przycisku sterującym.
+     */
     public void startSimulation() {
         if (gameLoop != null) {
             gameLoop.play();
@@ -111,6 +141,10 @@ public class GameController {
             }
         }
     }
+
+    /**
+     * Całkowicie zatrzymuje pętlę czasu symulacji i przywraca stan początkowy kontrolki UI.
+     */
     public void stopSimulationLoop() {
         if (gameLoop != null) {
             gameLoop.stop();
