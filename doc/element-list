@@ -1,0 +1,6 @@
+module:SymulacjaBiura
+game.agents
+game.core
+game.model
+game.states
+game.view

@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"m":"SymulacjaBiura","l":"game.agents"},{"m":"SymulacjaBiura","l":"game.core"},{"m":"SymulacjaBiura","l":"game.model"},{"m":"SymulacjaBiura","l":"game.states"},{"m":"SymulacjaBiura","l":"game.view"}];updateSearchResults();
