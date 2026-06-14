@@ -158,6 +158,8 @@ Testy jednostkowe projektu.
 
 Projekt najlepiej uruchamiać w IntelliJ IDEA.
 
+Główną klasą uruchomieniową jest `MainApp.java`.
+
 Po uruchomieniu aplikacji pojawia się ekran startowy, na którym można ustawić liczbę Juniorów, liczbę Seniorów oraz początkowy budżet.
 
 ---
@@ -180,12 +182,13 @@ Można je również uruchomić z panelu Maven:
 Maven → Lifecycle → test
 ```
 
-Aktualnie dodane testy obejmują logikę klasy `Junior`, między innymi:
+Projekt posiada solidne pokrycie testami jednostkowymi (JUnit 5) weryfikującymi reguły biznesowe. Obejmują one m.in.:
+* **Silnik Symulacji (`SimulationTest`):** Zabezpieczenia budżetu, upływ czasu, matematyka kar i statystyk.
+* **Kadry (`HRManagerTest`):** Weryfikacja cyklu życia pracownika oraz testy odporności archiwum (Defensive Copies).
+* **Agenci (`JuniorTest`, `BossTest`):** Zależności zmęczenia od szansy na błąd, liczniki sąsiedztwa szefa, stany szału i resetowanie metryk.
+* **Diagnostyka Zasobów (`TestResources`):** Autorski skrypt linter'a (Asset Scanner) weryfikujący poprawność mapowania plików graficznych `.png` w kodzie źródłowym gry.
 
-* wzrost szansy błędu przy spadku efektywności,
-* reset bieżących błędów bez resetowania historii błędów,
-* zapamiętywanie informacji o sąsiedztwie szefa,
-* licznik boostów otrzymanych od szefa.
+Testy można uruchomić z poziomu środowiska IDE lub za pomocą komendy: `mvn test` (Maven -> Lifecycle -> test).
 
 ---
 
