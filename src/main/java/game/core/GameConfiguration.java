@@ -17,24 +17,24 @@ public class GameConfiguration {
     // ==========================================
     public static final double STARTING_BUDGET = 2000.0;
 
-    // Kara za fatal error
+    /** Kara za fatal error */
     public static final double FATAL_ERROR_PENALTY = 300.0;
 
-    /** REBALANS: Podstawa zarobku za zadanie (dajemy 30, żeby firma miała zysk) */
+    /** Podstawa zarobku za zadanie */
     public static final double TASK_BASE_REWARD = 50.0;
-    /** Mnożnik doświadczenia (zostaje 10) */
+    /** Mnożnik doświadczenia */
     public static final double TASK_EXPERIENCE_MULTIPLIER = 10.0;
 
-    /** OPTYMALIZACJA PENSJI: Obniżamy koszty stałe, żeby firma nie krwawiła tak szybko */
+    /** Pensja pracowników */
     public static final double SALARY_SENIOR = 20.0;
     public static final double SALARY_JUNIOR = 5.0;
 
     // ==========================================
     // --- ZMĘCZENIE I WYDAJNOŚĆ ---
     // ==========================================
-    /** MAŁA KOREKTA: Zmniejszamy nagły koszt startu pracy (z 0.05 na 0.02) */
+    /** Koszt startu pracy */
     public static final double WORK_ENTER_EFFICIENCY_DECREASE = 0.02;
-    /** MAŁA KOREKTA: Pracownik męczy się wolniej (z 0.04 na 0.025) */
+    /** Spadek wydajności podczas pracy */
     public static final double WORK_STEP_EFFICIENCY_DECREASE = 0.025;
     /** Maksymalna możliwa wydajność pracownika */
     public static final double MAX_EFFICIENCY = 1.0;
@@ -55,21 +55,18 @@ public class GameConfiguration {
     // ==========================================
     /** Wzrost wydajności Juniora, gdy podejdzie Szef */
     public static final double BOSS_MOTIVATION_EFFICIENCY_BOOST = 0.10;
-    /** (Możesz to zmniejszyć do 0.05, jeśli gdziekolwiek indziej używasz tego do dodawania expa w trakcie pracy) */
-    public static final double BOSS_MOTIVATION_EXPERIENCE_BOOST = 0.05;
-    /** Koszt wydajności Seniora za rozmowę (zawracanie głowy) z Szefem */
-    public static final double BOSS_TALK_EFFICIENCY_DROP = 0.10;
 
     // ==========================================
     // --- BALANS PRACOWNIKÓW ---
     // ==========================================
-    /** NOWOŚĆ: Bazowy mnożnik doświadczenia po pomyślnym ukończeniu zadania */
+    /** Bazowy mnożnik doświadczenia po pomyślnym ukończeniu zadania */
     public static final double JUNIOR_EXPERIENCE_GAIN_PER_TASK = 0.015;
 
     /** Minimalna szansa na błąd dla Juniora (nawet przy maksymalnym doświadczeniu) */
     public static final double JUNIOR_MIN_FAIL_CHANCE = 0.1;
     /** Dodatkowy stały bonus do wydajności (Performance) dla Seniora */
     public static final double SENIOR_EXPERIENCE_BONUS = 0.15;
+
     // ==========================================
     // --- USTAWIENIA CZASOWE (TURY) ---
     // ==========================================
@@ -88,14 +85,19 @@ public class GameConfiguration {
     // ==========================================
     // --- USTAWIENIA SYMULACJI I LIMITÓW ---
     // ==========================================
+    /** Maksymalna ilość niepowodzeń przed Fatal Error */
     public static final int MAX_FAILS_LIMIT = 8;
+    /** Maksymalna ilość juniorów */
     public static final int MAX_JUNIORS = 10;
+    /** Maksymalna ilość seniorów */
     public static final int MAX_SENIORS = 5;
 
     // ==========================================
     // --- ROZMIAR I KONFIGURACJA PLANSZY ---
     // ==========================================
+    /** Szerokość mapy */
     public static final int MAP_WIDTH = 16;
+    /** Wysokość mapy */
     public static final int MAP_HEIGHT = 10;
 
     // ==========================================
@@ -165,7 +167,7 @@ public class GameConfiguration {
     /** Minimalna prędkość symulacji na suwaku */
     public static final double SPEED_SLIDER_MIN = 0.25;
     /** Maksymalna prędkość symulacji na suwaku */
-    public static final double SPEED_SLIDER_MAX = 10.0;
+    public static final double SPEED_SLIDER_MAX = 8.0;
     /** Domyślna początkowa prędkość symulacji */
     public static final double SPEED_SLIDER_DEFAULT = 1.0;
     /** Krok przesunięcia bloku suwaka */
@@ -194,14 +196,14 @@ public class GameConfiguration {
     // ==========================================
     // --- MAPOWANIE LICZBOWE UKŁADU MAPY ---
     // ==========================================
-    // Numeryczne typy podłóg (floorLayout)
+    /** Numeryczne typy podłóg */
     public static final int FLOOR_EMPTY = 0;
     public static final int FLOOR_OUTDOOR = 1;
     public static final int FLOOR_BOSS_OFFICE = 2;
     public static final int FLOOR_WALL_NOT_WALKABLE = 3;
     public static final int FLOOR_NOT_WALKABLE = 4;
 
-    // Numeryczne typy obiektów (objectLayout)
+    /** Numeryczne typy obiektów (objectLayout) */
     public static final int OBJ_WALL_RIGHT = 5;
     public static final int OBJ_WALL = 6;
     public static final int OBJ_COFFEE = 7;

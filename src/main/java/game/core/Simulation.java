@@ -9,6 +9,12 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * Główny silnik symulacji (klasa menedżerska fasady biznesowej).
+ * Zarządza cyklem życia wszystkich agentów w biurze, kontroluje upływ tur (kroków),
+ * obsługuje finanse (budżet, pensje, kary), dystrybuuje zadania oraz
+ * monitoruje globalne statystyki wydajności i błędów aplikacji.
+ */
 public class Simulation {
 
     private GameBoard gameBoard;
@@ -30,6 +36,15 @@ public class Simulation {
     private HRManager hrManager;
     private MainApp mainApp;
 
+    /**
+     * Tworzy i inicjalizuje strukturę nowego środowiska symulacji biura IT.
+     * Powołuje do życia Szefa w jego gabinecie, rozmieszcza startowych pracowników
+     * przy wolnych biurkach oraz rejestruje ich w module HRManager.
+     *
+     * @param numJuniors Początkowa liczba pracowników poziomu Junior (ograniczona limitem konfiguracji).
+     * @param numSeniors Początkowa liczba pracowników poziomu Senior (ograniczona limitem konfiguracji).
+     * @param initialBudget Początkowy stan kapitału zakładowego firmy.
+     */
     public Simulation(int numJuniors, int numSeniors, int initialBudget) {
         this.gameBoard = new GameBoard();
         this.agents = new CopyOnWriteArrayList<>();
@@ -62,13 +77,35 @@ public class Simulation {
         }
     }
 
+    /**
+     * Rejestruje główną instancję aplikacji JavaFX w celu umożliwienia
+     * wywoływania ekranów powiadomień i końca gry.
+     *
+     * @param mainApp Instancja klasy uruchomieniowej MainApp.
+     */
     public void setMainApp(MainApp mainApp) { this.mainApp = mainApp; }
+
+    /**
+     * Sprawdza, czy proces symulacji jest aktualnie aktywny.
+     *
+     * @return true, jeśli symulacja działa; false w przypadku zatrzymania lub końca gry.
+     */
     public boolean isRunning() { return this.isRunning; }
 
+    /**
+     * Wstrzymuje flagę działania pętli głównej symulacji.
+     */
     public void stop() {
         this.isRunning = false;
     }
 
+    /**
+     * Pomocnicza fabryka rozlokowująca określoną liczbę pracowników danego typu
+     * przy pierwszych wolnych kafelkach oznaczonych jako biurka.
+     *
+     * @param num Liczba pracowników do wygenerowania.
+     * @param type Typ pracownika (np. "Junior" lub "Senior").
+     */
     private void createWorkers(int num, String type) {
         for (int i = 0; i < num; i++) {
             Cell freeDesk = gameBoard.findFirstEmptyCell("desk");
@@ -87,8 +124,18 @@ public class Simulation {
         }
     }
 
+    /**
+     * Pobiera logiczną planszę gry.
+     *
+     * @return Obiekt typu GameBoard reprezentujący mapę biura.
+     */
     public GameBoard getGameBoard() { return gameBoard; }
 
+    /**
+     * Główna metoda wykonawcza pojedynczego kroku (tury) symulacji.
+     * Odpowiada za sekwencyjne rozliczanie pensji pracowniczych, dystrybucję nowych zadań,
+     * weryfikację pozycji agentów, wywołanie ich logiki wewnętrznej (stanów) oraz procesy HR.
+     */
     public void step() {
         if (!isRunning) return;
         stepCount++;
@@ -118,9 +165,7 @@ public class Simulation {
             }
         }
 
-        // =======================================================================
-        // 2. DYSTRYBUCJA ZADAŃ + BEZPIECZNIK ANTY-KODOWANIA W BIEGU (ZAKTUALIZOWANE)
-        // =======================================================================
+        // 2. Dystrybucja zadań projektowych i weryfikacja położenia pracowników
         if (stepCount % GameConfiguration.TASK_DISTRIBUTION_INTERVAL == 0) {
             System.out.println(">>> [Manager] Rozdzielanie nowej puli zadań w tej turze!");
             for (Agent agent : this.agents) {
@@ -129,7 +174,7 @@ public class Simulation {
                     Cell currentCell = gameBoard.getCell(worker.getX(), worker.getY());
                     String currentState = worker.getCurrentStateName();
 
-                    // TWARDY BAN: Jeśli pracownik NIE stoi na biurku, nie ma prawa pracować ani czekać na zadanie!
+                    // Jeśli pracownik NIE stoi na biurku, nie ma prawa pracować ani czekać na zadanie
                     if (currentCell != null && !GameConfiguration.TILE_TYPE_DESK.equalsIgnoreCase(currentCell.getType())) {
                         if ("WorkingState".equalsIgnoreCase(currentState) || "WaitingForTaskState".equalsIgnoreCase(currentState)) {
                             System.out.println(">>> [Korekta HR] " + worker.getName() + " złapany w strefie '" + currentCell.getType() + "'! Wymuszony marsz do biurka.");
@@ -157,7 +202,7 @@ public class Simulation {
         List<Agent> agentsToFire = new ArrayList<>();
         List<Agent> juniorsToHire = new ArrayList<>();
 
-        // 3. AKTUALIZACJA LOGIKI AGENTÓW
+        // 3. Aktualizacja zachowania i stanów autonomicznych agentów
         for (Agent agent : this.agents) {
             agent.act(gameBoard, this);
             if (agent instanceof Worker && ((Worker) agent).shouldBeFired()) {
@@ -165,7 +210,7 @@ public class Simulation {
             }
         }
 
-        // 4. PROCESY HR
+        // 4. Obsługa procesów kadrowych (Zwalnianie i rekrutacja zastępcza Juniorów)
         for (Agent firedAgent : agentsToFire) {
             this.removeAgent(firedAgent);
             this.hrManager.registerFire(firedAgent);
@@ -188,6 +233,10 @@ public class Simulation {
         this.hrManager.updateAllRecords();
     }
 
+    /**
+     * Raportuje wystąpienie błędu popełnionego przez Juniora.
+     * Weryfikuje, czy osiągnięto limit awarii wywołujący błąd krytyczny systemu.
+     */
     public void reportJuniorFail() {
         this.totalFails++;
         if (this.totalFails >= GameConfiguration.MAX_FAILS_LIMIT) {
@@ -195,10 +244,18 @@ public class Simulation {
         }
     }
 
+    /**
+     * Zmniejsza licznik bieżących awarii w biurze (wywoływane po udanej naprawie przez Seniora).
+     */
     public void repairFail() {
         if (this.totalFails > 0) this.totalFails--;
     }
 
+    /**
+     * Aktywuje stan awarii krytycznej (Fatal Error). Nalicza karę finansową,
+     * wprowadza Seniorów w stan zdenerwowania (MadState) oraz wymusza animację gniewu u Szefa.
+     * W przypadku utraty płynności finansowej wywołuje ekran końca gry.
+     */
     private void triggerFatalError() {
         this.totalFatalErrors++;
         double penalty = GameConfiguration.FATAL_ERROR_PENALTY;
@@ -224,7 +281,13 @@ public class Simulation {
         }
     }
 
+    /**
+     * Zwiększa aktualny stan konta firmy o podaną kwotę (zarobek za zadanie).
+     *
+     * @param amount Kwota zysku dodawana do budżetu.
+     */
     public void earnMoney(double amount) { this.budget += amount; }
+
     public int getStepCount() { return stepCount; }
     public int getTotalTurns() { return stepCount; }
     public double getBudget() { return this.budget; }
@@ -242,12 +305,23 @@ public class Simulation {
     public int getTotalTasksFailed() { return totalTasksFailed; }
     public int getTotalFatalErrors() { return totalFatalErrors; }
 
+    /**
+     * Oblicza procentowy współczynnik pomyślnie ukończonych zadań w stosunku do wszystkich oddanych.
+     *
+     * @return Wartość typu double z zakresu 0.0 - 100.0.
+     */
     public double getSuccessRate() {
         int totalTasks = totalTasksSuccess + totalTasksFailed;
         if (totalTasks == 0) return 100.0;
         return ((double) totalTasksSuccess / totalTasks) * 100.0;
     }
 
+    /**
+     * Formatuje licznik kroków symulacji na czytelną formę czasu (dni oraz godziny robocze).
+     * Zakłada, że na jeden dzień roboczy (od 09:00) składa się 5 tur.
+     *
+     * @return Sformatowany ciąg tekstowy (np. "Dzień 1, godz. 11:00").
+     */
     public String getSimulationTimeFormatted() {
         int turnsPerDay = 5;
         int day = (stepCount / turnsPerDay) + 1;
@@ -255,6 +329,11 @@ public class Simulation {
         return String.format("Dzień %d, godz. %02d:00", day, hour);
     }
 
+    /**
+     * Oblicza średnią arytmetyczną wydajności (Efficiency) wszystkich zatrudnionych pracowników.
+     *
+     * @return Średnia wartość procentowa z zakresu 0.0 - 100.0.
+     */
     public double getAverageEfficiency() {
         double total = 0.0;
         int count = 0;
@@ -269,6 +348,12 @@ public class Simulation {
 
     public double getAverageOfficeEfficiency() { return getAverageEfficiency(); }
 
+    /**
+     * Całkowicie usuwa wskazanego agenta z listy aktywnych obiektów symulacji
+     * oraz czyści referencję do niego na powiązanym kafelku planszy.
+     *
+     * @param agent Obiekt agenta przeznaczony do usunięcia.
+     */
     public void removeAgent(Agent agent) {
         if (this.agents.contains(agent)) {
             this.agents.remove(agent);
@@ -286,6 +371,11 @@ public class Simulation {
         }
     }
 
+    /**
+     * Wyszukuje i zwraca obiekt Szefa zarządzającego biurem.
+     *
+     * @return Instancja klasy Boss lub null, jeśli szef nie został odnaleziony.
+     */
     public Boss getBoss() {
         for (Agent agent : this.agents) {
             if (agent instanceof Boss) return (Boss) agent;

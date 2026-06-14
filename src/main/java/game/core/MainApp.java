@@ -16,37 +16,60 @@ import javafx.scene.layout.VBox;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
+/**
+ * Główna klasa uruchomieniowa aplikacji (punkt wejścia JavaFX).
+ * Odpowiada za inicjalizację okna, zarządzanie przełączaniem ekranów (menu startowe,
+ * właściwa symulacja, ekran końca gry) oraz obsługę płynnej animacji agentów
+ * za pomocą timera systemowego.
+ */
 public class MainApp extends Application {
 
-    private Stage primaryStage; // Główne okno aplikacji
+    /** Główne okno aplikacji udostępniane przez platformę JavaFX. */
+    private Stage primaryStage;
 
     private Simulation simulation;
     private GameView gameView;
     private MainLayout mainLayout;
     private GameController gameController;
 
+    /** Główny licznik odświeżania grafiki odpowiedzialny za płynny render klatek animacji. */
     private AnimationTimer timer;
+
+    /** Główny kontener przechowujący warstwy interfejsu (widok gry oraz nakładkę Game Over). */
     private StackPane rootContainer;
 
+    /** Kolejka punktów nawigacyjnych ścieżki wizualnej dla płynnych przejść agentów. */
+    private java.util.Queue<int[]> visualPath = new java.util.LinkedList<>();
+
+    /**
+     * Główna metoda startowa inicjalizująca parametry okna i wywołująca ekran konfiguracji.
+     *
+     * @param primaryStage Główna scena dostarczona przez system.
+     */
     @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
         this.primaryStage.setTitle(GameConfiguration.APP_WINDOW_TITLE);
         this.primaryStage.setMaximized(true);
 
-        // Zamiast odpalać grę, najpierw pokazujemy menu startowe
         showSetupScreen();
     }
 
-    // Kolejka ścieżki wizualnej
-    private java.util.Queue<int[]> visualPath = new java.util.LinkedList<>();
-
-    // Dodawanie kroku do animacji
+    /**
+     * Dodaje punkt współrzędnych do kolejki kroków animacji wizualnej.
+     *
+     * @param wx Logiczna współrzędna X punktu docelowego na planszy.
+     * @param wy Logiczna współrzędna Y punktu docelowego na planszy.
+     */
     public void addWaypoint(int wx, int wy) {
         visualPath.add(new int[]{wx, wy});
     }
 
-    // EKRAN STARTOWY (MENU KONFIGURACYJNE)
+    /**
+     * Tworzy i wyświetla ekran startowy (menu konfiguracyjne).
+     * Umożliwia użytkownikowi dynamiczne dobranie parametrów wejściowych symulacji,
+     * takich jak budżet czy początkowy skład osobowy zespołu IT.
+     */
     private void showSetupScreen() {
         VBox setupRoot = new VBox(20);
         setupRoot.setAlignment(Pos.CENTER);
@@ -111,7 +134,6 @@ public class MainApp extends Application {
                 exitSimulationButton
         );
 
-        // --- POPRAWKA BEZPIECZNEGO ODŚWIEŻANIA SCENY STARTOWEJ ---
         if (primaryStage.getScene() == null) {
             Scene setupScene = new Scene(setupRoot, 800, 600);
             primaryStage.setScene(setupScene);
@@ -121,7 +143,14 @@ public class MainApp extends Application {
         primaryStage.show();
     }
 
-    // WŁAŚCIWA GRA (Odpalana po kliknięciu START)
+    /**
+     * Inicjalizuje podstawowe komponenty silnika symulacji, wiąże ze sobą kontrolery,
+     * buduje docelową strukturę paneli JavaFX oraz uruchamia pętlę odświeżania grafiki.
+     *
+     * @param startJuniors Początkowa liczba pracowników poziomu Junior wybrana w menu.
+     * @param startSeniors Początkowa liczba pracowników poziomu Senior wybrana w menu.
+     * @param startBudget Początkowy stan budżetu firmy zadeklarowany przez użytkownika.
+     */
     private void startGame(int startJuniors, int startSeniors, int startBudget) {
         simulation = new Simulation(startJuniors, startSeniors, startBudget);
         simulation.setMainApp(this);
@@ -141,7 +170,6 @@ public class MainApp extends Application {
         rootContainer = new StackPane();
         rootContainer.getChildren().add(appRoot);
 
-        // --- POPRAWKA PRZEPIĘCIA WIDOKU PLANSZY BEZ ZMIANY ROZMIARU OKNA ---
         if (primaryStage.getScene() != null) {
             primaryStage.getScene().setRoot(rootContainer);
         } else {
@@ -175,6 +203,13 @@ public class MainApp extends Application {
         gameController.startSimulation();
     }
 
+    /**
+     * Tworzy uniwersalny przycisk wyjścia/powrotu, pozwalający opuścić tryb symulacji.
+     *
+     * @param returnToSetupScreen Definiuje czy przycisk ma cofać do menu konfiguracji (true),
+     * czy całkowicie wyłączyć aplikację (false).
+     * @return Skonfigurowany obiekt przycisku Button.
+     */
     private Button createExitSimulationButton(boolean returnToSetupScreen) {
         Button exitSimulationButton = new Button("↩ Wyjdź z symulacji");
         exitSimulationButton.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 8 18 8 18;");
@@ -192,6 +227,10 @@ public class MainApp extends Application {
         return exitSimulationButton;
     }
 
+    /**
+     * Przeprowadza procedurę bezpiecznego czyszczenia i zatrzymywania działających pętli czasowych
+     * oraz wątków logicznych symulacji przed zmianą ekranu lub zamknięciem programu.
+     */
     private void stopCurrentSimulation() {
         if (simulation != null) {
             simulation.stop();
@@ -207,7 +246,12 @@ public class MainApp extends Application {
         }
     }
 
-    // Ekran końca gry z raportem i przeglądaniem
+    /**
+     * Wyświetla ekran podsumowujący (GameOver) nakładki na planszę gry.
+     * Generuje szczegółowy raport końcowy z twardymi danymi statystycznymi.
+     *
+     * @param message Komunikat tekstowy informujący o przyczynie zakończenia symulacji (np. bankructwo).
+     */
     public void showGameOverScreen(String message) {
         if (timer != null) {
             timer.stop(); // Zatrzymujemy silnik wizualny
@@ -278,7 +322,15 @@ public class MainApp extends Application {
         }
     }
 
-    // Pomocnik do generowania czystych wierszy danych
+    /**
+     * Pomocnik generujący ujednolicony pod względem wizualnym wiersz danych statystycznych.
+     *
+     * @param textLabel Opis parametru statystycznego.
+     * @param textValue Sformatowana wartość liczbowa lub tekstowa parametru.
+     * @param styleLabel Styl CSS dla etykiety opisowej.
+     * @param styleValue Styl CSS dla pola wartości.
+     * @return Skonfigurowany wiersz danych w formacie HBox.
+     */
     private HBox createStatRow(String textLabel, String textValue, String styleLabel, String styleValue) {
         Label label = new Label(textLabel);
         label.setStyle(styleLabel);
@@ -292,6 +344,11 @@ public class MainApp extends Application {
         return row;
     }
 
+    /**
+     * Główny punkt wejścia programu w środowisku Java standard. Urządza rozruch środowiska JavaFX.
+     *
+     * @param args Argumenty wiersza poleceń.
+     */
     public static void main(String[] args) {
         launch(args);
     }
