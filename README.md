@@ -154,12 +154,15 @@ Testy jednostkowe projektu.
 
 ---
 
-## Uruchamianie projektu
+## Uruchamianie projektu (Quick Start)
 
-Projekt najlepiej uruchamiać w IntelliJ IDEA.
-
+Projekt najlepiej uruchamiać w IntelliJ IDEA. 
+Wymagania: środowisko **Java JDK 21** oraz narzędzie **Maven**
 Główną klasą uruchomieniową jest `MainApp.java`.
-
+Uruchomienie przez Terminal (alternatywa):
+   ```bash
+   mvn clean package
+   mvn javafx:run
 Po uruchomieniu aplikacji pojawia się ekran startowy, na którym można ustawić liczbę Juniorów, liczbę Seniorów oraz początkowy budżet.
 
 ---
@@ -189,6 +192,22 @@ Projekt posiada solidne pokrycie testami jednostkowymi (JUnit 5) weryfikującymi
 * **Diagnostyka Zasobów (`TestResources`):** Autorski skrypt linter'a (Asset Scanner) weryfikujący poprawność mapowania plików graficznych `.png` w kodzie źródłowym gry.
 
 Testy można uruchomić z poziomu środowiska IDE lub za pomocą komendy: `mvn test` (Maven -> Lifecycle -> test).
+
+---
+## Przykładowy przebieg (Sample Run)
+
+Oto scenariusz tego, jak zachowuje się aplikacja po prawidłowym uruchomieniu i jak wygląda przykładowa rozgrywka:
+
+1. **Konfiguracja początkowa:** Po włączeniu programu pojawia się ekran startowy. Użytkownik widzi domyślne parametry (5 Juniorów, 3 Seniorów oraz budżet 2000.0) i może je dostosować przed kliknięciem przycisku startu.
+2. **Inicjalizacja biura:** Po zatwierdzeniu konfiguracji ładuje się graficzna mapa biura w stylu pixel-art (wymiary planszy to 16x10 kafelków). Na swoich pozycjach startowych pojawiają się pracownicy oraz Szef.
+3. **Cykl życia biura i logi:** W trakcie trwania tur pracownicy wykonują zadania. W konsoli środowiska IntelliJ na bieżąco drukują się logi systemowe, np.:
+   `[STAN] Szef siedzi przy biurku i czeka.`
+4. **Zdarzenia losowe i interakcje:**
+   * Co 3 tury rozdzielane są nowe taski.
+   * Co 30 tur z budżetu pobierane są stałe pensje dla pracowników.
+   * Jeśli Junior popełni błąd, na planszy widać animację płaczu, a w konsoli pojawia się informacja o spadku efektywności.
+   * Gdy podejdzie do niego Szef, w konsoli i statystykach odnotowywany jest "motywacyjny boost".
+5. **Koniec symulacji (Bankructwo):** Gra toczy się autonomicznie do momentu, gdy przez nagromadzenie błędów i wypłaty pensji budżet firmy spadnie do wartości `<= 0`. W tym momencie aplikacja blokuje dalszy ruch, zatrzymuje pętlę gry i wyświetla ekran końcowy z komunikatem o bankructwie oraz przyciskiem powrotu do menu.
 
 ---
 
