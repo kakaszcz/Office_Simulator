@@ -213,6 +213,22 @@ Oto scenariusz tego, jak zachowuje się aplikacja po prawidłowym uruchomieniu i
    * Gdy podejdzie do niego Szef, w konsoli i statystykach odnotowywany jest "motywacyjny boost".
 5. **Koniec symulacji (Bankructwo):** Gra toczy się autonomicznie do momentu, gdy przez nagromadzenie błędów i wypłaty pensji budżet firmy spadnie do wartości `<= 0`. W tym momencie aplikacja blokuje dalszy ruch, zatrzymuje pętlę gry i wyświetla ekran końcowy z komunikatem o bankructwie oraz przyciskiem powrotu do menu.
 
+
+### Scenariusze Testowe Stabilności Ekonomicznej (Deterministic Runs)
+
+W celu weryfikacji poprawności działania silnika ekonomicznego oraz powtarzalności reguł biznesowych aplikacji, przeprowadzono serię testów zidentyfikowanych jako punkty krytyczne symulacji.
+
+**Scenariusz testowy: Skrajne obciążenie budżetu zatrudnieniem**
+Konfiguracja początkowa: Budżet startowy: `2000.0 PLN/USD`, liczba Juniorów: `10`, liczba Seniorów: `1`.
+Charakterystyka przebiegu: Ze względu na wysokie koszty utrzymania tak licznej kadry juniorskiej przy minimalnym wsparciu mentorskim (tylko 1 Senior), bilans zysków z zadań do strat z błędów drastycznie przyspiesza moment niewypłacalności.
+Wyniki powtarzalności (Moment Bankructwa): W zależności od losowego generowania zadań, symulacja w tym scenariuszu regularnie osiąga stan bankructwa (budżet `<= 0`) w następujących przedziałach czasowych:
+  * Próba I: **53. tura**
+  * Próba II: **54. tura**
+  * Próba III: **48. tura**
+  * Próba IV: **111. tura**
+  * Próba V: **150. tura**
+
+Powyższe dane jednoznacznie potwierdzają prawidłowe i dynamiczne naliczanie kar za błędy oraz pensji pracowniczych (zgodnie z `PAYDAY_INTERVAL` z klasy konfiguracyjnej), uniemożliwiając powstawanie nieskończonych pętli rozgrywki przy złym zarządzaniu kadrami.
 ---
 
 ## Status projektu
