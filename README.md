@@ -156,7 +156,9 @@ Testy jednostkowe projektu.
 
 ## Uruchamianie projektu (Quick Start)
 
-Projekt najlepiej uruchamiać w IntelliJ IDEA. Wymagania: środowisko **Java JDK 21** oraz narzędzie **Maven**. 
+Projekt najlepiej uruchamiać w IntelliJ IDEA. 
+
+Wymagania: środowisko **Java JDK 21** oraz narzędzie **Maven**. 
 
 Główną klasą uruchomieniową jest `MainApp.java`. 
 
@@ -165,9 +167,9 @@ Uruchomienie przez Terminal (alternatywa):
 ```bash
 mvn clean package
 mvn javafx:run
-Po uruchomieniu aplikacji pojawia się ekran startowy, na którym można ustawić liczbę Juniorów, liczbę Seniorów oraz początkowy budżet.
+```
 
----
+Po uruchomieniu aplikacji pojawia się ekran startowy, na którym można ustawić liczbę Juniorów, liczbę Seniorów oraz początkowy budżet.
 
 ## Testy
 
