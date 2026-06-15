@@ -228,7 +228,7 @@ Wyniki powtarzalności (Moment Bankructwa): W zależności od losowego generowan
   * Próba IV: **111. tura**
   * Próba V: **150. tura**
 
-Powyższe dane jednoznacznie potwierdzają prawidłowe i dynamiczne naliczanie kar za błędy oraz pensji pracowniczych (zgodnie z `PAYDAY_INTERVAL` z klasy konfiguracyjnej), uniemożliwiając powstawanie nieskończonych pętli rozgrywki przy złym zarządzaniu kadrami.
+Powyższe dane jednoznacznie potwierdzają prawidłowe i dynamiczne naliczanie kar za błędy oraz pensji pracowniczych (zgodnie z interwałem wypłat z klasy konfiguracyjnej), uniemożliwiając powstawanie nieskończonych pętli rozgrywki przy złym zarządzaniu kadrami.
 ---
 
 ## Status projektu
