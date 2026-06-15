@@ -3,18 +3,17 @@ package game.core;
 import game.agents.Agent;
 import game.view.GameView;
 import game.view.MainLayout;
-import javafx.animation.AnimationTimer;
-import javafx.application.Application;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
+import javafx.animation.AnimationTimer; //mechanizm do wykonywania kodu przy kazdej klatce animacji (plynne przesuwanie, odswiezanie)
+import javafx.application.Application; //bazowa klasa aplikacji javafx
+import javafx.geometry.Pos; // do wyrownywania elementow
+import javafx.scene.Scene; //zawartosc okna
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.Spinner;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.scene.layout.StackPane;
-import javafx.stage.Stage;
+import javafx.scene.control.Spinner; //kontrolka z wyborem liczby ze strzalkami
+import javafx.scene.layout.HBox; //ukl elementy poziomo
+import javafx.scene.layout.VBox; //ukl elem pionowo
+import javafx.scene.layout.StackPane; //ukl elementy warstowowo
+import javafx.stage.Stage; //glowne okno
 
 /**
  * Główna klasa uruchomieniowa aplikacji (punkt wejścia JavaFX).
@@ -24,13 +23,13 @@ import javafx.stage.Stage;
  */
 public class MainApp extends Application {
 
-    /** Główne okno aplikacji udostępniane przez platformę JavaFX. */
+    /** Główne okno aplikacji (JavaFX). */
     private Stage primaryStage;
 
     private Simulation simulation;
     private GameView gameView;
-    private MainLayout mainLayout;
-    private GameController gameController;
+    private MainLayout mainLayout; //plansza, panele boczne, logi itp
+    private GameController gameController; //odpala lub zatrzymuje petle tur
 
     /** Główny licznik odświeżania grafiki odpowiedzialny za płynny render klatek animacji. */
     private AnimationTimer timer;
@@ -49,7 +48,7 @@ public class MainApp extends Application {
     @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
-        this.primaryStage.setTitle(GameConfiguration.APP_WINDOW_TITLE);
+        this.primaryStage.setTitle(GameConfiguration.APP_WINDOW_TITLE); //tytul brany z klasy game config
         this.primaryStage.setMaximized(true);
 
         showSetupScreen();
@@ -110,7 +109,7 @@ public class MainApp extends Application {
         startButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10 30 10 30;");
 
         startButton.setOnAction(e -> {
-            int startJuniors = juniorsSpinner.getValue();
+            int startJuniors = juniorsSpinner.getValue(); //pobieranie wartosci ze spinnera
             int startSeniors = seniorsSpinner.getValue();
             int startBudget = budgetSpinner.getValue();
 
@@ -120,7 +119,7 @@ public class MainApp extends Application {
         startButton.setOnMouseEntered(e -> startButton.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10 30 10 30;"));
         startButton.setOnMouseExited(e -> startButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10 30 10 30;"));
 
-        Button exitSimulationButton = createExitSimulationButton(false);
+        Button exitSimulationButton = createExitSimulationButton(false); //false czyli nie ma wracac do ekranu konfiguracji tylko zamknac aplikacje
 
         setupRoot.getChildren().addAll(
                 titleLabel,
@@ -134,7 +133,7 @@ public class MainApp extends Application {
                 exitSimulationButton
         );
 
-        if (primaryStage.getScene() == null) {
+        if (primaryStage.getScene() == null) { //jesli nie ma ustawionej sceny to tworzymy
             Scene setupScene = new Scene(setupRoot, 800, 600);
             primaryStage.setScene(setupScene);
         } else {
@@ -152,23 +151,23 @@ public class MainApp extends Application {
      * @param startBudget Początkowy stan budżetu firmy zadeklarowany przez użytkownika.
      */
     private void startGame(int startJuniors, int startSeniors, int startBudget) {
-        simulation = new Simulation(startJuniors, startSeniors, startBudget);
+        simulation = new Simulation(startJuniors, startSeniors, startBudget); //glowny obiekt symulacji
         simulation.setMainApp(this);
 
         gameView = new GameView(simulation.getGameBoard());
         mainLayout = new MainLayout(simulation, gameView);
 
         gameController = new GameController(simulation, mainLayout.getHRDashboard());
-        HBox speedPanel = gameController.createSpeedControlPanel();
+        HBox speedPanel = gameController.createSpeedControlPanel(); //panel kontroli predkosci
 
-        Button exitSimulationButton = createExitSimulationButton(true);
+        Button exitSimulationButton = createExitSimulationButton(true); //czyli po kliknieciu nie zamyka aplikacji tylko wraca do ekr konfig
         speedPanel.getChildren().add(exitSimulationButton);
 
         VBox appRoot = new VBox();
         appRoot.getChildren().addAll(speedPanel, mainLayout.getScene().getRoot());
 
         rootContainer = new StackPane();
-        rootContainer.getChildren().add(appRoot);
+        rootContainer.getChildren().add(appRoot); //aplikacja jako pierwsza warstwa
 
         if (primaryStage.getScene() != null) {
             primaryStage.getScene().setRoot(rootContainer);
