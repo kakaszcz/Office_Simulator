@@ -5,6 +5,13 @@ import game.core.GameConfiguration;
 import game.model.Cell;
 import game.model.GameBoard;
 
+/**
+ * Abstrakcyjna klasa bazowa reprezentująca autonomicznego agenta w symulacji biura.
+ * Stanowi fundament dla wszystkich postaci poruszających się po planszy (np. Pracowników, Szefa).
+ * Klasa rozdziela logiczny cykl życia i pozycjonowanie na siatce (metoda {@code act})
+ * od płynnego renderowania wizualnego oraz animacji klatek ruchu na ekranie (metoda {@code updateVisual}).
+ * Wspiera mechanizm punktów pośrednich (waypoints) w celu zapewnienia płynnych przejść kafelkowych.
+ */
 abstract public class Agent {
     private int x;
     private int y;
@@ -24,10 +31,23 @@ abstract public class Agent {
     // Kolejka kroków do wykonania przez animację wizualną
     private java.util.Queue<int[]> visualPath = new java.util.LinkedList<>();
 
+    /**
+     * Rejestruje nowy punkt pośredni (waypoint) w kolejce animacji wizualnej agenta.
+     *
+     * @param wx Logiczna współrzędna X punktu docelowego.
+     * @param wy Logiczna współrzędna Y punktu docelowego.
+     */
     public void addWaypoint(int wx, int wy) {
         visualPath.add(new int[]{wx, wy});
     }
 
+    /**
+     * Tworzy nowego agenta, przydziela mu unikalne ID oraz synchronizuje jego
+     * początkową pozycję logiczną z pozycją wizualną na mapie.
+     *
+     * @param x Początkowa logiczna współrzędna X na siatce planszy.
+     * @param y Początkowa logiczna współrzędna Y na siatce planszy.
+     */
     public Agent(int x, int y) {
         this.id = Agent.nextId++;
         this.x = x;
@@ -38,10 +58,27 @@ abstract public class Agent {
         this.visualY = y;
     }
 
+    /**
+     * Ustawia imię lub identyfikator tekstowy agenta.
+     *
+     * @param name Nowe imię dla agenta.
+     */
     public void setName(String name) { this.name = name; }
+
+    /**
+     * Pobiera imię lub identyfikator tekstowy agenta.
+     *
+     * @return Ciąg znaków reprezentujący imię agenta.
+     */
     public String getName() { return name; }
 
-    // Metoda do obsługi tur (logika)
+    /**
+     * Abstrakcyjna metoda wymuszająca implementację logiki zachowania agenta w każdej turze.
+     * Odpowiada za procesy decyzyjne, interakcje oraz wyznaczanie nowych ścieżek ruchu.
+     *
+     * @param board Obiekt planszy gry (GameBoard) analizowany przez agenta.
+     * @param sim Obiekt silnika symulacji (Simulation) dający dostęp do parametrów globalnych.
+     */
     public abstract void act(GameBoard board, Simulation sim);
 
     /**

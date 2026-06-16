@@ -2,7 +2,6 @@ package game.agents;
 
 import game.core.GameConfiguration;
 
-//spr.
 /**
  * Reprezentuje pracownika o poziomie Senior w symulacji.
  * Senior charakteryzuje się podwyższoną i bardziej stabilną efektywnością pracy.

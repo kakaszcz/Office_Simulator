@@ -9,7 +9,6 @@ import game.core.GameConfiguration;
 
 import java.util.List;
 
-//spr.
 /**
  * Abstrakcyjna klasa bazowa reprezentująca pracownika (programistę) w biurze.
  * Zarządza cyklem życia agenta za pomocą wzorca projektowego Stanu (WorkerState),
@@ -112,6 +111,10 @@ public abstract class Worker extends Agent {
             this.currentTargetCell = targetCell;
             Cell startCell = board.getCell(this.getX(), this.getY());
             this.currentPath = pathfinder.findPath(startCell, targetCell, board);
+
+            if (this.currentPath != null && this.currentPath.isEmpty()) {
+                this.currentPath = null;
+            }
         }
 
         if (this.currentPath != null && !this.currentPath.isEmpty()) {

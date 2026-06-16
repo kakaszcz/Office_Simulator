@@ -4,6 +4,14 @@ import game.core.Simulation;
 import game.core.GameConfiguration;
 import game.model.*;
 
+/**
+ * Klasa reprezentująca Szefa (Boss) zarządzającego biurem w symulacji.
+ * Szef monitoruje stan budżetu firmy, patroluje biuro w poszukiwaniu pracowników,
+ * przeprowadza kontrole wydajności oraz nakłada kary (zwolnienia).
+ * Posiada unikalne mechanizmy zachowań, takie jak stan szału (mad turns) po wystąpieniu
+ * błędu krytycznego, priorytetowe ściganie Juniorów, motywujące rozmowy z Seniorami
+ * oraz autonomiczne zarządzanie przerwami na kawę.
+ */
 public class Boss extends Agent {
 
     private int controlRange;
@@ -191,8 +199,8 @@ public class Boss extends Agent {
                         } else {
                             System.out.println("!!! SZEF " + this.getName() + " ZWALNIA PRACOWNIKA " + worker.getName() + " ZA ZŁE WYNIKI (Wydajność: "
                                     + String.format("%.2f", worker.getEfficiency() * 100) + "%) !!!");
-                            worker.markFired();
                         }
+                        worker.markFired();
                     }
                     else {
                         if (worker instanceof game.agents.Senior && !state.equalsIgnoreCase("TalkingState")) {
