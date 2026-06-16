@@ -1,8 +1,8 @@
 module SymulacjaBiura {
-    requires javafx.controls;
+    requires javafx.controls; //daje np button, label, HBox itd
     requires javafx.graphics;
 
-    exports game.core;
+    exports game.core; //udostepnianie pakietu game.core innym modulom
     exports game.model;
     exports game.states;
     exports game.view;
