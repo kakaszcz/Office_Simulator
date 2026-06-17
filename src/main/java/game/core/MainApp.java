@@ -167,39 +167,39 @@ public class MainApp extends Application {
         appRoot.getChildren().addAll(speedPanel, mainLayout.getScene().getRoot());
 
         rootContainer = new StackPane();
-        rootContainer.getChildren().add(appRoot); //aplikacja jako pierwsza warstwa
+        rootContainer.getChildren().add(appRoot); //gra jako pierwsza warstwa
 
         if (primaryStage.getScene() != null) {
-            primaryStage.getScene().setRoot(rootContainer);
-        } else {
+            primaryStage.getScene().setRoot(rootContainer); //przejscie z ekr konfig do ekranu gry
+        } else { //jak scena nie ist to tworzymy nową
             Scene gameScene = new Scene(rootContainer);
-            primaryStage.setScene(gameScene);
+            primaryStage.setScene(gameScene); //ustawiamy scene jako gl element okna
         }
 
-        // Stabilne wymuszenie pełnego ekranu
+        // Stabilne wymuszenie pełnego ekranu (maksymalizacja ekranu)
         primaryStage.setMaximized(true);
 
-        gameView.render(simulation);
+        gameView.render(simulation); //pierwszy raz rysujemy plansze i agentow
 
         timer = new AnimationTimer() {
             @Override
-            public void handle(long now) {
-                if (!simulation.isRunning()) {
+            public void handle(long now) { //odswiezenie jednej klatki symulacji
+                if (!simulation.isRunning()) { //jesli symulacja nie dziala to wychodzi z metoy handle
                     return;
                 }
 
-                double currentSpeed = gameController.getSpeed();
+                double currentSpeed = gameController.getSpeed(); //bierze predkosc z suwaka
 
                 for (Agent agent : simulation.getAgents()) {
-                    agent.updateVisual(currentSpeed);
+                    agent.updateVisual(currentSpeed);//przesuwa agentow zgodnie z curr predkoscia
                 }
-                gameView.render(simulation);
-                mainLayout.update(simulation);
+                gameView.render(simulation); //po przesunieciu agentow rysuje od nowa
+                mainLayout.update(simulation); //aktualizacja paneli bocznych
             }
         };
 
-        timer.start();
-        gameController.startSimulation();
+        timer.start(); //uruchamia animation timer (grafika)
+        gameController.startSimulation(); //uruchamia logike gry
     }
 
     /**
@@ -216,9 +216,9 @@ public class MainApp extends Application {
         exitSimulationButton.setOnAction(e -> {
             stopCurrentSimulation();
 
-            if (returnToSetupScreen) {
+            if (returnToSetupScreen) { //gdy true to wraca do setup screen
                 showSetupScreen();
-            } else {
+            } else { //gdy false to zamyka aplikacje
                 javafx.application.Platform.exit();
             }
         });
