@@ -29,7 +29,7 @@ public class HRManager {
      * @param agent Obiekt agenta (pracownika) wstępującego do symulacji.
      */
     public void registerHire(Agent agent) {
-        activeRecords.put(agent, new EmployeeRecord(agent));
+        activeRecords.put(agent, new EmployeeRecord(agent)); //nowa kartoteka dla nowego pracownika
         totalHired++;
     }
 

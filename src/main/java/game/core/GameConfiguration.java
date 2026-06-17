@@ -162,7 +162,7 @@ public class GameConfiguration {
     // --- KONTROLA CZASU I UI (TIMELINE / SLIDER) ---
     // ==========================================
     /** Bazowy czas trwania jednej tury w milisekundach przy prędkości 1.0x */
-    public static final int GAME_LOOP_BASE_TICK_MS = 1000;
+    public static final int GAME_LOOP_BASE_TICK_MS = 1000; //po prostu jedna sekunda
 
     /** Minimalna prędkość symulacji na suwaku */
     public static final double SPEED_SLIDER_MIN = 0.25;
