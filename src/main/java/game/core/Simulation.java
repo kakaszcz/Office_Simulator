@@ -72,7 +72,7 @@ public class Simulation {
 
         for (Agent agent : this.agents) {
             if (agent instanceof game.agents.Worker) {
-                this.hrManager.registerHire(agent);
+                this.hrManager.registerHire(agent); //tworzenie kartoteki
             }
         }
     }

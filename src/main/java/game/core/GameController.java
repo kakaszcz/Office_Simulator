@@ -20,8 +20,8 @@ import javafx.util.Duration;
 public class GameController {
 
     private final Simulation simulation;
-    private final HRDashboard hrDashboard;
-    private Timeline gameLoop;
+    private final HRDashboard hrDashboard; //przechowuje panel hr
+    private Timeline gameLoop; //logika tur
     private Button playPauseBtn; // Pole klasy do synchronizacji stanu przycisku
 
     /**
@@ -44,13 +44,13 @@ public class GameController {
      * zatrzymania w przypadku wykrycia końca gry lub bankructwa firmy.
      */
     private void initGameLoop() {
-        KeyFrame keyFrame = new KeyFrame(Duration.millis(GameConfiguration.GAME_LOOP_BASE_TICK_MS), event -> {
+        KeyFrame keyFrame = new KeyFrame(Duration.millis(GameConfiguration.GAME_LOOP_BASE_TICK_MS), event -> { //czas miedzy wywolaniami
             // Zatrzymujemy pętlę Timeline po wykryciu bankructwa/końca gry, by nie obciążać procesora w tle
             if (!simulation.isRunning()) {
                 System.out.println(">>> [GameLoop] Wykryto zatrzymanie symulacji. Zatrzymuję pętlę główną kontrolera.");
                 gameLoop.stop();
                 if (playPauseBtn != null) {
-                    playPauseBtn.setText("▶ Start");
+                    playPauseBtn.setText("▶ Start"); //ustawia tekst przycisku na start gdy symulacja zostala zatrzymana
                     playPauseBtn.setDisable(true); // Blokujemy przycisk na ekranie Game Over
                 }
                 return;
